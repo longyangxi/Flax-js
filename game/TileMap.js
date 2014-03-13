@@ -169,11 +169,10 @@ lg.TileMap = cc.Class.extend({
         if(!(sprite instanceof cc.Node)) return;
         if(tx === undefined) tx = this.getTileIndexX(sprite.getPositionX());
         if(ty === undefined) ty = this.getTileIndexY(sprite.getPositionY());
-
+        sprite.setPosition(this.getTiledPositionX(tx), this.getTiledPositionY(ty));
         if(autoAdd === true) {
             sprite.setTileMap(this);
         }
-        sprite.setPosition(this.getTiledPositionX(tx), this.getTiledPositionY(ty));
     },
     snapAll:function()
     {
@@ -259,7 +258,7 @@ lg.TileMap = cc.Class.extend({
             if(i > -1)
             {
                 objs.splice(i, 1);
-                object.tx = object.ty = -1;
+//                object.tx = object.ty = -1;
             }
             i = this._objectsArr.indexOf(object);
             if(i > -1){

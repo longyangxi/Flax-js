@@ -401,8 +401,6 @@ cc.Loader._instance = null;
  */
 Preloader = cc.Scene.extend(/** @lends Preloader# */{
     _logo: null,
-    _logoTexture: null,
-    _texture2d: null,
     _bgLayer: null,
     _label: null,
     _winSize:null,
@@ -422,36 +420,20 @@ Preloader = cc.Scene.extend(/** @lends Preloader# */{
         var logoHeight = logoH;
         var centerPos = cc.p(this._winSize.width / 2, this._winSize.height / 2);
 
-        this._logoTexture = new Image();
-        var _this = this, handler;
-        this._logoTexture.addEventListener("load", handler = function() {
-            _this._initStage(centerPos);
-            this.removeEventListener('load', handler, false);
-        });
-        this._logoTexture.src = logoSrc;
-        this._logoTexture.width = logoWidth;
-        this._logoTexture.height = logoHeight;
-
         // bg
-        this._bgLayer = cc.LayerColor.create(cc.c4(backgroundColor[0], backgroundColor[1], backgroundColor[2], 255));//32, 32, 32
+        this._bgLayer = cc.LayerColor.create(cc.c4(backgroundColor[0], backgroundColor[1], backgroundColor[2], 255));
         this._bgLayer.setPosition(0, 0);
         this.addChild(this._bgLayer, 0);
-
-        //loading percent
-        this._label = cc.LabelTTF.create("Loading... 0%", "Arial", 28);//14);
-        this._label.setColor(cc.c3(38, 192, 216));
-        this._label.setPosition(cc.pAdd(centerPos, cc.p(0, -logoHeight / 2 - 20)));
-        this._bgLayer.addChild(this._label, 100);
-    },
-
-    _initStage: function (centerPos) {
-        this._texture2d = new cc.Texture2D();
-        this._texture2d.initWithElement(this._logoTexture);
-        this._texture2d.handleLoadedTexture();
-        this._logo = cc.Sprite.createWithTexture(this._texture2d);
-        this._logo.setScale(cc.CONTENT_SCALE_FACTOR());
+        //logo
+        this._logo = cc.Sprite.create(logoSrc);
         this._logo.setPosition(centerPos);
         this._bgLayer.addChild(this._logo, 10);
+
+        //loading percent
+        this._label = cc.LabelTTF.create("Loading... 0%", "Arial", 28);
+        this._label.setColor(cc.c3(38, 192, 216));
+        this._label.setPosition(cc.pAdd(centerPos, cc.p(0,  logoOnCenter ? 0 : (-logoHeight / 2 - 20))));
+        this._bgLayer.addChild(this._label, 100);
     },
 
     onEnter: function () {
