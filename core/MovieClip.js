@@ -6,8 +6,9 @@ var lg = lg || {};
 
 lg.MovieClip = lg.TimeLine.extend({
     _namedChildren:null,
+    _theRect:null,
 
-    setChild:function(childName, id)
+    replaceChild:function(childName, assetID)
     {
         var childDefine = this.define.children[childName];
         if(childDefine == null){
@@ -17,9 +18,9 @@ lg.MovieClip = lg.TimeLine.extend({
         var child = this._namedChildren.get(childName);
         if(child)
         {
-            child.setPlist(this.plistFile, id);
+            child.setPlist(this.plistFile, assetID);
         }else{
-            childDefine.class = id;
+            childDefine.class = assetID;
         }
     },
     onNewSheet:function()
@@ -27,6 +28,13 @@ lg.MovieClip = lg.TimeLine.extend({
         this.removeAllChildren();
         this.totalFrames = this.define.totalFrames;
         this._namedChildren = new buckets.Dictionary();
+    },
+    onReset:function(firstTime)
+    {
+        this._super(firstTime);
+        if(this._theRect) this.setContentSize(this._theRect._size);
+        //MovieClip is just a container here, so we don't need a texture for it, and opacity = 0 will not impact the children
+        this.setOpacity(0);
     },
     doRenderFrame:function(frame)
     {
@@ -72,7 +80,11 @@ lg.MovieClip = lg.TimeLine.extend({
     },
     getDefine:function()
     {
-       return lg.assetsManager.getMc(this.plistFile, this.assetID);
+        var define = lg.assetsManager.getMc(this.plistFile, this.assetID);
+        if(define) {
+            this._theRect = lg.rectClone( define.rect);
+        }
+        return define;
     },
     getChildByName:function(name, nest)
     {
@@ -90,6 +102,19 @@ lg.MovieClip = lg.TimeLine.extend({
                 }
             }
         }
+    },
+    getRect:function(global)
+    {
+        if(this._theRect == null) return null;
+        global = (global === true);
+        if(!global) return this._theRect;
+        var w = this._theRect._size.width;
+        var h = this._theRect._size.height;
+        var origin = cc.p(this._theRect._origin);
+        if(this._scaleX < 0) origin.x = origin.x + w;
+        if(this._scaleY < 0) origin.y = origin.y + h;
+        origin = this.convertToWorldSpace(origin);
+        return cc.rect(origin.x, origin.y, w*Math.abs(this._scaleX), h*Math.abs(this._scaleY));
     },
     getLabelText:function(labelName, ifNest)
     {

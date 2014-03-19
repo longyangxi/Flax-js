@@ -17,6 +17,7 @@ lg.currentScene = null;
 lg._scenesDict = {};
 lg._resourcesLoaded = [];
 lg._soundEnabled = true;
+lg._soundBugFixed = false;
 
 lg.registerScene = function(name, scene, resources)
 {
@@ -44,6 +45,7 @@ lg.preload = function(res, callBack)
             callBack();
         }, this);
     }
+    lg._fixSoundBug();
 }
 lg.replaceScene = function(sceneName)
 {
@@ -83,12 +85,13 @@ lg.setSoundEnabled = function(value)
 {
     if(lg._soundEnabled == value) return;
     lg._soundEnabled = value;
+    var audioEngine = cc.AudioEngine.getInstance();
     if(value)
     {
-        cc.AudioEngine.getInstance().resumeMusic();
+        audioEngine.resumeMusic();
     }else{
-        cc.AudioEngine.getInstance().pauseMusic();
-        cc.AudioEngine.getInstance().stopAllEffects();
+        audioEngine.pauseMusic();
+        audioEngine.stopAllEffects();
     }
 }
 lg.getSoundEnabled = function()
@@ -98,14 +101,63 @@ lg.getSoundEnabled = function()
 lg.playMusic = function(path, loop)
 {
     if(lg._soundEnabled){
-        cc.AudioEngine.getInstance().stopMusic(true);
-        cc.AudioEngine.getInstance().playMusic(path, loop);
+        var audioEngine = cc.AudioEngine.getInstance();
+        audioEngine.stopMusic(true);
+        audioEngine.playMusic(path, loop);
     }
 }
 lg.playSound = function(path)
 {
     if(lg._soundEnabled){
         cc.AudioEngine.getInstance().playEffect(path);
+    }
+}
+lg._fixSoundBug = function()
+{
+    if(lg._soundBugFixed) return;
+    lg._soundBugFixed = true;
+
+    var hidden, visibilityChange;
+    if (typeof document.hidden !== "undefined") {
+        hidden = "hidden";
+        visibilityChange = "visibilitychange";
+    } else if (typeof document.mozHidden !== "undefined") {
+        hidden = "mozHidden";
+        visibilityChange = "mozvisibilitychange";
+    } else if (typeof document.msHidden !== "undefined") {
+        hidden = "msHidden";
+        visibilityChange = "msvisibilitychange";
+    } else if (typeof document.webkitHidden !== "undefined") {
+        hidden = "webkitHidden";
+        visibilityChange = "webkitvisibilitychange";
+    }
+    var audioEngine = cc.AudioEngine.getInstance();
+    window.addEventListener("focus", function () {
+        if(!cc.AudioEngine) return;
+        audioEngine._resumePlaying();
+        lg._soundEnabled = true;
+    }, false);
+    window.addEventListener("blur", function () {
+        if(!cc.AudioEngine) return;
+        setTimeout(function(){
+            audioEngine._pausePlaying();
+            lg._soundEnabled = false;
+        },0.1);
+    }, false);
+    document.addEventListener(visibilityChange, handleVisibilityChange, false);
+
+    function handleVisibilityChange() {
+        if(!cc.AudioEngine) return;
+        if (!document.hidden){
+            cc.Director.getInstance()._resetLastUpdate();
+            audioEngine._resumePlaying();
+            lg._soundEnabled = true;
+        } else{
+            setTimeout(function(){
+                audioEngine._pausePlaying();
+                lg._soundEnabled = false;
+            },0.1);
+        }
     }
 }
 //----------------------sound about-------------------------------------------------------
@@ -160,13 +212,34 @@ lg.getRotation = function(sprite, global)
  * */
 lg.getRect = function(sprite, global)
 {
+    var rect;
+    if(sprite instanceof  lg.MovieClip) {
+        rect = sprite.getRect(global);
+        if(rect) return rect;
+    }
     global = (global === true);
     var pos = sprite.getPosition();
     if(global && sprite.getParent()) pos = sprite.getParent().convertToWorldSpace(pos);
     var size = sprite.getContentSize();
     var anchor = sprite.getAnchorPoint();
-    return cc.rect(pos.x - size.width * anchor.x,pos.y - size.height * anchor.y,size.width, size.height);
-//    return new cc.Rect(pos.x - size.width * anchor.x,pos.y - size.height * anchor.y,size.width, size.height);
+    rect = cc.rect(pos.x - size.width * anchor.x,pos.y - size.height * anchor.y,size.width, size.height);
+    return rect;
+};
+lg.rectClone = function(rect)
+{
+    if(rect == null) return null;
+    return cc.rect(rect._origin.x, rect._origin.y, rect._size.width, rect._size.height);
+};
+lg.drawRect = function(rect, drawNode, lineWidth, lineColor, fillColor)
+{
+    if(drawNode == null) {
+        drawNode = cc.DrawNode.create();
+        if(lg.currentScene) lg.currentScene.addChild(drawNode, 99999);
+    }
+    if(lineWidth == null) lineWidth = 1;
+    if(lineColor == null) lineColor = cc.c4f(255, 0, 0, 255);
+    var dp = cc.pAdd(rect._origin, cc.p(rect._size.width, rect._size.height));
+    drawNode.drawRect(rect._origin, dp, fillColor, lineWidth, lineColor);
 };
 lg.ifTouched = function(target, touch)
 {
@@ -269,6 +342,7 @@ lg.randInt = function (start, end)
 };
 lg.getRandomInArray = function (arr)
 {
+    if(arr == null) return null;
     var i = lg.randInt(0, arr.length);
     return arr[i];
 };

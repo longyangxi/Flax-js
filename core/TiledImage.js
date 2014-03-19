@@ -117,11 +117,11 @@ lg.TiledImage = cc.SpriteBatchNode.extend({
     },
     _createTile:function(i, j)
     {
-        var tile = this._pool.fetch(this._taID);
+        var tile = this._pool.fetch(this._taID, this);
         tile.setAnchorPoint(0.5, 0.5);
         this.tileMap.addObject(tile, i, j);
         this.tileMap.snapToTile(tile, i, j);
-        this.addChild(tile);
+//        this.addChild(tile);
         return tile;
     }
 });

@@ -14,6 +14,7 @@ lg.AssetsManager = cc.Class.extend({
     displaysCache:null,
     displayDefineCache:null,
     mcsCache:null,
+    subAnimsCache:null,
     fontsCache:null,
 
    init:function()
@@ -22,6 +23,7 @@ lg.AssetsManager = cc.Class.extend({
        this.displaysCache = new buckets.Dictionary();
        this.displayDefineCache = new buckets.Dictionary();
        this.mcsCache = new buckets.Dictionary();
+       this.subAnimsCache = new buckets.Dictionary();
        this.fontsCache = new buckets.Dictionary();
    },
    createDisplay:function(plistFile, assetID)
@@ -125,7 +127,7 @@ lg.AssetsManager = cc.Class.extend({
                     dDefine = displays[dName];
                     if(dDefine.hasOwnProperty("anchors")) dDefine["anchors"] = this._parseAnchors(dDefine["anchors"]);
                     this.displayDefineCache.set(plistFile + dName, dDefine);
-    //                cc.log(dName);
+                    this._parseSubAnims(plistFile, dName);
                 }
             }
             this.displaysCache.set(plistFile, displayNames);
@@ -142,6 +144,9 @@ lg.AssetsManager = cc.Class.extend({
                 var mc = {};
                 mc.totalFrames = mcDefine["totalFrames"];
                 mc.labels = mcDefine['labels'];
+                mc.anchorX = mcDefine['anchorX'];
+                mc.anchorY = mcDefine['anchorY'];
+                mc.rect = this._strToRect(mcDefine['rect']);
                 if(mcDefine.hasOwnProperty("anchors")) mc.anchors = this._parseAnchors(mcDefine["anchors"]);
                 mc.children = {};
                 var childDefine;
@@ -156,6 +161,9 @@ lg.AssetsManager = cc.Class.extend({
                     if(childDefine.hasOwnProperty("text")) mc.children[childName]["text"] = childDefine["text"];
                 }
                 this.mcsCache.set(plistFile + sName, mc);
+
+                //see if there is a '$' sign which present sub animation of the mc
+                this._parseSubAnims(plistFile, sName);
             }
         }
         //parse the fonts
@@ -212,6 +220,11 @@ lg.AssetsManager = cc.Class.extend({
         }
         return this.mcsCache.get(key);
     },
+    getSubAnims:function(plistFile, theName)
+    {
+        var akey = plistFile + theName;
+        return this.subAnimsCache.get(akey);
+    },
     getFont:function(plistFile, fontName)
     {
         var key = plistFile + fontName;
@@ -219,6 +232,21 @@ lg.AssetsManager = cc.Class.extend({
             this.addPlist(plistFile);
         }
         return this.fontsCache.get(key);
+    },
+    _parseSubAnims:function(plistFile, assetID)
+    {
+        var aarr = assetID.split("$");
+        var rname = aarr[0];
+        var aname = aarr[1];
+        if(rname && aname && rname != '' && aname != ''){
+            var akey = plistFile + rname;
+            var anims = this.subAnimsCache.get(akey);
+            if(anims == null) {
+                anims = [];
+                this.subAnimsCache.set(akey, anims);
+            }
+            anims.push(aname);
+        }
     },
     _parseAnchors:function(anchorDict)
     {
@@ -252,6 +280,11 @@ lg.AssetsManager = cc.Class.extend({
             fs[fi] = parseFloat(fs[fi]);
         }
         return fs;
+    },
+    _strToRect:function(str)
+    {
+        var arr = str.split(",");
+        return cc.rect(parseFloat(arr[0]), parseFloat(arr[1]), parseFloat(arr[2]), parseFloat(arr[3]));
     }
 });
 

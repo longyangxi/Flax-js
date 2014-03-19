@@ -27,7 +27,7 @@ lg.ObjectPool = cc.Class.extend({
         if(maxCount !== undefined) this.maxCount = maxCount;
         return true;
     },
-    fetch:function(assetID, params)
+    fetch:function(assetID, parent, params)
     {
         if(assetID == null){
             cc.log("Please give me a assetID to fetch a object!");
@@ -39,7 +39,6 @@ lg.ObjectPool = cc.Class.extend({
             obj.setPlist(this._plistFile, assetID);
         }else{
             obj = this._cls.create(this._plistFile, assetID);
-//            obj = this._cache.createDisplay(this._plistFile, assetID);
         }
 
         obj.clsName = this._clsName;
@@ -49,12 +48,15 @@ lg.ObjectPool = cc.Class.extend({
         if(params){
             lg.copyProperties(params, obj);
         }
-//        if(parent && obj.getParent() != parent){
-//            obj.removeFromParent(false);
-//            parent.addChild(obj);
-//        }
-//        if(obj.getZOrder() != zOrder && !isNaN(zOrder)) obj.setZOrder(zOrder);
-        if(obj["onReset"]) obj.onReset();
+        var zOrder = null;
+        if(params) zOrder = params.zOrder;
+        if(parent && obj.getParent() != parent){
+            obj.removeFromParent(false);
+            parent.addChild(obj, zOrder);
+        }else{
+            if(!isNaN(zOrder) && obj.getZOrder() != zOrder) obj.setZOrder(zOrder);
+            if(obj.onReset) obj.onReset();
+        }
         return obj;
     },
     recycle:function(object)
@@ -67,7 +69,7 @@ lg.ObjectPool = cc.Class.extend({
             object.removeFromParent();
         }else{
             object.setVisible(false);
-            if(object["onRecycle"]) object.onRecycle();
+            if(object.onRecycle) object.onRecycle();
             this._pool.push(object);
         }
     },

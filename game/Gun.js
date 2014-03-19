@@ -4,6 +4,7 @@
 var lg = lg || {};
 
 lg.Gun = cc.Node.extend({
+//    autoRecycle:false,
     damage:1,//the damage of the bullet
     speed:500,//the move speed of the bullet per second
     interval:0.2,//the interval time between two launch
@@ -45,6 +46,7 @@ lg.Gun = cc.Node.extend({
             this._waveFire();
         }
         this.scheduleUpdate();
+        this.schedule(this.update, 0.1, cc.REPEAT_FOREVER);
     },
     end:function()
     {
@@ -52,6 +54,7 @@ lg.Gun = cc.Node.extend({
         this._firing = false;
         this.unschedule(this._createBullet);
         this.unschedule(this._createWave);
+        this.unschedule(this.update);
     },
     update:function(delta)
     {
@@ -156,17 +159,16 @@ lg.Gun = cc.Node.extend({
         {
             d = ints[i];
             r = rot + d*this.angleGap;
-            b = this._pool.fetch(this._bulletID);
+            b = this._pool.fetch(this._bulletID, lg.Gun.batchCanvas);
             b.damage = this.damage;
             b.play();
-            b.autoRecycle = true;
             b.setPosition(pos);
             b.setRotation(r);
             //todo, implement in the ObjectPool.fetch里面去？
-            if(b.getParent() && b.getParent() != lg.Gun.batchCanvas) {
-                b.removeFromParent(false);
-            }
-            if(b.getParent() == null)  lg.Gun.batchCanvas.addChild(b);
+//            if(b.getParent() && b.getParent() != lg.Gun.batchCanvas) {
+//                b.removeFromParent(false);
+//            }
+//            if(b.getParent() == null)  lg.Gun.batchCanvas.addChild(b);
             b.runAction(cc.MoveBy.create(t,lg.getPointOnCircle(this._maxShootDistance, r)));
             this._bullets.push(b);
         }
@@ -197,6 +199,17 @@ lg.Gun = cc.Node.extend({
             this._hitEffect.gotoAndPlay1(1);
         }
     }
+//    destroy:function()
+//    {
+//        if(this.autoRecycle) {
+//            if(!this.inRecycle) {
+//                var pool = lg.ObjectPool.get(this.plistFile, this.clsName);
+//                pool.recycle(this);
+//            }
+//        }else{
+//            this.removeFromParent();
+//        }
+//    }
 });
 
 lg.Gun.batchCanvas = null;

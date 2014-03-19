@@ -25,7 +25,6 @@ lg.TimeLine = cc.Sprite.extend({
     inRecycle:false,
     collider:null,
     collidCenter:null,
-    _sourceChanged:false,
     _anchorBindings:null,
     _inited:false,
     tx:0,
@@ -35,6 +34,10 @@ lg.TimeLine = cc.Sprite.extend({
     _tileMap:null,
     _tileInited:false,
     _mouseEnabled:true,
+    _baseAssetID:null,
+    _currentSubAnim:null,
+    _subAnims:null,
+    _animSequence:null,
 
     init:function()
     {
@@ -43,6 +46,7 @@ lg.TimeLine = cc.Sprite.extend({
             this.doInit();
             this._inited = true;
             this._anchorBindings = [];
+            this._animSequence = [];
             this.collidCenter = cc.p();
             this.onAnimationOver = new signals.Signal();
             return true;
@@ -55,32 +59,44 @@ lg.TimeLine = cc.Sprite.extend({
      * */
     setPlist:function(plistFile, assetID)
     {
-        if(this.plistFile == plistFile && this.assetID == assetID) return;
-        this.plistFile = plistFile;
-        this._sourceChanged = true;
-        var cache = lg.assetsManager;
-        cache.addPlist(plistFile);
-        if(assetID == null)
-        {
-            assetID = cache.getRandomDisplayName(plistFile);
-        }
-        this.assetID = assetID;
-        this.define = this.getDefine();
-        if(this.define == null)
-        {
-            cc.log("There is no display named: "+assetID+" in plist: "+plistFile);
+        if(plistFile == null || assetID == null){
+            throw 'plistFile and assetID can not be null!'
             return;
         }
+        if(this.plistFile == plistFile && (this.assetID == assetID || this._baseAssetID == assetID)) return;
+        this.plistFile = plistFile;
+        lg.assetsManager.addPlist(plistFile);
 
-        //don't move me......
-        this.init();
+        //see if there is a sub animation
+        var ns = assetID.split("$");
+        this._baseAssetID = ns[0];
+        this._subAnims = lg.assetsManager.getSubAnims(plistFile, this._baseAssetID);
+        var anim = ns[1];
+        if(anim == null && this._subAnims) anim = this._subAnims[0];
+        assetID = this._baseAssetID;
+        if(anim) {
+            assetID = this._baseAssetID+"$"+anim;
+            this._currentSubAnim = anim;
+        }
 
-        //set the anchor
-        var anchorX = this.define["anchorX"];
-        var anchorY = this.define["anchorY"];
-        if(!isNaN(anchorX) && !isNaN(anchorY)) this.setAnchorPoint(anchorX, anchorY);
-        this.onNewSheet();
-        this.renderFrame(this.currentFrame);
+        this.assetID = assetID;
+        this.define = this.getDefine();
+        if(this.define) {
+            this.init();
+            //set the anchor
+            var anchorX = this.define.anchorX;
+            var anchorY = this.define.anchorY;
+            if(!isNaN(anchorX) && !isNaN(anchorY)) {
+                this.setAnchorPoint(anchorX, anchorY);
+            }
+            this.onNewSheet();
+            //todo, to be verified
+//            this.renderFrame(this.currentFrame, true);
+            this.renderFrame(0, true);
+        }else {
+            this.init();
+            cc.log("There is no display named: "+assetID+" in plist: "+plistFile);
+        }
     },
     setParams:function(params)
     {
@@ -88,8 +104,8 @@ lg.TimeLine = cc.Sprite.extend({
     },
     getLabels:function(label)
     {
-        if(this.define.hasOwnProperty("labels")){
-            return this.define["labels"][label];
+        if(this.define.labels){
+            return this.define.labels[label];
         }
         return null;
     },
@@ -99,8 +115,8 @@ lg.TimeLine = cc.Sprite.extend({
     },
     _getAnchor:function(name)
     {
-        if(this.define.hasOwnProperty("anchors")){
-            var an = this.define["anchors"][name];
+        if(this.define.anchors){
+            var an = this.define.anchors[name];
             if(an != null) {
               an = an[this.currentFrame];
               return an;
@@ -110,23 +126,36 @@ lg.TimeLine = cc.Sprite.extend({
     },
     bindAchor:function(anchorName, node)
     {
-        if(!this.define.hasOwnProperty("anchors")) return false;
-        if(this.define["anchors"][anchorName] == null) return false;
-        if(this._anchorBindings.indexOf(node) > -1) return false;
+        if(!this.define.anchors) {
+//            cc.log(this.assetID+": no anchors, "+anchorName);
+            return false;
+        }
+        if(this.define.anchors[anchorName] == null) {
+//            cc.log(this.assetID+": no anchor name, "+anchorName);
+            return false;
+        }
+        if(this._anchorBindings.indexOf(node) > -1) {
+//            cc.log(this.assetID+": anchor exit, "+anchorName);
+            return false;
+        }
         this._anchorBindings.push(node);
         node.__anchor__ = anchorName;
-        this.addChild(node);
+        if(node.getParent() != this){
+            node.removeFromParent(false);
+            this.addChild(node);
+        }
+        this._handleAnchorBindings();
         return true;
     },
     getCurrentLabel:function()
     {
-        if(!this.define.hasOwnProperty("labels")) return null;
-        var labels = this.define["labels"];
+        if(!this.define.labels) return null;
+        var labels = this.define.labels;
         var label = null;
         for(var name in labels)
         {
             label = labels[name];
-            if(this.currentFrame >= label["start"] && this.currentFrame <= label["end"]){
+            if(this.currentFrame >= label.start && this.currentFrame <= label.end){
                 return name;
             }
         }
@@ -134,23 +163,47 @@ lg.TimeLine = cc.Sprite.extend({
     },
     play:function()
     {
-        if(this.playing) return;
         this.loopStart = 0;
         this.loopEnd = this.totalFrames - 1;
         this.updatePlaying(true);
+        this._animSequence.length = 0;
+    },
+    playSequence:function(anims){
+        if(anims == null || anims.length == 0) return;
+        this.gotoAndPlay(anims.shift());
+        this._animSequence = anims;
+    },
+    setSubAnim:function(anim, autoPlay)
+    {
+        if(!anim || anim.length == 0) return false;
+        if(this._subAnims == null || this._subAnims.indexOf(anim) == -1){
+//            cc.log("There is no animation named: "+anim);
+            return false;
+        }
+//        if(this._currentSubAnim == anim) return false;
+        this._currentSubAnim = anim;
+        this.setPlist(this.plistFile, this._baseAssetID+"$"+anim);
+        if(autoPlay === false) this.gotoAndStop(0);
+        else this.gotoAndPlay1(0);
+        this._animSequence.length = 0;
+        return true;
     },
     gotoAndPlay:function(label)
     {
         var lbl = this.getLabels(label);
         if(lbl == null){
-            cc.log("There is no label named :"+label+" in display : "+this.assetID);
-            this.play();
-            return false;
+            if(!this.setSubAnim(label, true)) {
+                this.play();
+                return false;
+            }else {
+                return true;
+            }
         }
-        this.loopStart = lbl["start"];
-        this.loopEnd = lbl["end"];
+        this.loopStart = lbl.start;
+        this.loopEnd = lbl.end;
         this.updatePlaying(true);
         this.currentFrame = this.loopStart;
+        this._animSequence.length = 0;
         return true;
     },
     gotoAndPlay1:function(frame)
@@ -160,17 +213,17 @@ lg.TimeLine = cc.Sprite.extend({
             cc.log("The frame: "+frame +" is out of range!");
             return false;
         }
-        if(this.playing && frame == this.currentFrame) return true;
+//        if(this.playing && frame == this.currentFrame) return true;
         this.loopStart = 0;
         this.loopEnd = this.totalFrames - 1;
         this.updatePlaying(true);
         this.currentFrame = frame;
+        this._animSequence.length = 0;
         return true;
     },
     stop:function()
     {
         this.updatePlaying(false);
-//        this.gotoAndStop(this.currentFrame);
     },
     gotoAndStop:function(frame)
     {
@@ -179,21 +232,20 @@ lg.TimeLine = cc.Sprite.extend({
             cc.log("The frame: "+frame +" is out of range!");
             return false;
         }
-        if(!this.playing && this.currentFrame == frame) return true;
+//        if(!this.playing && this.currentFrame == frame) return true;
         this.updatePlaying(false);
         this.currentFrame = frame;
         this.renderFrame(frame);
+        this._animSequence.length = 0;
         return true;
     },
     gotoAndStop1:function(label)
     {
         var lbl = this.getLabels(label);
-        if(lbl == null)
-        {
-//            cc.log("There is no label named: "+label+" in display: "+this.assetID);
-            return false;
+        if(lbl == null){
+            return this.setSubAnim(label, false);
         }
-        var theFrame = lbl["start"];
+        var theFrame = lbl.start;
         return this.gotoAndStop(theFrame);
     },
     setFPS:function(f)
@@ -240,6 +292,11 @@ lg.TimeLine = cc.Sprite.extend({
                 this.currentFrame = this.loopEnd;
                 this.updatePlaying(false);
                 this.setVisible(false);
+            }else if(this._animSequence.length) {
+                var anims = this._animSequence.concat();
+                this.gotoAndPlay(anims.shift());
+                this._animSequence = anims;
+//                this._recoverOldAnim();
             }else{
                 this.currentFrame = this.loopStart;
             }
@@ -249,9 +306,9 @@ lg.TimeLine = cc.Sprite.extend({
     {
         return frame >= 0 && frame < this.totalFrames;
     },
-    renderFrame:function(frame)
+    renderFrame:function(frame, forceUpdate)
     {
-        if(this.prevFrame == frame && this._sourceChanged === false) return;
+        if(this.prevFrame == frame && forceUpdate != true) return;
         if(this.prevFrame != frame) this.prevFrame = frame;
         this._handleAnchorBindings();
         this.doRenderFrame(frame);
@@ -266,7 +323,6 @@ lg.TimeLine = cc.Sprite.extend({
         var anchor = null;
         var i = -1;
         var n = this._anchorBindings.length;
-
         while(++i < n) {
             node = this._anchorBindings[i];
             if(!node.isVisible()) continue;
@@ -277,9 +333,9 @@ lg.TimeLine = cc.Sprite.extend({
      },
     _updateAnchorNode:function(node, anchor)
     {
-        if(node._position._x != anchor[0] || node._position._y != anchor[0]) {
+//        if(node._position._x != anchor[0] || node._position._y != anchor[0]) {
             node.setPosition(anchor[0], anchor[1]);
-        }
+//        }
     },
     onEnter:function()
     {
@@ -402,6 +458,19 @@ lg.TimeLine = cc.Sprite.extend({
         if(this._tileMap) this._tileMap.removeObject(this);
         this._tileInited = false;
         this.setPosition(-1000, -1000);
+        this._animSequence.length = 0;
+
+        //remove all anchor nodes
+        var node = null;
+        var i = -1;
+        var n = this._anchorBindings.length;
+        while(++i < n) {
+            node = this._anchorBindings[i];
+            if(node.destroy) node.destroy();
+            else node.removeFromParent(true);
+            delete  node.__anchor__;
+        }
+        this._anchorBindings.length = 0;
     },
     isMouseEnabled:function()
     {
@@ -425,3 +494,11 @@ lg.TimeLine = cc.Sprite.extend({
 
     }
 });
+
+lg.TimeLine.create = function(plistFile, assetID)
+{
+    var tl = new lg.TimeLine();
+    tl.setPlist(plistFile, assetID);
+    tl.clsName = "lg.TimeLine";
+    return tl;
+};
