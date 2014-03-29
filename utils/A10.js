@@ -49,6 +49,7 @@ function goMoreGame()
 }
 
 function _fetchLogo(pos, parent, callback) {
+//    return;
     var logoData = GameAPI.Branding.getLogo();
     var logoTexture = new Image();
     logoTexture.src = logoData.image;
