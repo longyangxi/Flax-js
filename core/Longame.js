@@ -18,9 +18,19 @@ lg._scenesDict = {};
 lg._resourcesLoaded = [];
 lg._soundEnabled = true;
 lg._soundBugFixed = false;
+lg._inited = false;
+
+lg.init = function()
+{
+    if(lg._inited) return;
+    lg._inited = true;
+    lg.assetsManager = lg.AssetsManager.create();
+    lg.inputManager = lg.InputManager.create();
+}
 
 lg.registerScene = function(name, scene, resources)
 {
+    lg.init();
     lg._scenesDict[name] = {scene:scene, res:resources};
 }
 lg.preload = function(res, callBack)
@@ -55,8 +65,6 @@ lg.replaceScene = function(sceneName)
         throw "Please register the scene: "+sceneName+" firstly!";
         return;
     }
-    if(lg.assetsManager == null) lg.assetsManager = lg.AssetsManager.create();
-    if(lg.inputManager == null) lg.inputManager = lg.InputManager.create();
     lg.ObjectPool.release();
     lg.currentSceneName = sceneName;
     lg.currentScene = new s.scene();

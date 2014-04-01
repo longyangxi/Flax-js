@@ -103,6 +103,20 @@ lg.MovieClip = lg.TimeLine.extend({
             }
         }
     },
+    getChildByAssetID:function(id)
+    {
+        var child = null;
+        for (var key in this._namedChildren.table) {
+            if (this._namedChildren.table.hasOwnProperty(key)) {
+                var pair = this._namedChildren.table[key];
+                child = pair.value;
+                if(child.assetID == id){
+                    return child;
+                }
+            }
+        }
+        return null;
+    },
     getRect:function(global)
     {
         if(this._theRect == null) return null;

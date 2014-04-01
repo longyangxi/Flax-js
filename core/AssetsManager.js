@@ -71,8 +71,14 @@ lg.AssetsManager = cc.Class.extend({
                 mc = lg.MovieClip.create(plistFile, assetID);
                 mc.clsName = "lg.MovieClip";
             }else {
-                cc.log("There is no display with assetID: "+assetID+" in plist: "+plistFile);
-                return null;
+                var subAnims = this.getSubAnims(plistFile, assetID);
+                if(subAnims.length) {
+                    mc = lg.MovieClip.create(plistFile, assetID + "$" +subAnims[0]);
+                    mc.clsName = "lg.MovieClip";
+                }else{
+                    cc.log("There is no display with assetID: "+assetID+" in plist: "+plistFile);
+                    return null;
+                }
             }
         }
         return mc;

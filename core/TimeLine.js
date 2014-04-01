@@ -169,7 +169,12 @@ lg.TimeLine = cc.Sprite.extend({
         this._animSequence.length = 0;
     },
     playSequence:function(anims){
-        if(anims == null || anims.length == 0) return;
+        if(anims == null) return;
+        if(!(anims instanceof  Array)) {
+            anims = Array.prototype.slice.call(arguments);
+        }
+        if(anims.length == 0) return;
+
         this.gotoAndPlay(anims.shift());
         this._animSequence = anims;
     },
@@ -424,10 +429,10 @@ lg.TimeLine = cc.Sprite.extend({
     /**
      * Reset some parameters, called when onEnter, or fetch from the pool
      * */
-    onReset:function(firtTime)
+    onReset:function(firstTime)
     {
         if(!this._running) return;
-        firtTime = (firtTime === true);
+        firstTime = (firstTime === true);
         this.inRecycle = false;
         this.setVisible(true);
         if(this._tileMap && !this._tileInited) {
