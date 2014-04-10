@@ -20,6 +20,30 @@ lg._soundEnabled = true;
 lg._soundBugFixed = false;
 lg._inited = false;
 
+lg.startGame = function(scene){
+
+    lg.init();
+
+    lg.preload(allResource, function(){
+        var splashing = false;
+        if(a10Enabled) {
+            if(a10Remote) {
+                var splashScreenData = GameAPI.Branding.getSplashScreen();
+                if (splashScreenData.show) {
+                    showSplash(splashScreenData.action, scene);
+                    splashing = true;
+                }
+            }else {
+                showSplash(goMoreGame, scene);
+                splashing = true;
+            }
+        }
+        if(!splashing) {
+            lg.replaceScene(scene);
+        }
+    });
+}
+
 lg.init = function()
 {
     if(lg._inited) return;
@@ -71,7 +95,8 @@ lg.replaceScene = function(sceneName)
     lg.preload(s.res,function(){
         if(lg.inputManager.getParent()) lg.inputManager.removeFromParent(false);
         lg.currentScene.addChild(lg.inputManager, 999999);
-        cc.Director.getInstance().replaceScene(lg.currentScene);
+        if(cc.Director.getInstance()._runningScene) cc.Director.getInstance().replaceScene(lg.currentScene);
+        else cc.Director.getInstance().runWithScene(lg.currentScene);
     });
 }
 lg._tileMaps = {};
@@ -254,6 +279,7 @@ lg.ifTouched = function(target, touch)
     if(target == null) return false;
     if(!(target instanceof cc.Node)) return false;
     var pos = touch.getLocation();
+
     var local = target.convertToNodeSpace(pos);
     var r = lg.getRect(target);
     r._origin.x = r._origin.y = 0;
@@ -279,29 +305,6 @@ lg.isChildOf = function(child, parent)
     return false;
 };
 
-//lg.getClassName = function(object)
-//{
-//    var fn = window || this;
-//    var obj = null;
-//    for (var key in fn) {
-//        obj = fn[key];
-//        if(key == "lg"){
-//            for (var key1 in obj) {
-//                var obj1 = obj[key1];
-//                if(obj1 === object || (typeof obj1 === "function" && object instanceof obj1)) return "lg."+key1;
-//            }
-//        }
-//
-//        if(typeof obj !== "function") continue;
-//        try{
-//            if (obj === object || object instanceof obj)
-//                return key;
-//        }catch (err){
-//
-//        }
-//    }
-//    return "undefined";
-//};
 /**
  * Convert a name to a Object or a Function
  * @param {String}name cc.Sprite

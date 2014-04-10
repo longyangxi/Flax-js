@@ -5,6 +5,7 @@
 var lg = lg || {};
 
 lg.MovieClip = lg.TimeLine.extend({
+    autoPlayChildren:false,
     _namedChildren:null,
     _theRect:null,
 
@@ -15,7 +16,7 @@ lg.MovieClip = lg.TimeLine.extend({
             cc.log("There is no child with named: "+childName +"  in MovieClip: "+this.assetID);
             return;
         }
-        var child = this._namedChildren.get(childName);
+        var child = this._namedChildren[childName];
         if(child)
         {
             child.setPlist(this.plistFile, assetID);
@@ -27,7 +28,9 @@ lg.MovieClip = lg.TimeLine.extend({
     {
         this.removeAllChildren();
         this.totalFrames = this.define.totalFrames;
-        this._namedChildren = new buckets.Dictionary();
+        this._namedChildren = {};
+        this._theRect = lg.rectClone( this.define.rect);
+        this.setContentSize(this._theRect.width, this._theRect.height);
     },
     onReset:function(firstTime)
     {
@@ -45,7 +48,7 @@ lg.MovieClip = lg.TimeLine.extend({
         {
             childDefine = this.define.children[childName];
             frameDefine = childDefine.frames[frame];
-            child = this._namedChildren.get(childName);
+            child = this._namedChildren[childName];
             if(frameDefine == null) {
                 if(child) child.setVisible(false);
             }else {
@@ -59,60 +62,87 @@ lg.MovieClip = lg.TimeLine.extend({
                     }
                     child.name = childName;
                     this.addChild(child, childDefine.zOrder);
-                    this._namedChildren.set(childName, child);
+                    this._namedChildren[childName] = child;
+                    if(this.autoPlayChildren) {
+                        this.playing ? child.gotoAndPlay1(0) : child.gotoAndStop(0);
+                    }
                     //todo, this doesn't point to really sub class this
 //                    if(this.hasOwnProperty(childName)) this[childName] = child;
+                    this.onNewChild(child);
                 }
                 var x = frameDefine[0];
                 var y = frameDefine[1];
                 var rot = frameDefine[2];
                 var scaleX = frameDefine[3];
-                var scaleY = frameDefine[4];
+                var scaleY = frameDefine[4]
                 var opacity = Math.round(255*frameDefine[5]);
 
                 if(x != child._position._x || y != child._position._y) child.setPosition(x, y);
                 if(rot != child._rotationX) child.setRotation(rot);
                 if(scaleX != child._scaleX || scaleY != child._scaleY) child.setScale(scaleX, scaleY);
-                if(child["setOpacity"] && opacity != child.getOpacity()) child.setOpacity(opacity);
+                //todo, movieclip can not set opacity..., maybe we could override the setOpacity function, but some difficult
+                if(!(child instanceof lg.MovieClip) && child.setOpacity && opacity != child.getOpacity()) child.setOpacity(opacity);
                 child.setVisible(true);
+                if(this.autoPlayChildren) {
+                    this.playing ? child.play() : child.stop();
+                }
             }
         }
+    },
+    stop:function()
+    {
+        this._super();
+        if(this.autoPlayChildren) {
+            for(var key in this._namedChildren) {
+                var child = this._namedChildren[key];
+                if(child instanceof lg.TimeLine) {
+                    child.stop();
+                }
+            }
+        }
+    },
+    play:function()
+    {
+        this._super();
+        if(this.autoPlayChildren) {
+            for(var key in this._namedChildren) {
+                var child = this._namedChildren[key];
+                if(child instanceof lg.TimeLine) {
+                    child.play();
+                }
+            }
+        }
+    },
+    onNewChild:function(child)
+    {
+
     },
     getDefine:function()
     {
         var define = lg.assetsManager.getMc(this.plistFile, this.assetID);
-        if(define) {
-            this._theRect = lg.rectClone( define.rect);
-        }
         return define;
     },
     getChildByName:function(name, nest)
     {
         if(nest === undefined) nest = true;
-        if(this._namedChildren.containsKey(name)) return this._namedChildren.get(name);
+        var child = this._namedChildren[name];
+        if(child) return child;
         if(!nest) return null;
-        var child = null;
-        for (var key in this._namedChildren.table) {
-            if (this._namedChildren.table.hasOwnProperty(key)) {
-                var pair = this._namedChildren.table[key];
-                if(pair.value["getChildByName"])
-                {
-                    child = pair.value.getChildByName(name, nest);
-                    if(child) return child;
-                }
+        for(var key in this._namedChildren) {
+            child = this._namedChildren[key];
+            if(child.getChildByName) {
+                child = child.getChildByName(name, nest);
+                if(child) return child;
             }
         }
     },
     getChildByAssetID:function(id)
     {
         var child = null;
-        for (var key in this._namedChildren.table) {
-            if (this._namedChildren.table.hasOwnProperty(key)) {
-                var pair = this._namedChildren.table[key];
-                child = pair.value;
-                if(child.assetID == id){
-                    return child;
-                }
+        for(var key in this._namedChildren) {
+            child = this._namedChildren[key];
+            if(child.assetID == id){
+                return child;
             }
         }
         return null;
@@ -144,6 +174,11 @@ lg.MovieClip = lg.TimeLine.extend({
             return true;
         }
         return false;
+    },
+    onRecycle:function()
+    {
+        this._super();
+        this.autoPlayChildren = false;
     }
 });
 lg.MovieClip.create = function(plistFile, assetID)

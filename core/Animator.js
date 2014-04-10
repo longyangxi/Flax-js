@@ -19,6 +19,11 @@ lg.Animator = lg.TimeLine.extend({
             return;
         }
     },
+    onEnter:function()
+    {
+        this._super();
+//        lg.drawRect(lg.getRect(this,true));
+    },
     doRenderFrame:function(frame)
     {
         var sFrame = cc.SpriteFrameCache.getInstance().getSpriteFrame(this.frameNames[frame]);

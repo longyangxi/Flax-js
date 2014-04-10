@@ -432,7 +432,7 @@ Preloader = cc.Scene.extend(/** @lends Preloader# */{
         //loading percent
         this._label = cc.LabelTTF.create("Loading... 0%", "Arial", 28);
         this._label.setColor(cc.c3(38, 192, 216));
-        this._label.setPosition(cc.pAdd(centerPos, cc.p(0,  logoOnCenter ? 0 : (-logoHeight / 2 - 20))));
+        this._label.setPosition(cc.pAdd(centerPos, cc.p(0,  logoOnCenter ? 0 : (-logoHeight / 2 - 10))));
         this._bgLayer.addChild(this._label, 100);
     },
 

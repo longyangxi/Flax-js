@@ -229,7 +229,7 @@ lg.AssetsManager = cc.Class.extend({
     getSubAnims:function(plistFile, theName)
     {
         var akey = plistFile + theName;
-        return this.subAnimsCache.get(akey);
+        return this.subAnimsCache.get(akey) || [];
     },
     getFont:function(plistFile, fontName)
     {

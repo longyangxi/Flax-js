@@ -419,7 +419,7 @@ lg.TimeLine = cc.Sprite.extend({
     {
         if(this.autoRecycle) {
             if(!this.inRecycle) {
-                var pool = lg.ObjectPool.get(this.plistFile, this.clsName);
+                var pool = lg.ObjectPool.get(this.plistFile, this.clsName, this.__pool__id__ || "");
                 pool.recycle(this);
             }
         }else{

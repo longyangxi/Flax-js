@@ -2,7 +2,9 @@
  * Created by long on 14-3-18.
  */
 
-function showSplash() {
+function showSplash(action, startScene) {
+    SplashScene.action = action;
+    SplashScene.startScene = startScene;
     lg.registerScene("splash", SplashScene.scene);
     lg.replaceScene("splash");
 }
@@ -16,14 +18,16 @@ var SplashScene = cc.Layer.extend({
         this.addChild(logo);
         logo.runAction(cc.FadeIn.create(0.5));
         this.scheduleOnce(function(){
-            lg.replaceScene("mainMenu");
+            lg.replaceScene(SplashScene.startScene);
         }, 3);
         this.scheduleOnce(function(){
             logo.runAction(cc.FadeOut.create(0.5));
         }, 2.5);
-        lg.inputManager.addListener(logo, goMoreGame);
+        lg.inputManager.addListener(logo, SplashScene.action);
     }
 });
+SplashScene.action = null;
+SplashScene.startScene = null;
 SplashScene.create = function()
 {
     var s = new SplashScene();
@@ -40,17 +44,29 @@ SplashScene.scene = function()
 function goMoreGame()
 {
     if(a10Enabled) {
-        var moreBtnAction = GameAPI.Branding.getLink("more_games");
-        if(!moreBtnAction.error && moreBtnAction.action) {
-            moreBtnAction.action();
+        if(a10Remote) {
+            var moreBtnAction = GameAPI.Branding.getLink("more_games");
+            if(!moreBtnAction.error && moreBtnAction.action) {
+                moreBtnAction.action();
+            }
+        }else{
+            window.open((typeof inZibbo != "undefined") ? "http://zibbo.com" : "http://a10.com");
         }
-    }//window.open("http://a10.com");
-    else window.open("http://longames.com");
+    }else{
+        window.open("http://longames.com");
+    }
 }
 
 function _fetchLogo(pos, parent, callback) {
-//    return;
     var logoData = GameAPI.Branding.getLogo();
+    if(logoData.error){
+        cc.log("API error: "+logoData.error);
+        return;
+    }
+    if(!logoData.image) {
+        cc.log("API does not return a logo image!");
+        return;
+    }
     var logoTexture = new Image();
     logoTexture.src = logoData.image;
     if(logoData.width == null){
@@ -86,9 +102,12 @@ var LogoButton = lg.SimpleButton.extend({
     onEnter:function()
     {
         this._super();
-        this.setVisible(false);
-        if(a10Enabled) {
+        this.setVisible(a10Enabled);
+        if(a10Enabled && a10Remote){
+            this.setVisible(false);
             _fetchLogo(cc.pAdd(this.getPosition(), cc.p(-20, 0)), this.getParent());
+        }else{
+            lg.inputManager.addListener(this, goMoreGame);
         }
     }
 });

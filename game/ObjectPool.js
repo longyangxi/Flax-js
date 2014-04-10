@@ -9,6 +9,7 @@ lg.ObjectPool = cc.Class.extend({
     _cls:null,
     _plistFile:null,
     _pool:null,
+    _extraID:"",
 
     init:function(plistFile, clsName, maxCount)
     {
@@ -41,6 +42,7 @@ lg.ObjectPool = cc.Class.extend({
             obj = this._cls.create(this._plistFile, assetID);
         }
 
+        obj.__pool__id__ = this._extraID;
         obj.clsName = this._clsName;
         obj.autoRecycle = true;
         obj.setVisible(true);
@@ -89,13 +91,15 @@ lg.ObjectPool.create = function(plistFile, clsName, maxCount)
     }
     return null;
 };
-lg.ObjectPool.get = function(plistFile, clsName)
+lg.ObjectPool.get = function(plistFile, clsName, id)
 {
     if(clsName == null) clsName = "lg.Animator";
-    var key = plistFile+clsName;
+    if(id == null) id = "";
+    var key = plistFile+clsName+id;
     var pool = lg.ObjectPool.all[key];
     if(pool == null){
         pool = lg.ObjectPool.create(plistFile, clsName);
+        pool._extraID = id;
         lg.ObjectPool.all[key] = pool;
     }
     return pool;
