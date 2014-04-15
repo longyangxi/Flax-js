@@ -7,7 +7,7 @@ DEGREE_TO_RADIAN = Math.PI/180.0;
 
 var lg = lg || {};
 
-lg.version = 1.2;
+lg.version = 1.3;
 
 //----------------------scene about----------------------------------------------------
 lg.assetsManager = null;
