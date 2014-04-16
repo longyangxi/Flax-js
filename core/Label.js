@@ -86,14 +86,16 @@ lg.Label = cc.SpriteBatchNode.extend({
             }
 
             //create a char sprite
-            var sprite = cc.Sprite.createWithSpriteFrame(cc.SpriteFrameCache.getInstance().getSpriteFrame(this.frames[charIndex]));
+            var sprite = cc.Sprite.create(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
             // calculate the position of the sprite;
             var size = sprite.getContentSize();
-            sprite.setPosition(this.mlWidth, 0);
+            sprite.x = this.mlWidth;
+            sprite.y = 0;
             this.mlWidth += size.width * this.gapScale;
             this.mlHeight = size.height > this.mlHeight ? size.height : this.mlHeight;
             //all the label sprites are anchored on the left-top corner as in Flash
-            sprite.setAnchorPoint(0, 1);
+            sprite.anchorX = 0;
+            sprite.anchorY = 1;
             this.addChild(sprite);
         }
         this.setContentSize(this.mlWidth, this.mlHeight);
@@ -107,7 +109,7 @@ lg.Label.create = function(plistFile, fontName, gapScale)
     lbl.gapScale = gapScale === undefined ? 1.0 : gapScale;
 
     var imgFile = plistFile.replace("."+lg.getFileExtension(plistFile), ".png");
-    if(lbl.initWithFile(imgFile, 10))
+    if(lbl.init(imgFile, 10))
     {
         lg.assetsManager.addPlist(plistFile);
         lbl.setFontName(fontName);

@@ -83,22 +83,36 @@ lg.InputManager = cc.Layer.extend({
     onEnter:function()
     {
         this._super();
+        var self = this;
+        var listener = cc.EventListener.create({
+            event: cc.EventListener.TOUCH_ONE_BY_ONE,
+            swallowTouches: true,
+            onTouchBegan:function(touch, event)
+            {
+                return self.handleTouchBegan(touch, event);
+            },
+            onTouchEnded:function(touch, event)
+            {
+                self.handleTouchEnded(touch, event);
+            },
+            onTouchMoved:function(touch, event)
+            {
+                self.handleTouchMoved(touch);
+            }
+        });
+        cc.eventManager.addListener(listener, this);
 
-        if (sys.capabilities.hasOwnProperty('keyboard'))
-        {
-            this.setKeyboardEnabled(true);
-        }
-        if (sys.capabilities.hasOwnProperty('mouse'))
-        {
-            this.setMousePriority(-255);
-            this.setMouseEnabled(true);
-        }
-        if (sys.capabilities.hasOwnProperty('touches'))
-        {
-            this.setTouchMode(cc.TOUCH_ONE_BY_ONE);
-            this.setTouchPriority(-255);
-            this.setTouchEnabled(true, true);
-        }
+        var listener = cc.EventListener.create({
+            event: cc.EventListener.MOUSE,
+            onMouseDown: function(event) {
+                cc.log("onMouseDown");
+            },
+            onMouseMove: function(event) {
+                cc.log("mouse move: "+event.getCursorX());
+                self.handleTouchMoved(cc.p(event.getCursorX(), event.getCursorY()));
+            }
+        });
+//        cc.eventManager.addListener(listener, this);
     },
     onExit:function()
     {
@@ -118,7 +132,8 @@ lg.InputManager = cc.Layer.extend({
         var child = null;
         var tileMap = null;
         var tiles = null;
-        var pos = touch.getLocation();
+        var pos = touch;
+        if(touch instanceof cc.Touch) pos = touch.getLocation();
         var i = children.length;
         while(--i >= 0){
             child = children[i];
@@ -141,7 +156,7 @@ lg.InputManager = cc.Layer.extend({
                     return this._tempResult;
                 }
             }
-            if(lg.ifTouched(child, touch)){
+            if(lg.ifTouched(child, pos)){
                 this._doTouched = true;
                 return child;
             }
@@ -188,23 +203,22 @@ lg.InputManager = cc.Layer.extend({
         if(this._itemTouched)
         {
             if(this._itemTouched instanceof lg.SimpleButton) {
-                var state = ButtonState.UP;
                 if(this._itemTouched.isSelectable() && !this._itemTouched.isSelected())
                 {
-                    state = ButtonState.SELECTED;
+                    this._itemTouched.setState(ButtonState.SELECTED);
                 }
-                this._itemTouched.setState(state);
+                var state = (this.findTouchedItem(pTouch) == this._itemTouched) ? ButtonState.OVER : ButtonState.UP;
+                this._setButtonState(this._itemTouched, state);
             }
-//            this._onItemClicked(pTouch);
         }
         this._dispatch(pTouch, InputType.click);
         this._itemTouched = null;
     },
-    handleTouchMoved:function(pTouch)
+    handleTouchMoved:function(touch)
     {
         if(!this.enabled || !this.isVisible()) return;
         if(!this.checkMouseMove) return;
-        var touched = this.findTouchedItem(pTouch);
+        var touched = this.findTouchedItem(touch);
         if(touched != this._itemTouched) {
             if(this._itemTouched) {
                 if(this._itemTouched instanceof lg.SimpleButton) {
@@ -223,7 +237,7 @@ lg.InputManager = cc.Layer.extend({
                 }
             }
         }
-        this._dispatch(pTouch, InputType.move);
+        this._dispatch(touch, InputType.move);
     },
     handleToucheCanceled:function(touch, event)
     {
@@ -266,60 +280,44 @@ lg.InputManager = cc.Layer.extend({
         button.setState(state);
     },
     /**
-     * Sort the targets ascending according its zOrder firstly and the __input_priority secondly
+     * Sort the targets ascending according its zIndex firstly and the __input_priority secondly
      * */
     _sortTargets:function(target1, target2)
     {
-        if(target1.getZOrder() == target2.getZOrder())
+        if(target1.zIndex == target2.zIndex)
         {
             return target1.__input__priority > target2.__input__priority ? 1 : -1;
-        }else if(target1.getZOrder() > target2.getZOrder())
+        }else if(target1.zIndex > target2.zIndex)
         {
             return 1;
         }else {
             return -1;
         }
-    },
-    onKeyDown:function(keycode)
-    {
-//        cc.KEY.w
-    },
-    onKeyUp:function(keycode)
-    {
-
-    },
-    onTouchBegan:function(pTouch, pEvent)
-    {
-        return this.handleTouchBegan(pTouch);
-    },
-    onTouchEnded:function(pTouch, pEvent)
-    {
-        this.handleTouchEnded(pTouch);
-    },
-    onTouchMoved:function(pTouch, pEvent)
-    {
-        this.handleTouchMoved(pTouch);
-    },
-    onTouchCancelled:function(touch, event)
-    {
-        this.handleToucheCanceled(touch, event);
-    },
-    onMouseDown:function(mouse)
-    {
-        this.handleTouchBegan(mouse);
-    },
-    onMouseUp:function(mouse)
-    {
-        this.handleTouchEnded(mouse);
-    },
-    onMouseMoved:function(mouse)
-    {
-        this.handleTouchMoved(mouse);
-    },
-    onMouseDragged:function (mouse) {
-        //todo
-        return false;
     }
+//    onKeyDown:function(keycode)
+//    {
+////        cc.KEY.w
+//    },
+//    onKeyUp:function(keycode)
+//    {
+//
+//    },
+//    onMouseDown:function(mouse)
+//    {
+//        this.handleTouchBegan(mouse);
+//    },
+//    onMouseUp:function(mouse)
+//    {
+//        this.handleTouchEnded(mouse);
+//    },
+//    onMouseMoved:function(mouse)
+//    {
+//        this.handleTouchMoved(mouse);
+//    },
+//    onMouseDragged:function (mouse) {
+//        //todo
+//        return false;
+//    }
 });
 
 lg.InputManager.create = function()

@@ -24,10 +24,12 @@ lg.SimpleButton = lg.Animator.extend({
         if(this._state == state) return;
         this._state = state;
         this.enabled = this._state != ButtonState.DISABLED;
-        if(!this.gotoAndStop1(this._state))
+        if(!this.gotoAndStop(this._state))
         {
             var optionState = this.isSelected() ? ButtonState.SELECTED : ButtonState.UP;
-            if(!this.gotoAndStop1(optionState)){
+            //if there is no DOWN label, then use OVER label
+//            if(this._state == ButtonState.DOWN && this.hasLabel(ButtonState.OVER)) optionState = ButtonState.OVER;
+            if(!this.gotoAndStop(optionState)){
                 this.gotoAndStop(1);
             }
         }

@@ -37,8 +37,8 @@ lg.TileMap = cc.Class.extend({
     },
     setMapSizePixel:function(w, h)
     {
-        if(w == null) w = lg.stage.width();
-        if(h == null) h = lg.stage.height();
+        if(w == null) w = cc.visibleRect.width;
+        if(h == null) h = cc.visibleRect.height;
         return this.setMapSize(Math.ceil(w/this._tileWidth), Math.ceil(h/this._tileHeight));
     },
     setMapSize:function(w, h)
@@ -199,7 +199,7 @@ lg.TileMap = cc.Class.extend({
             objs.push(object);
             return;
         }
-        var zOrder0 = (tx + (this._mapHeight - 1 - ty)*this._mapWidth)*MAX_IN_TILE;
+        var zIndex0 = (tx + (this._mapHeight - 1 - ty)*this._mapWidth)*MAX_IN_TILE;
         var child = null;
         var childCount = 0;
         var inserted = false;
@@ -208,16 +208,16 @@ lg.TileMap = cc.Class.extend({
             child = objs[i];
             if(child instanceof cc.Node)
             {
-                if(!inserted && child.getPositionY() <= object.getPositionY())
+                if(!inserted && child.y <= object.y)
                 {
                     objs.splice(i, 0, object);
 //                    cc.log("add tile obj: "+object.id+", "+tx+": "+ty);
-                    object.setZOrder(Math.min(childCount, MAX_IN_TILE) + zOrder0);
+                    object.zIndex = Math.min(childCount, MAX_IN_TILE) + zIndex0;
                     inserted = true;
                     childCount++;
                     i++;
                 }
-                child.setZOrder(Math.min(childCount, MAX_IN_TILE) + zOrder0);
+                child.zIndex = Math.min(childCount, MAX_IN_TILE) + zIndex0;
                 childCount++;
             }
         }
@@ -225,7 +225,7 @@ lg.TileMap = cc.Class.extend({
         {
             objs.push(object);
 //            cc.log("add tile obj: "+object.id+", "+tx+": "+ty);
-            object.setZOrder(Math.min(childCount, MAX_IN_TILE) + zOrder0);
+            object.zOrder = Math.min(childCount, MAX_IN_TILE) + zIndex0;
         }
     },
     updateLayout:function(tx, ty)
@@ -242,7 +242,7 @@ lg.TileMap = cc.Class.extend({
             child = objs[i];
             if(child instanceof cc.Node)
             {
-                child.setZOrder(Math.min(childCount, MAX_IN_TILE) + zOrder0);
+                child.zIndex = Math.min(childCount, MAX_IN_TILE) + zIndex0;
                 childCount++;
             }
         }
@@ -358,9 +358,9 @@ lg.TileMap = cc.Class.extend({
     },
     _sortByY:function(a, b)
     {
-        if(a.getPositionY() > b.getPositionY())
+        if(a.y > b.y)
             return -1;
-        if(a.getPositionY() < b.getPositionY())
+        if(a.y < b.y)
             return 1;
     }
 });

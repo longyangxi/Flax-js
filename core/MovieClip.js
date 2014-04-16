@@ -29,15 +29,21 @@ lg.MovieClip = lg.TimeLine.extend({
         this.removeAllChildren();
         this.totalFrames = this.define.totalFrames;
         this._namedChildren = {};
-        this._theRect = lg.rectClone( this.define.rect);
-        this.setContentSize(this._theRect.width, this._theRect.height);
+        this._theRect = cc.rect(this.define.rect);
+        //fix the anchor issue
+        this.scheduleOnce(function(){
+            this.setContentSize(this._theRect.width, this._theRect.height);
+        },0.01);
     },
     onReset:function(firstTime)
     {
         this._super(firstTime);
-        if(this._theRect) this.setContentSize(this._theRect._size);
+        //fix the anchor issue
+        this.scheduleOnce(function(){
+            this.setContentSize(this._theRect.width, this._theRect.height);
+        },0.01)
         //MovieClip is just a container here, so we don't need a texture for it, and opacity = 0 will not impact the children
-        this.setOpacity(0);
+        this.opacity = 0;
     },
     doRenderFrame:function(frame)
     {
@@ -50,7 +56,7 @@ lg.MovieClip = lg.TimeLine.extend({
             frameDefine = childDefine.frames[frame];
             child = this._namedChildren[childName];
             if(frameDefine == null) {
-                if(child) child.setVisible(false);
+                if(child) child.visible = false;
             }else {
                 if(child == null){
                     //hadle the label text
@@ -61,10 +67,10 @@ lg.MovieClip = lg.TimeLine.extend({
                         child = lg.assetsManager.createDisplay(this.plistFile, childDefine.class);
                     }
                     child.name = childName;
-                    this.addChild(child, childDefine.zOrder);
+                    this.addChild(child, childDefine.zIndex);
                     this._namedChildren[childName] = child;
                     if(this.autoPlayChildren) {
-                        this.playing ? child.gotoAndPlay1(0) : child.gotoAndStop(0);
+                        this.playing ? child.gotoAndPlay(0) : child.gotoAndStop(0);
                     }
                     //todo, this doesn't point to really sub class this
 //                    if(this.hasOwnProperty(childName)) this[childName] = child;
@@ -72,17 +78,19 @@ lg.MovieClip = lg.TimeLine.extend({
                 }
                 var x = frameDefine[0];
                 var y = frameDefine[1];
-                var rot = frameDefine[2];
+                var rotation = frameDefine[2];
                 var scaleX = frameDefine[3];
                 var scaleY = frameDefine[4]
                 var opacity = Math.round(255*frameDefine[5]);
 
-                if(x != child._position._x || y != child._position._y) child.setPosition(x, y);
-                if(rot != child._rotationX) child.setRotation(rot);
-                if(scaleX != child._scaleX || scaleY != child._scaleY) child.setScale(scaleX, scaleY);
+                if(x != child.x) child.x = x;
+                if(y != child.y) child.y = y;
+                if(rotation != child.rotation) child.rotation = rotation;
+                if(scaleX != child.scaleX) child.scaleX = scaleX;
+                if(scaleY != child.scaleY) child.scaleY = scaleY;
                 //todo, movieclip can not set opacity..., maybe we could override the setOpacity function, but some difficult
-                if(!(child instanceof lg.MovieClip) && child.setOpacity && opacity != child.getOpacity()) child.setOpacity(opacity);
-                child.setVisible(true);
+                if(!(child instanceof lg.MovieClip) && child.setOpacity && opacity != child.opacity) child.opacity = opacity;
+                child.visible = true;
                 if(this.autoPlayChildren) {
                     this.playing ? child.play() : child.stop();
                 }
@@ -152,8 +160,8 @@ lg.MovieClip = lg.TimeLine.extend({
         if(this._theRect == null) return null;
         global = (global === true);
         if(!global) return this._theRect;
-        var w = this._theRect._size.width;
-        var h = this._theRect._size.height;
+        var w = this._theRect.width;
+        var h = this._theRect.height;
         var origin = cc.p(this._theRect._origin);
         if(this._scaleX < 0) origin.x = origin.x + w;
         if(this._scaleY < 0) origin.y = origin.y + h;

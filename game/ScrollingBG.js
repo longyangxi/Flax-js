@@ -90,15 +90,15 @@ lg.ScrollingBG = cc.Node.extend({
         if(!this._paused) return;
         this._paused = false;
         if(this._speedX != 0){
-            this._doScroll(this._size.width - Math.abs(this.bg0.getPositionX()));
+            this._doScroll(this._size.width - Math.abs(this.bg0.x));
         }else if(this._speedY != 0) {
-            this._doScroll(this._size.height - Math.abs(this.bg0.getPositionY()));
+            this._doScroll(this._size.height - Math.abs(this.bg0.y));
         }
     },
     _resetScroll:function()
     {
         this.bg0.setPosition(0, 0);
-        (this._speedX != 0) ? this.bg1.setPositionX(-this._d*(this._size.width - 1)) : this.bg1.setPositionY(-this._d*(this._size.height - 1));
+        (this._speedX != 0) ? this.bg1.x = -this._d*(this._size.width - 1) : this.bg1.y = -this._d*(this._size.height - 1);
     },
     _doScroll:function(dist)
     {

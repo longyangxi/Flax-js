@@ -98,10 +98,6 @@ lg.TimeLine = cc.Sprite.extend({
             cc.log("There is no display named: "+assetID+" in plist: "+plistFile);
         }
     },
-    setParams:function(params)
-    {
-        lg.copyProperties(params, this);
-    },
     getLabels:function(label)
     {
         if(this.define.labels){
@@ -140,7 +136,7 @@ lg.TimeLine = cc.Sprite.extend({
         }
         this._anchorBindings.push(node);
         node.__anchor__ = anchorName;
-        if(node.getParent() != this){
+        if(node.parent != this){
             node.removeFromParent(false);
             this.addChild(node);
         }
@@ -189,40 +185,37 @@ lg.TimeLine = cc.Sprite.extend({
         this._currentSubAnim = anim;
         this.setPlist(this.plistFile, this._baseAssetID+"$"+anim);
         if(autoPlay === false) this.gotoAndStop(0);
-        else this.gotoAndPlay1(0);
+        else this.gotoAndPlay(0);
         this._animSequence.length = 0;
         return true;
     },
-    gotoAndPlay:function(label)
+    gotoAndPlay:function(frameOrLabel)
     {
-        var lbl = this.getLabels(label);
-        if(lbl == null){
-            if(!this.setSubAnim(label, true)) {
-                this.play();
-                return false;
-            }else {
-                return true;
+        if(isNaN(frameOrLabel)) {
+            var lbl = this.getLabels(frameOrLabel);
+            if(lbl == null){
+                if(!this.setSubAnim(frameOrLabel, true)) {
+                    this.play();
+//                    cc.log("There is no frame label: "+frameOrLabel+" in the display: "+this._baseAssetID);
+                    return false;
+                }else {
+                    return true;
+                }
             }
+            this.loopStart = lbl.start;
+            this.loopEnd = lbl.end;
+            this.currentFrame = this.loopStart;
+        }else{
+            if(!this.isValideFrame(frameOrLabel))
+            {
+                cc.log("The frame: "+frameOrLabel +" is out of range!");
+                return false;
+            }
+            this.loopStart = 0;
+            this.loopEnd = this.totalFrames - 1;
+            this.currentFrame = frameOrLabel;
         }
-        this.loopStart = lbl.start;
-        this.loopEnd = lbl.end;
         this.updatePlaying(true);
-        this.currentFrame = this.loopStart;
-        this._animSequence.length = 0;
-        return true;
-    },
-    gotoAndPlay1:function(frame)
-    {
-        if(!this.isValideFrame(frame))
-        {
-            cc.log("The frame: "+frame +" is out of range!");
-            return false;
-        }
-//        if(this.playing && frame == this.currentFrame) return true;
-        this.loopStart = 0;
-        this.loopEnd = this.totalFrames - 1;
-        this.updatePlaying(true);
-        this.currentFrame = frame;
         this._animSequence.length = 0;
         return true;
     },
@@ -230,28 +223,28 @@ lg.TimeLine = cc.Sprite.extend({
     {
         this.updatePlaying(false);
     },
-    gotoAndStop:function(frame)
+    gotoAndStop:function(frameOrLabel)
     {
-        if(!this.isValideFrame(frame))
+        //convert frame label to frame number
+        if(isNaN(frameOrLabel)) {
+            var lbl = this.getLabels(frameOrLabel);
+            if(lbl == null){
+                return this.setSubAnim(frameOrLabel, false);
+            }
+            frameOrLabel = lbl.start;
+        }
+
+        if(!this.isValideFrame(frameOrLabel))
         {
-            cc.log("The frame: "+frame +" is out of range!");
+            cc.log("The frame: "+frameOrLabel +" is out of range!");
             return false;
         }
 //        if(!this.playing && this.currentFrame == frame) return true;
         this.updatePlaying(false);
-        this.currentFrame = frame;
-        this.renderFrame(frame);
+        this.currentFrame = frameOrLabel;
+        this.renderFrame(frameOrLabel);
         this._animSequence.length = 0;
         return true;
-    },
-    gotoAndStop1:function(label)
-    {
-        var lbl = this.getLabels(label);
-        if(lbl == null){
-            return this.setSubAnim(label, false);
-        }
-        var theFrame = lbl.start;
-        return this.gotoAndStop(theFrame);
     },
     setFPS:function(f)
     {
@@ -296,7 +289,7 @@ lg.TimeLine = cc.Sprite.extend({
             }else if(this.autoHideWhenOver) {
                 this.currentFrame = this.loopEnd;
                 this.updatePlaying(false);
-                this.setVisible(false);
+                this.visible = false;
             }else if(this._animSequence.length) {
                 var anims = this._animSequence.concat();
                 this.gotoAndPlay(anims.shift());
@@ -339,7 +332,8 @@ lg.TimeLine = cc.Sprite.extend({
     _updateAnchorNode:function(node, anchor)
     {
 //        if(node._position._x != anchor[0] || node._position._y != anchor[0]) {
-            node.setPosition(anchor[0], anchor[1]);
+            node.x = anchor[0];
+            node.y = anchor[1];
 //        }
     },
     onEnter:function()
@@ -434,7 +428,7 @@ lg.TimeLine = cc.Sprite.extend({
         if(!this._running) return;
         firstTime = (firstTime === true);
         this.inRecycle = false;
-        this.setVisible(true);
+        this.visible = true;
         if(this._tileMap && !this._tileInited) {
             this._tileMap.addObject(this);
             this._tileInited = true;
@@ -448,15 +442,15 @@ lg.TimeLine = cc.Sprite.extend({
         this.inRecycle = true;
         //when recycled, reset all the prarams as default
         this.autoRecycle = false;
-        this.setZOrder(0);
+        this.zIndex = 0;
         this.setScale(1);
-        this.setOpacity(255);
-        this.setRotation(0);
+        this.opacity = 255;
+        this.rotation = 0;
         this.autoDestroyWhenOver = false;
         this.autoStopWhenOver = false;
         this.autoHideWhenOver = false;
         //hide the object
-        this.setVisible(false);
+        this.visible = false;
         this.stop();
         this.stopAllActions();
         this.unscheduleAllCallbacks();

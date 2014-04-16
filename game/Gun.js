@@ -33,7 +33,7 @@ lg.Gun = cc.Node.extend({
         this._super();
         this._pool = lg.ObjectPool.get(this._plistFile, "lg.Animator");
         this._waveTime = this.interval*this.countInWave + this.waveInterval;
-        this._maxShootDistance = Math.max(lg.stage.width(), lg.stage.height())*1.5;
+        this._maxShootDistance = Math.max(cc.visibleRect.width, cc.visibleRect.height)*1.5;
         this._bullets = [];
     },
     start:function()
@@ -74,7 +74,7 @@ lg.Gun = cc.Node.extend({
             b = this._bullets[i];
             rect = b.collider;
             over = false;
-            if(!cc.rectIntersectsRect(lg.stage.rect(), rect)){
+            if(!cc.rectIntersectsRect(cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height), rect)){
                 over = true;
             }else if(this._targetMap){
                 targets = this._targetMap.getCoveredTiles1(rect, true);
@@ -108,13 +108,13 @@ lg.Gun = cc.Node.extend({
             }
         }
     },
-    setParams:function(params)
-    {
-        if(params == null) return;
-        lg.copyProperties(params, this);
-        this.end();
-        this.start();
-    },
+//    setParams:function(params)
+//    {
+//        if(params == null) return;
+//        lg.copyProperties(params, this);
+//        this.end();
+//        this.start();
+//    },
     setTargetMap:function(mapId)
     {
         this._targetMap = lg.getTileMap(mapId);
@@ -148,7 +148,7 @@ lg.Gun = cc.Node.extend({
             return;
         }
         var t = this._maxShootDistance/this.speed;
-        var pos = this.getParent().convertToWorldSpace(this.getPosition());
+        var pos = this.parent.convertToWorldSpace(this.getPosition());
         var rot = lg.getRotation(this);
         var b = null;
         var i = -1;
@@ -182,21 +182,21 @@ lg.Gun = cc.Node.extend({
     _showFireEffect:function(pos, rot)
     {
         if(this._fireEffect) {
-            if(this._fireEffect.getParent() == null) lg.Gun.batchCanvas.addChild(this._fireEffect, 100);
+            if(this._fireEffect.parent == null) lg.Gun.batchCanvas.addChild(this._fireEffect, 100);
             this._fireEffect.setVisible(true);
             this._fireEffect.setPosition(pos);
             this._fireEffect.setRotation(rot);
-            this._fireEffect.gotoAndPlay1(1);
+            this._fireEffect.gotoAndPlay(1);
         }
     },
     _showHitEffect:function(pos, rot)
     {
         if(this._hitEffect) {
-            if(this._hitEffect.getParent() == null) lg.Gun.batchCanvas.addChild(this._hitEffect, 100);
+            if(this._hitEffect.parent == null) lg.Gun.batchCanvas.addChild(this._hitEffect, 100);
             this._hitEffect.setVisible(true);
             this._hitEffect.setPosition(pos);
             this._hitEffect.setRotation(rot);
-            this._hitEffect.gotoAndPlay1(1);
+            this._hitEffect.gotoAndPlay(1);
         }
     }
 //    destroy:function()

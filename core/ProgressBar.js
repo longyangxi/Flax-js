@@ -26,7 +26,7 @@ lg.ProgressBar = cc.ClippingNode.extend({
             cc.p(size.width, size.height),
             cc.p(0, size.height)];
 
-        var white = cc.c4f(1, 1, 1, 0);
+        var white = cc.color(1, 1, 1, 0);
         this._stencil.drawPoly(rectangle, white, 1, white);
 
         this.addChild(this._bar);
@@ -45,11 +45,11 @@ lg.ProgressBar = cc.ClippingNode.extend({
     },
     _updateProgress:function()
     {
-        this._tempPos.x = - (1.0 - this._progress)*this.getContentSize().width;
-        this._tempPos.y = this._stencil.getPositionY();
+        this._tempPos.x = - (1.0 - this._progress)*this.width;
+        this._tempPos.y = this._stencil.y;
         if(this.tweenSpeed > 0) {
             this._stencil.stopAllActions();
-            var t = Math.abs(this._tempPos.x - this.getPositionX())/this.tweenSpeed;
+            var t = Math.abs(this._tempPos.x - this.x)/this.tweenSpeed;
             this._stencil.runAction(cc.MoveTo.create(t, this._tempPos));
         }
         else this._stencil.setPosition(this._tempPos);

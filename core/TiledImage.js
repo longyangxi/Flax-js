@@ -14,7 +14,7 @@ lg.TiledImage = cc.SpriteBatchNode.extend({
     _minHeight:0,
     _pool:null,
 
-    initWithFile:function(fileImage, capacity)
+    init:function(fileImage, capacity)
     {
         this._super(fileImage, capacity);
         this.tileMap = lg.TileMap.create("tile_image_"+lg.randInt(0, 1000));
@@ -130,11 +130,11 @@ lg.TiledImage.create = function(plistFile, assetID, minWidth, minHeight)
 {
     var ts = new lg.TiledImage();
     var imgFile = plistFile.replace("."+lg.getFileExtension(plistFile), ".png");
-    if(ts.initWithFile(imgFile, 10))
+    if(ts.init(imgFile, 10))
     {
         ts.setTileSource(plistFile, assetID);
-        if(!isNaN(minWidth)) minWidth = lg.stage.width();
-        if(!isNaN(minHeight)) minHeight = lg.stage.height();
+        if(!isNaN(minWidth)) minWidth = cc.visibleRect.width;
+        if(!isNaN(minHeight)) minHeight = cc.visibleRect.height;
         ts.setMinSize(minWidth, minHeight);
         return ts;
     }

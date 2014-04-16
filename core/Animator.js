@@ -26,8 +26,8 @@ lg.Animator = lg.TimeLine.extend({
     },
     doRenderFrame:function(frame)
     {
-        var sFrame = cc.SpriteFrameCache.getInstance().getSpriteFrame(this.frameNames[frame]);
-        if(sFrame) this.setDisplayFrame(sFrame);
+        var sFrame = cc.spriteFrameCache.getSpriteFrame(this.frameNames[frame]);
+        if(sFrame) this.setSpriteFrame(sFrame);
     },
     getDefine:function()
     {

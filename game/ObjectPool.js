@@ -45,18 +45,15 @@ lg.ObjectPool = cc.Class.extend({
         obj.__pool__id__ = this._extraID;
         obj.clsName = this._clsName;
         obj.autoRecycle = true;
-        obj.setVisible(true);
+        obj.visible = true;
 
         if(params){
-            lg.copyProperties(params, obj);
+            obj.attr(params);
         }
-        var zOrder = null;
-        if(params) zOrder = params.zOrder;
         if(parent && obj.getParent() != parent){
             obj.removeFromParent(false);
-            parent.addChild(obj, zOrder);
+            parent.addChild(obj);
         }else{
-            if(!isNaN(zOrder) && obj.getZOrder() != zOrder) obj.setZOrder(zOrder);
             if(obj.onReset) obj.onReset();
         }
         return obj;
@@ -70,7 +67,7 @@ lg.ObjectPool = cc.Class.extend({
         if(this._pool.length > this.maxCount){
             object.removeFromParent();
         }else{
-            object.setVisible(false);
+            object.visible = false;
             if(object.onRecycle) object.onRecycle();
             this._pool.push(object);
         }

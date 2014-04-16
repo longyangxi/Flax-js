@@ -8,7 +8,6 @@ DEGREE_TO_RADIAN = Math.PI/180.0;
 var lg = lg || {};
 
 lg.version = 1.3;
-
 //----------------------scene about----------------------------------------------------
 lg.assetsManager = null;
 lg.inputManager = null;
@@ -17,7 +16,6 @@ lg.currentScene = null;
 lg._scenesDict = {};
 lg._resourcesLoaded = [];
 lg._soundEnabled = true;
-lg._soundBugFixed = false;
 lg._inited = false;
 
 lg.startGame = function(scene){
@@ -57,30 +55,6 @@ lg.registerScene = function(name, scene, resources)
     lg.init();
     lg._scenesDict[name] = {scene:scene, res:resources};
 }
-lg.preload = function(res, callBack)
-{
-    if(res == null || res.length == 0) {
-        callBack();
-        return;
-    }
-    var hasLoaded = true;
-    var i = -1;
-    while(++i < res.length)
-    {
-        if(lg._resourcesLoaded.indexOf(res[i].src) == -1){
-            lg._resourcesLoaded.push(res[i].src);
-            hasLoaded = false;
-        }
-    }
-    if(hasLoaded){
-        callBack();
-    }else{
-        Preloader.load(res, function(){
-            callBack();
-        }, this);
-    }
-    lg._fixSoundBug();
-}
 lg.replaceScene = function(sceneName)
 {
     if(lg.currentSceneName == sceneName) return;
@@ -93,10 +67,9 @@ lg.replaceScene = function(sceneName)
     lg.currentSceneName = sceneName;
     lg.currentScene = new s.scene();
     lg.preload(s.res,function(){
-        if(lg.inputManager.getParent()) lg.inputManager.removeFromParent(false);
+        lg.inputManager.removeFromParent(false);
         lg.currentScene.addChild(lg.inputManager, 999999);
-        if(cc.Director.getInstance()._runningScene) cc.Director.getInstance().replaceScene(lg.currentScene);
-        else cc.Director.getInstance().runWithScene(lg.currentScene);
+        cc.director.runScene(lg.currentScene);
     });
 }
 lg._tileMaps = {};
@@ -118,7 +91,7 @@ lg.setSoundEnabled = function(value)
 {
     if(lg._soundEnabled == value) return;
     lg._soundEnabled = value;
-    var audioEngine = cc.AudioEngine.getInstance();
+    var audioEngine = cc.audioEngine;
     if(value)
     {
         audioEngine.resumeMusic();
@@ -134,7 +107,7 @@ lg.getSoundEnabled = function()
 lg.playMusic = function(path, loop)
 {
     if(lg._soundEnabled){
-        var audioEngine = cc.AudioEngine.getInstance();
+        var audioEngine = cc.audioEngine;
         audioEngine.stopMusic(true);
         audioEngine.playMusic(path, loop);
     }
@@ -142,55 +115,7 @@ lg.playMusic = function(path, loop)
 lg.playSound = function(path)
 {
     if(lg._soundEnabled){
-        cc.AudioEngine.getInstance().playEffect(path);
-    }
-}
-lg._fixSoundBug = function()
-{
-    if(lg._soundBugFixed) return;
-    lg._soundBugFixed = true;
-
-    var hidden, visibilityChange;
-    if (typeof document.hidden !== "undefined") {
-        hidden = "hidden";
-        visibilityChange = "visibilitychange";
-    } else if (typeof document.mozHidden !== "undefined") {
-        hidden = "mozHidden";
-        visibilityChange = "mozvisibilitychange";
-    } else if (typeof document.msHidden !== "undefined") {
-        hidden = "msHidden";
-        visibilityChange = "msvisibilitychange";
-    } else if (typeof document.webkitHidden !== "undefined") {
-        hidden = "webkitHidden";
-        visibilityChange = "webkitvisibilitychange";
-    }
-    var audioEngine = cc.AudioEngine.getInstance();
-    window.addEventListener("focus", function () {
-        if(!cc.AudioEngine) return;
-        audioEngine._resumePlaying();
-        lg._soundEnabled = true;
-    }, false);
-    window.addEventListener("blur", function () {
-        if(!cc.AudioEngine) return;
-        setTimeout(function(){
-            audioEngine._pausePlaying();
-            lg._soundEnabled = false;
-        },0.1);
-    }, false);
-    document.addEventListener(visibilityChange, handleVisibilityChange, false);
-
-    function handleVisibilityChange() {
-        if(!cc.AudioEngine) return;
-        if (!document.hidden){
-            cc.Director.getInstance()._resetLastUpdate();
-            audioEngine._resumePlaying();
-            lg._soundEnabled = true;
-        } else{
-            setTimeout(function(){
-                audioEngine._pausePlaying();
-                lg._soundEnabled = false;
-            },0.1);
-        }
+        cc.audioEngine.playEffect(path);
     }
 }
 //----------------------sound about-------------------------------------------------------
@@ -222,7 +147,7 @@ lg.getPointOnCircle = function(radius, angle)
 lg.getPosition = function(sprite, global)
 {
     var pos = sprite.getPosition();
-    if(global === true && sprite.getParent()) pos = sprite.getParent().convertToWorldSpace(pos);
+    if(global === true && sprite.parent) pos = sprite.parent.convertToWorldSpace(pos);
     return pos;
 };
 /**
@@ -230,13 +155,13 @@ lg.getPosition = function(sprite, global)
  * */
 lg.getRotation = function(sprite, global)
 {
-    if(global !== true) return sprite.getRotation();
+    if(global !== true) return sprite.rotation;
     var r = 0;
     var p = sprite;
     while(p)
     {
-        r += p.getRotation();
-        p = p.getParent();
+        r += p.rotation;
+        p = p.parent;
     }
     return r;
 };
@@ -252,16 +177,11 @@ lg.getRect = function(sprite, global)
     }
     global = (global === true);
     var pos = sprite.getPosition();
-    if(global && sprite.getParent()) pos = sprite.getParent().convertToWorldSpace(pos);
+    if(global && sprite.parent) pos = sprite.parent.convertToWorldSpace(pos);
     var size = sprite.getContentSize();
     var anchor = sprite.getAnchorPoint();
     rect = cc.rect(pos.x - size.width * anchor.x,pos.y - size.height * anchor.y,size.width, size.height);
     return rect;
-};
-lg.rectClone = function(rect)
-{
-    if(rect == null) return null;
-    return cc.rect(rect._origin.x, rect._origin.y, rect._size.width, rect._size.height);
 };
 lg.drawRect = function(rect, drawNode, lineWidth, lineColor, fillColor)
 {
@@ -274,15 +194,15 @@ lg.drawRect = function(rect, drawNode, lineWidth, lineColor, fillColor)
     var dp = cc.pAdd(rect._origin, cc.p(rect._size.width, rect._size.height));
     drawNode.drawRect(rect._origin, dp, fillColor, lineWidth, lineColor);
 };
-lg.ifTouched = function(target, touch)
+lg.ifTouched = function(target, pos)
 {
     if(target == null) return false;
     if(!(target instanceof cc.Node)) return false;
-    var pos = touch.getLocation();
 
     var local = target.convertToNodeSpace(pos);
     var r = lg.getRect(target);
-    r._origin.x = r._origin.y = 0;
+    cc.rect
+    r.x = r.y = 0;
 //    cc.log(child.name+": "+cc.rectContainsPoint(r, local));
     return cc.rectContainsPoint(r, local);
 };
@@ -296,11 +216,11 @@ lg.isChildOf = function(child, parent)
 {
     if(child == null || parent == null) return false;
     if(child == parent) return false;
-    var p = child.getParent();
+    var p = child.parent;
     while(p)
     {
         if(p == parent) return true;
-        p = p.getParent();
+        p = p.parent;
     }
     return false;
 };
@@ -331,8 +251,8 @@ lg.nameToObject = function(name, type) {
 };
 lg.createBGLayer = function(scene, color)
 {
-    if(color == null) color = cc.c4b(255, 255, 255, 255);
-    var layer = cc.LayerColor.create(color, lg.stage.width(), lg.stage.height());
+    if(color == null) color = cc.color(255, 255, 255, 255);
+    var layer = cc.LayerColor.create(color, lg.visibleRect.width, cc.visibleRect.height);
     scene.addChild(layer, 0);
     return layer;
 };
@@ -404,115 +324,3 @@ lg.createDInts = function(count, centerInt)
     }
     return ds;
 };
-///---------------------utils-------------------------------------------------------------
-
-///---------------------stage-------------------------------------------------------------
-lg.anchorCenter = cc.p(0.5, 0.5);
-lg.anchorTop = cc.p(0.5, 1);
-lg.anchorTopRight = cc.p(1, 1);
-lg.anchorRight = cc.p(1, 0.5);
-lg.anchorBottomRight = cc.p(1, 0);
-lg.anchorBottom = cc.p(0.5, 0);
-lg.anchorBottomLeft = cc.p(0, 0);
-lg.anchorLeft = cc.p(0, 0.5);
-lg.anchorTopLeft = cc.p(0, 1);
-
-
-lg.stage = {
-    _rcVisible:cc.RectZero(),
-    _ptCenter:cc.PointZero(),
-    _ptTop:cc.PointZero(),
-    _ptTopRight:cc.PointZero(),
-    _ptRight:cc.PointZero(),
-    _ptBottomRight:cc.PointZero(),
-    _ptBottom:cc.PointZero(),
-    _ptLeft:cc.PointZero(),
-    _ptTopLeft:cc.PointZero(),
-    _ptBottomLeft:cc.PointZero(),
-    _width:0,
-    _height:0,
-
-    rect:function () {
-        if (this._rcVisible.width == 0) {
-            var s = cc.Director.getInstance().getWinSize();
-            this._rcVisible = cc.rect(0, 0, s.width, s.height);
-        }
-        return this._rcVisible;
-    },
-    width:function(){
-        if(this._width == 0) this._width = this.rect().width;
-        return this._width;
-    },
-    height:function(){
-        if(this._height == 0) this._height = this.rect().height;
-        return this._height;
-    },
-    center:function () {
-        if (this._ptCenter.x == 0) {
-            var rc = this.rect();
-            this._ptCenter.x = rc.x + rc.width / 2;
-            this._ptCenter.y = rc.y + rc.height / 2;
-        }
-        return this._ptCenter;
-    },
-    top:function () {
-        if (this._ptTop.x == 0) {
-            var rc = this.rect();
-            this._ptTop.x = rc.x + rc.width / 2;
-            this._ptTop.y = rc.y + rc.height;
-        }
-        return this._ptTop;
-    },
-    topRight:function () {
-        if (this._ptTopRight.x == 0) {
-            var rc = this.rect();
-            this._ptTopRight.x = rc.x + rc.width;
-            this._ptTopRight.y = rc.y + rc.height;
-        }
-        return this._ptTopRight;
-    },
-    right:function () {
-        if (this._ptRight.x == 0) {
-            var rc = this.rect();
-            this._ptRight.x = rc.x + rc.width;
-            this._ptRight.y = rc.y + rc.height / 2;
-        }
-        return this._ptRight;
-    },
-    bottomRight:function () {
-        if (this._ptBottomRight.x == 0) {
-            var rc = this.rect();
-            this._ptBottomRight.x = rc.x + rc.width;
-            this._ptBottomRight.y = rc.y;
-        }
-        return this._ptBottomRight;
-    },
-    bottom:function () {
-        if (this._ptBottom.x == 0) {
-            var rc = this.rect();
-            this._ptBottom.x = rc.x + rc.width / 2;
-            this._ptBottom.y = rc.y;
-        }
-        return this._ptBottom;
-    },
-    bottomLeft:function () {
-        return this._ptBottomLeft;
-    },
-    left:function () {
-        if (this._ptLeft.y == 0) {
-            var rc = this.rect();
-            this._ptLeft.x = rc.x;
-            this._ptLeft.y = rc.y + rc.height / 2;
-        }
-        return this._ptLeft;
-    },
-    topLeft:function () {
-        if (this._ptTopLeft.y == 0) {
-            var rc = this.rect();
-            this._ptTopLeft.x = rc.x;
-            this._ptTopLeft.y = rc.y + rc.height;
-        }
-        return this._ptTopLeft;
-    }
-};
-///---------------------stage-------------------------------------------------------------
