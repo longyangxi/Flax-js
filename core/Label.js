@@ -5,7 +5,6 @@
 SPACE_CHAR_GAP = 10;
 
 var lg = lg || {};
-//todo, 1. align mode 2. auto add or remove char
 lg.Label = cc.SpriteBatchNode.extend({
     mlWidth:0.0,
     mlHeight:0.0,
@@ -18,6 +17,8 @@ lg.Label = cc.SpriteBatchNode.extend({
     chars:[],
     plistFile:null,
     name:null,
+    params:null,
+    _fontDefine:null,
 
     getString:function()
     {
@@ -26,7 +27,7 @@ lg.Label = cc.SpriteBatchNode.extend({
     setString:function(str)
     {
         this.str = ""+str;
-        this._setString(str);
+        this._updateStr();
     },
     getGapScale:function()
     {
@@ -38,7 +39,7 @@ lg.Label = cc.SpriteBatchNode.extend({
         this.gapScale = gap;
         if(this.str)
         {
-            this._setString(str);
+            this._updateStr();
         }
     },
     setFontName:function(font)
@@ -46,13 +47,12 @@ lg.Label = cc.SpriteBatchNode.extend({
         if(font == null) return;
         if(this.fontName != null && this.fontName == font) return;
         this.fontName = font;
-        var mcCache = lg.assetsManager;
-        var fontDefine = mcCache.getFont(this.plistFile, this.fontName);
-        this.frames = mcCache.getFrameNames(this.plistFile, parseInt(fontDefine["start"]), parseInt(fontDefine["end"]));
-        this.chars = fontDefine["chars"];
-        this.fontSize = parseInt(fontDefine["size"]);
+        this._fontDefine = lg.assetsManager.getFont(this.plistFile, this.fontName);
+        this.frames = lg.assetsManager.getFrameNames(this.plistFile, parseInt(this._fontDefine.start), parseInt(this._fontDefine.end));
+        this.chars = this._fontDefine.chars;
+        this.fontSize = parseInt(this._fontDefine.size);
     },
-    _setString:function(str)
+    _updateStr:function()
     {
         this.removeAllChildren();
         this.mlWidth = 0;
@@ -87,33 +87,47 @@ lg.Label = cc.SpriteBatchNode.extend({
 
             //create a char sprite
             var sprite = cc.Sprite.create(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
+            sprite.anchorX = this._fontDefine.anchorX;
+            sprite.anchorY = this._fontDefine.anchorY;
             // calculate the position of the sprite;
             var size = sprite.getContentSize();
             sprite.x = this.mlWidth;
             sprite.y = 0;
             this.mlWidth += size.width * this.gapScale;
             this.mlHeight = size.height > this.mlHeight ? size.height : this.mlHeight;
-            //all the label sprites are anchored on the left-top corner as in Flash
-            sprite.anchorX = 0;
-            sprite.anchorY = 1;
             this.addChild(sprite);
+        }
+        if(this.params){
+            //restrain the text within the rectangle
+            var rx = this.mlWidth/this.params.width;
+            var ry = this.mlHeight/this.params.height;
+            var r = Math.max(rx, ry);
+            var deltaY = 0;
+            if(r > 1){
+                this.scale = 1/r;
+                deltaY = this.mlHeight*(1 - 1/r)*r;
+                this.mlWidth *= this.scale;
+                this.mlHeight *= this.scale;
+
+            }
+            //enable the center align
+            var deltaX = (this.params.width - this.mlWidth)/2;
+            var i = this.childrenCount;
+            while(i--){
+                if(this.params.align == "center") this.children[i].x += deltaX;
+                this.children[i].y -= deltaY;
+            }
         }
         this.setContentSize(this.mlWidth, this.mlHeight);
     }
 });
 
-lg.Label.create = function(plistFile, fontName, gapScale)
+lg.Label.create = function(plistFile, fontName)
 {
-    var lbl = new lg.Label();
-    lbl.plistFile = plistFile;
-    lbl.gapScale = gapScale === undefined ? 1.0 : gapScale;
-
     var imgFile = plistFile.replace("."+lg.getFileExtension(plistFile), ".png");
-    if(lbl.init(imgFile, 10))
-    {
-        lg.assetsManager.addPlist(plistFile);
-        lbl.setFontName(fontName);
-        return lbl;
-    }
-    return null;
+    var lbl = new lg.Label(imgFile, 10);
+    lbl.plistFile = plistFile;
+    lg.assetsManager.addPlist(plistFile);
+    lbl.setFontName(fontName);
+    return lbl;
 };

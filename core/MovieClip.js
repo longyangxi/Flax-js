@@ -26,9 +26,12 @@ lg.MovieClip = lg.TimeLine.extend({
     },
     onNewSheet:function()
     {
-        this.removeAllChildren();
-        this.totalFrames = this.define.totalFrames;
+//        this.removeAllChildren();
+        for(var childName in this._namedChildren){
+            this._namedChildren[childName].destroy();
+        }
         this._namedChildren = {};
+        this.totalFrames = this.define.totalFrames;
         this._theRect = cc.rect(this.define.rect);
         //fix the anchor issue
         this.scheduleOnce(function(){
@@ -60,14 +63,15 @@ lg.MovieClip = lg.TimeLine.extend({
             }else {
                 if(child == null){
                     //hadle the label text
-                    if(childDefine["text"] != null){
-                        child = lg.Label.create(this.plistFile, childDefine.class, 1.0);
-                        child.setString(childDefine["text"]);
+                    if(childDefine.text != null){
+                        child = lg.Label.create(this.plistFile, childDefine.class);
+                        child.params = childDefine;
+                        child.setString(childDefine.text);
+                        this.addChild(child, childDefine.zIndex);
                     }else{
-                        child = lg.assetsManager.createDisplay(this.plistFile, childDefine.class);
+                        child = lg.assetsManager.createDisplay(this.plistFile, childDefine.class, true, this, {zIndex: childDefine.zIndex});
                     }
                     child.name = childName;
-                    this.addChild(child, childDefine.zIndex);
                     this._namedChildren[childName] = child;
                     if(this.autoPlayChildren) {
                         this.playing ? child.gotoAndPlay(0) : child.gotoAndStop(0);

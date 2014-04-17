@@ -201,7 +201,6 @@ lg.ifTouched = function(target, pos)
 
     var local = target.convertToNodeSpace(pos);
     var r = lg.getRect(target);
-    cc.rect
     r.x = r.y = 0;
 //    cc.log(child.name+": "+cc.rectContainsPoint(r, local));
     return cc.rectContainsPoint(r, local);

@@ -84,6 +84,7 @@ lg.InputManager = cc.Layer.extend({
     {
         this._super();
         var self = this;
+
         var listener = cc.EventListener.create({
             event: cc.EventListener.TOUCH_ONE_BY_ONE,
             swallowTouches: true,

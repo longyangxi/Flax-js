@@ -26,62 +26,55 @@ lg.AssetsManager = cc.Class.extend({
        this.subAnimsCache = new buckets.Dictionary();
        this.fontsCache = new buckets.Dictionary();
    },
-   createDisplay:function(plistFile, assetID)
+   createDisplay:function(plistFile, assetID, fromPool, parent, params)
    {
        this.addPlist(plistFile);
 
-       var mc = null;
        var clsName = assetID;
         var mcCls = lg.nameToObject(clsName);
-        if(mcCls) {
-            this._checkCreateFunc(mcCls, clsName);
-            mc = mcCls.create(plistFile, assetID);
-            mc.clsName = clsName;
-            return mc;
-        }
-
-        var define = this.getDisplayDefine(plistFile, assetID);
-        if(define){
-            clsName = define["type"];
-            if(clsName != "null")
-            {
-                mcCls = lg.nameToObject(clsName);
-                if(mcCls){
-                    this._checkCreateFunc(mcCls, clsName);
-                    mc = mcCls.create(plistFile, assetID);
-                }else {
-                    clsName = F2C_ALIAS[clsName];
+        if(mcCls == null) {
+            var define = this.getDisplayDefine(plistFile, assetID);
+            if(define){
+                clsName = define.type;
+                if(clsName != "null")
+                {
                     mcCls = lg.nameToObject(clsName);
-                    if(mcCls){
-                        this._checkCreateFunc(mcCls, clsName);
-                        mc = mcCls.create(plistFile, assetID);
+                    if(mcCls == null){
+                        clsName = F2C_ALIAS[clsName];
+                        mcCls = lg.nameToObject(clsName);
+                    }
+                }
+                if(mcCls == null)
+                {
+                    mcCls = lg.Animator;
+                    clsName = "lg.Animator";
+                }
+            }else {
+                define = this.getMc(plistFile, assetID);
+                mcCls = lg.MovieClip;
+                clsName = "lg.MovieClip";
+                if(define == null){
+                    var subAnims = this.getSubAnims(plistFile, assetID);
+                    if(subAnims.length) {
+                        assetID = assetID + "$" + subAnims[0];
+                    }else{
+                        cc.log("There is no display with assetID: "+assetID+" in plist: "+plistFile);
+                        return null;
                     }
                 }
             }
-            if(mc == null)
-            {
-                clsName = "lg.Animator";
-                mc = lg.Animator.create(plistFile, assetID);
-            }
-            mc.clsName = clsName;
-        }else {
-            define = this.getMc(plistFile, assetID);
-            if(define)
-            {
-                mc = lg.MovieClip.create(plistFile, assetID);
-                mc.clsName = "lg.MovieClip";
-            }else {
-                var subAnims = this.getSubAnims(plistFile, assetID);
-                if(subAnims.length) {
-                    mc = lg.MovieClip.create(plistFile, assetID + "$" +subAnims[0]);
-                    mc.clsName = "lg.MovieClip";
-                }else{
-                    cc.log("There is no display with assetID: "+assetID+" in plist: "+plistFile);
-                    return null;
-                }
-            }
         }
-        return mc;
+       this._checkCreateFunc(mcCls, clsName);
+       var mc = null;
+       if(fromPool === true) {
+           mc = lg.ObjectPool.get(plistFile,clsName,assetID).fetch(assetID, parent, params);
+       }else{
+           mc = mcCls.create(plistFile, assetID);
+           if(params) mc.attr(params);
+           if(parent) parent.addChild(mc);
+           mc.clsName = clsName;
+       }
+       return mc;
    },
     _checkCreateFunc:function(target, clsName)
     {
@@ -157,7 +150,12 @@ lg.AssetsManager = cc.Class.extend({
                     mc.children[childName]["frames"] = this._strToArray(childDefine["frames"]);
                     mc.children[childName]["class"] = childDefine["class"];
                     mc.children[childName]["zIndex"] = parseInt(childDefine["zOrder"]);
-                    if(childDefine.hasOwnProperty("text")) mc.children[childName]["text"] = childDefine["text"];
+                    if(childDefine.hasOwnProperty("text")) {
+                        mc.children[childName]["text"] = childDefine["text"];
+                        mc.children[childName]["align"] = childDefine["align"];
+                        mc.children[childName]["width"] = childDefine["width"];
+                        mc.children[childName]["height"] = childDefine["height"];
+                    }
                 }
                 this.mcsCache.set(plistFile + sName, mc);
 

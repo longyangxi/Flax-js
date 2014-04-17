@@ -132,10 +132,5 @@ lg.preload = function(res, callBack)
 
         cc.director.runScene(_cc.loaderScene);
         return _cc.loaderScene;
-
-//        Preloader.preload(res, function(){
-//            callBack();
-//        }, this);
     }
-//    lg._fixSoundBug();
 }

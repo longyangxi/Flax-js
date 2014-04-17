@@ -19,7 +19,7 @@ lg.ProgressBar = cc.ClippingNode.extend({
         this.setContentSize(size);
         this.setAnchorPoint(this._bar.getAnchorPoint());
         this._bar.setAnchorPoint(0, 0);
-        this._bar.setPosition(cc.POINT_ZERO);
+        this._bar.setPosition(cc.p());
 
         this._stencil = cc.DrawNode.create();
         var rectangle = [cc.p(0, 0),cc.p(size.width, 0),
