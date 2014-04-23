@@ -30,7 +30,7 @@ lg.SimpleButton = lg.Animator.extend({
             //if there is no DOWN label, then use OVER label
 //            if(this._state == ButtonState.DOWN && this.hasLabel(ButtonState.OVER)) optionState = ButtonState.OVER;
             if(!this.gotoAndStop(optionState)){
-                this.gotoAndStop(1);
+                this.gotoAndStop(0);
             }
         }
     },

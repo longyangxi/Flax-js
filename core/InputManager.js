@@ -103,16 +103,16 @@ lg.InputManager = cc.Layer.extend({
         });
         cc.eventManager.addListener(listener, this);
 
-        var listener = cc.EventListener.create({
-            event: cc.EventListener.MOUSE,
-            onMouseDown: function(event) {
-                cc.log("onMouseDown");
-            },
-            onMouseMove: function(event) {
-                cc.log("mouse move: "+event.getCursorX());
-                self.handleTouchMoved(cc.p(event.getCursorX(), event.getCursorY()));
-            }
-        });
+//        var listener = cc.EventListener.create({
+//            event: cc.EventListener.MOUSE,
+//            onMouseDown: function(event) {
+//                cc.log("onMouseDown");
+//            },
+//            onMouseMove: function(event) {
+//                cc.log("mouse move: "+event.getLocationX());
+//                self.handleTouchMoved(cc.p(event.getLocationX(), event.getLocationY()));
+//            }
+//        });
 //        cc.eventManager.addListener(listener, this);
     },
     onExit:function()
@@ -204,9 +204,10 @@ lg.InputManager = cc.Layer.extend({
         if(this._itemTouched)
         {
             if(this._itemTouched instanceof lg.SimpleButton) {
-                if(this._itemTouched.isSelectable() && !this._itemTouched.isSelected())
+                if(this._itemTouched.isSelectable())
                 {
-                    this._itemTouched.setState(ButtonState.SELECTED);
+                    if (!this._itemTouched.isSelected()) this._itemTouched.setState(ButtonState.SELECTED);
+                    else this._itemTouched.setState(ButtonState.UP);
                 }
                 var state = (this.findTouchedItem(pTouch) == this._itemTouched) ? ButtonState.OVER : ButtonState.UP;
                 this._setButtonState(this._itemTouched, state);

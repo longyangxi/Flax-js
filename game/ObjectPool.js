@@ -50,11 +50,11 @@ lg.ObjectPool = cc.Class.extend({
         if(params){
             obj.attr(params);
         }
-        if(parent && obj.getParent() != parent){
+        if(parent && obj.parent != parent){
             obj.removeFromParent(false);
             parent.addChild(obj);
-        }else{
-            if(obj.onReset) obj.onReset();
+        }else if(obj.parent){
+            if(obj instanceof lg.TimeLine) obj.onReset();
         }
         return obj;
     },

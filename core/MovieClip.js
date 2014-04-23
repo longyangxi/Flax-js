@@ -33,18 +33,12 @@ lg.MovieClip = lg.TimeLine.extend({
         this._namedChildren = {};
         this.totalFrames = this.define.totalFrames;
         this._theRect = cc.rect(this.define.rect);
-        //fix the anchor issue
-        this.scheduleOnce(function(){
-            this.setContentSize(this._theRect.width, this._theRect.height);
-        },0.01);
+        this.setContentSize(this._theRect.width, this._theRect.height);
     },
-    onReset:function(firstTime)
+    onReset:function()
     {
-        this._super(firstTime);
-        //fix the anchor issue
-        this.scheduleOnce(function(){
-            this.setContentSize(this._theRect.width, this._theRect.height);
-        },0.01)
+        this._super();
+        this.setContentSize(this._theRect.width, this._theRect.height);
         //MovieClip is just a container here, so we don't need a texture for it, and opacity = 0 will not impact the children
         this.opacity = 0;
     },
@@ -67,9 +61,8 @@ lg.MovieClip = lg.TimeLine.extend({
                         child = lg.Label.create(this.plistFile, childDefine.class);
                         child.params = childDefine;
                         child.setString(childDefine.text);
-                        this.addChild(child, childDefine.zIndex);
                     }else{
-                        child = lg.assetsManager.createDisplay(this.plistFile, childDefine.class, true, this, {zIndex: childDefine.zIndex});
+                        child = lg.assetsManager.createDisplay(this.plistFile, childDefine.class, true);
                     }
                     child.name = childName;
                     this._namedChildren[childName] = child;
@@ -97,6 +90,12 @@ lg.MovieClip = lg.TimeLine.extend({
                 child.visible = true;
                 if(this.autoPlayChildren) {
                     this.playing ? child.play() : child.stop();
+                }
+                if(child.parent != this){
+                    child.removeFromParent(false);
+                    this.addChild(child, childDefine.zIndex);
+                }else if(child.zIndex != childDefine.zIndex){
+                    child.zIndex = childDefine.zIndex;
                 }
             }
         }
@@ -166,7 +165,7 @@ lg.MovieClip = lg.TimeLine.extend({
         if(!global) return this._theRect;
         var w = this._theRect.width;
         var h = this._theRect.height;
-        var origin = cc.p(this._theRect._origin);
+        var origin = cc.p(this._theRect.x, this._theRect.y);
         if(this._scaleX < 0) origin.x = origin.x + w;
         if(this._scaleY < 0) origin.y = origin.y + h;
         origin = this.convertToWorldSpace(origin);

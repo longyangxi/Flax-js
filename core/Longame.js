@@ -18,11 +18,11 @@ lg._resourcesLoaded = [];
 lg._soundEnabled = true;
 lg._inited = false;
 
-lg.startGame = function(scene){
+lg.startGame = function(scene, resources){
 
     lg.init();
 
-    lg.preload(allResource, function(){
+    lg.preload(resources, function(){
         var splashing = false;
         if(a10Enabled) {
             if(a10Remote) {
@@ -190,9 +190,9 @@ lg.drawRect = function(rect, drawNode, lineWidth, lineColor, fillColor)
         if(lg.currentScene) lg.currentScene.addChild(drawNode, 99999);
     }
     if(lineWidth == null) lineWidth = 1;
-    if(lineColor == null) lineColor = cc.c4f(255, 0, 0, 255);
-    var dp = cc.pAdd(rect._origin, cc.p(rect._size.width, rect._size.height));
-    drawNode.drawRect(rect._origin, dp, fillColor, lineWidth, lineColor);
+    if(lineColor == null) lineColor = cc.color(255, 0, 0, 255);
+    var dp = cc.pAdd(cc.p(rect.x, rect.y), cc.p(rect.width, rect.height));
+    drawNode.drawRect(cc.p(rect.x, rect.y), dp, fillColor, lineWidth, lineColor);
 };
 lg.ifTouched = function(target, pos)
 {

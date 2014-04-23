@@ -149,7 +149,7 @@ lg.AssetsManager = cc.Class.extend({
                     mc.children[childName] = {};
                     mc.children[childName]["frames"] = this._strToArray(childDefine["frames"]);
                     mc.children[childName]["class"] = childDefine["class"];
-                    mc.children[childName]["zIndex"] = parseInt(childDefine["zOrder"]);
+                    mc.children[childName]["zIndex"] = parseInt(childDefine["zIndex"]);
                     if(childDefine.hasOwnProperty("text")) {
                         mc.children[childName]["text"] = childDefine["text"];
                         mc.children[childName]["align"] = childDefine["align"];
@@ -274,7 +274,8 @@ lg.AssetsManager = cc.Class.extend({
         var fs = str.split(",");
         for(var fi = 0; fi < fs.length; fi++)
         {
-            fs[fi] = parseFloat(fs[fi]);
+            if(fs[fi].indexOf(".") > -1) fs[fi] = parseFloat(fs[fi]);
+            else fs[fi] = parseInt(fs[fi]);
         }
         return fs;
     },

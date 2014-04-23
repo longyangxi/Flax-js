@@ -11,6 +11,7 @@ lg.TimeLine = cc.Sprite.extend({
     autoRecycle:false,
     plistFile:null,
     currentFrame:0,
+    currentAnim:null,
     prevFrame:-1,
     totalFrames:0,
     frameInterval:0,
@@ -120,7 +121,7 @@ lg.TimeLine = cc.Sprite.extend({
         }
         return null;
     },
-    bindAchor:function(anchorName, node)
+    bindAchor:function(anchorName, node, alwaysBind)
     {
         if(!this.define.anchors) {
 //            cc.log(this.assetID+": no anchors, "+anchorName);
@@ -134,13 +135,13 @@ lg.TimeLine = cc.Sprite.extend({
 //            cc.log(this.assetID+": anchor exit, "+anchorName);
             return false;
         }
-        this._anchorBindings.push(node);
+        if(alwaysBind !== false) this._anchorBindings.push(node);
         node.__anchor__ = anchorName;
         if(node.parent != this){
             node.removeFromParent(false);
             this.addChild(node);
         }
-        this._handleAnchorBindings();
+        this._updateAnchorNode(node, this._getAnchor(anchorName));
         return true;
     },
     getCurrentLabel:function()
@@ -205,6 +206,7 @@ lg.TimeLine = cc.Sprite.extend({
             this.loopStart = lbl.start;
             this.loopEnd = lbl.end;
             this.currentFrame = this.loopStart;
+            this.currentAnim = frameOrLabel;
         }else{
             if(!this.isValideFrame(frameOrLabel))
             {
@@ -232,6 +234,9 @@ lg.TimeLine = cc.Sprite.extend({
                 return this.setSubAnim(frameOrLabel, false);
             }
             frameOrLabel = lbl.start;
+            this.currentAnim = frameOrLabel;
+        }else{
+            this.currentAnim = null;
         }
 
         if(!this.isValideFrame(frameOrLabel))
@@ -323,7 +328,7 @@ lg.TimeLine = cc.Sprite.extend({
         var n = this._anchorBindings.length;
         while(++i < n) {
             node = this._anchorBindings[i];
-            if(!node.isVisible()) continue;
+            if(!node.visible) continue;
             anchor = this._getAnchor(node.__anchor__);
             if(anchor == null) continue;
             this._updateAnchorNode(node, anchor);
@@ -334,12 +339,13 @@ lg.TimeLine = cc.Sprite.extend({
 //        if(node._position._x != anchor[0] || node._position._y != anchor[0]) {
             node.x = anchor[0];
             node.y = anchor[1];
+            if(anchor.length > 2) node.zIndex = anchor[2];
 //        }
     },
     onEnter:function()
     {
         this._super();
-        this.onReset(true);
+        this.onReset();
     },
     onExit:function()
     {
@@ -423,10 +429,8 @@ lg.TimeLine = cc.Sprite.extend({
     /**
      * Reset some parameters, called when onEnter, or fetch from the pool
      * */
-    onReset:function(firstTime)
+    onReset:function()
     {
-        if(!this._running) return;
-        firstTime = (firstTime === true);
         this.inRecycle = false;
         this.visible = true;
         if(this._tileMap && !this._tileInited) {
