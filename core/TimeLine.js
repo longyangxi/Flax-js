@@ -124,15 +124,15 @@ lg.TimeLine = cc.Sprite.extend({
     bindAchor:function(anchorName, node, alwaysBind)
     {
         if(!this.define.anchors) {
-//            cc.log(this.assetID+": no anchors, "+anchorName);
+            cc.log(this.assetID+": there is no any anchor!");
             return false;
         }
         if(this.define.anchors[anchorName] == null) {
-//            cc.log(this.assetID+": no anchor name, "+anchorName);
+            cc.log(this.assetID+": there is no anchor named "+anchorName);
             return false;
         }
         if(this._anchorBindings.indexOf(node) > -1) {
-//            cc.log(this.assetID+": anchor exit, "+anchorName);
+            cc.log(this.assetID+": anchor has been bound, "+anchorName);
             return false;
         }
         if(alwaysBind !== false) this._anchorBindings.push(node);

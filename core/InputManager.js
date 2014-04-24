@@ -124,7 +124,9 @@ lg.InputManager = cc.Layer.extend({
     },
     findTouchedItem:function(touch)
     {
-        if(!this.isVisible()) return null;
+        if(!this.enabled || !this.isVisible()) return null;
+        //except the priority, zIndex doesn't need sorting, this may impact the performance when mouse moving
+        //todo,if the targets are not in the same container, then the zIndex sort is not perfect
         this._targets.sort(this._sortTargets);
         return this._searchChildren(this._targets, touch);
     },
@@ -261,9 +263,8 @@ lg.InputManager = cc.Layer.extend({
         var call = null;
         var target = null;
         if(calls){
-            var i = -1;
-            var n = calls.length;
-            while(++i < n)
+            var i = calls.length;
+            while(i--)
             {
                 call = calls[i];
                 target = call.target;
