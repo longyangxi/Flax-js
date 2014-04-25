@@ -30,7 +30,9 @@ lg.InputManager = cc.Layer.extend({
      * */
     addListener:function(target, func, type, priority)
     {
-        if(target == null || func == null) return;
+        if(target == null || func == null) {
+            throw "Event target is null!"
+        }
         type = (type == null) ? InputType.click : type;
         var arr = this._callbacks[type];
         if(arr == null){
@@ -190,9 +192,9 @@ lg.InputManager = cc.Layer.extend({
         this._inTouching = true;
         this._doTouched = false;
         this._itemTouched = this.findTouchedItem(pTouch);
-        if (this._itemTouched && (this._itemTouched instanceof lg.SimpleButton)) {
-//            cc.log("touch begin: "+this.name+", "+this.type);
-            this._setButtonState(this._itemTouched, ButtonState.DOWN);
+        if(this._itemTouched){
+            var btn = this._findButton(this._itemTouched);
+            if(btn) this._setButtonState(btn, ButtonState.DOWN);
         }
         this._dispatch(pTouch, InputType.press);
 //        cc.log("touch begin result: "+this.name+", "+this.type+", "+this._doTouched);
@@ -205,14 +207,16 @@ lg.InputManager = cc.Layer.extend({
 //        cc.log("touch end: "+this.name+", "+this.type+", "+this._itemTouched);
         if(this._itemTouched)
         {
-            if(this._itemTouched instanceof lg.SimpleButton) {
-                if(this._itemTouched.isSelectable())
+            var btn = this._findButton(this._itemTouched);
+            if(btn) {
+                if(btn.isSelectable())
                 {
-                    if (!this._itemTouched.isSelected()) this._itemTouched.setState(ButtonState.SELECTED);
-                    else this._itemTouched.setState(ButtonState.UP);
+                    if (!btn.isSelected()) btn.setState(ButtonState.SELECTED);
+                    else btn.setState(ButtonState.UP);
                 }
-                var state = (this.findTouchedItem(pTouch) == this._itemTouched) ? ButtonState.OVER : ButtonState.UP;
-                this._setButtonState(this._itemTouched, state);
+                var newTouched = this.findTouchedItem(pTouch);
+                var state = (lg.isChildOf(newTouched, btn)) ? ButtonState.OVER : ButtonState.UP;
+                this._setButtonState(btn, state);
             }
         }
         this._dispatch(pTouch, InputType.click);
@@ -225,9 +229,10 @@ lg.InputManager = cc.Layer.extend({
         var touched = this.findTouchedItem(touch);
         if(touched != this._itemTouched) {
             if(this._itemTouched) {
-                if(this._itemTouched instanceof lg.SimpleButton) {
-                    var state = (this._itemTouched.isSelectable() && this._itemTouched.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
-                    this._itemTouched.setState(state);
+                var btn = this._findButton(this._itemTouched);
+                if(btn){
+                    var state = (btn.isSelectable() && btn.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
+                    btn.setState(state);
                 }
                 this._itemTouched = null;
             }
@@ -235,9 +240,10 @@ lg.InputManager = cc.Layer.extend({
             if(touched) {
                 this._itemTouched = touched;
 //                cc.log("moved: "+this._inTouching+", "+Types.isSimpleButton(this._itemTouched)+", "+touched.name);
-                if(this._itemTouched instanceof lg.SimpleButton) {
+                var btn = this._findButton(this._itemTouched);
+                if(btn){
                     var state = this._inTouching ? ButtonState.DOWN : ButtonState.OVER;
-                    this._setButtonState(this._itemTouched, state);
+                    this._setButtonState(btn, state);
                 }
             }
         }
@@ -248,9 +254,10 @@ lg.InputManager = cc.Layer.extend({
         this._inTouching = false;
         if(this._itemTouched)
         {
-            if(this._itemTouched instanceof lg.SimpleButton) {
-                var state = (this._itemTouched.isSelectable() && this._itemTouched.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
-                this._itemTouched.setState(state);
+            var btn = this._findButton(this._itemTouched);
+            if(btn){
+                var state = (btn.isSelectable() && btn.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
+                btn.setState(state);
             }
             this._itemTouched = null;
         }
@@ -270,7 +277,10 @@ lg.InputManager = cc.Layer.extend({
                 target = call.target;
                 if(target.isVisible() && target.isRunning()
                     && (target == this._itemTouched || lg.isChildOf(this._itemTouched, target)))
-                    call.func.apply(target, [touch, this._itemTouched]);
+                {
+//                    call.func.apply(target, [touch, this._itemTouched]);
+                    call.func.apply(target, [touch, target]);
+                }
             }
         }
     },
@@ -296,6 +306,15 @@ lg.InputManager = cc.Layer.extend({
         }else {
             return -1;
         }
+    },
+    _findButton:function(item)
+    {
+        var p = item;
+        while(p){
+            if(p instanceof lg.Button) return p;
+            p = p.parent;
+        }
+        return p;
     }
 //    onKeyDown:function(keycode)
 //    {

@@ -48,39 +48,6 @@ lg.TiledImage = cc.SpriteBatchNode.extend({
             this._updateSize();
         }
     },
-//    setPosition:function(pos, yValue)
-//    {
-//        var oldX = this._position._x;
-//        var oldY = this._position._y;
-//        var dirty = false;
-//        if(yValue === undefined) {
-//            dirty = (pos.x != oldX || pos.y != oldY);
-//            if(dirty) this._super(pos);
-//        }else {
-//            dirty = (pos != oldX || yValue != oldY);
-//            if(dirty) this._super(pos, yValue);
-//        }
-//        if(!dirty || !this.autoScroll) return;
-//
-////        this.tileMap.offsetX = this._position._x;
-////        this.tileMap.offsetY = this._position._y;
-//
-//        var deltaX = this._position._x - oldX;
-//        var deltaY = this._position._y - oldY;
-//
-//        var dtx = Math.ceil(this._position._x/this.tileMap._tileWidth);
-//        var dty = Math.ceil(this._position._y/this.tileMap._tileHeight);
-//
-//        //to add
-//        var snx = (deltaX >= 0) ? 1 : -1;
-//        var sny = (deltaY >= 0) ? 1 : -1;
-//        var i = (deltaX >= 0) ? 0 : this.tileMap._mapWidth - 1;
-//        var j = (deltaY >= 0) ? 0 : this.tileMap._mapHeight - 1;
-//        var bx = this.tileMap.getTiledPositionX(i - 0.5*snx) + this._position._x;
-//        var by = this.tileMap.getTiledPositionY(j - 0.5*sny) + this._position._y;
-//
-//        //todo
-//    },
     _updateTileImg:function()
     {
         var child = null;

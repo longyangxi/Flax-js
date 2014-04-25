@@ -1,7 +1,6 @@
 /**
- * Created by long on 14-2-2.
+ * Created by long on 14-4-25.
  */
-
 var lg = lg || {};
 
 var ButtonState = {
@@ -14,7 +13,7 @@ var ButtonState = {
     DISABLED:"disabled"
 };
 
-lg.SimpleButton = lg.Animator.extend({
+lg.Button = lg.MovieClip.extend({
     name:null,
     _state:null,
 
@@ -56,9 +55,9 @@ lg.SimpleButton = lg.Animator.extend({
         return this._state != ButtonState.DISABLED;
     }
 });
-lg.SimpleButton.create = function(plistFile, assetID)
+lg.Button.create = function(plistFile, assetID)
 {
-    var btn = new lg.SimpleButton();
+    var btn = new lg.Button();
     btn.setPlist(plistFile, assetID);
     btn.setState(ButtonState.UP);
     return btn;

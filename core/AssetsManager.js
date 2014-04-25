@@ -5,7 +5,7 @@
 var lg = lg || {};
 
 F2C_ALIAS = {mc:"lg.MovieClip",
-             button:"lg.SimpleButton",
+             button:"lg.Button",
              progress:"lg.ProgressBar"
             };
 
@@ -48,35 +48,34 @@ lg.AssetsManager = cc.Class.extend({
 
         var mcCls = lg.nameToObject(clsName);
         if(mcCls == null && !clsPreDefined) {
+            var isMC = false;
             var define = this.getDisplayDefine(plistFile, assetID);
+            if(define == null) {
+                define = this.getMc(plistFile, assetID);
+                isMC = true;
+            }
             if(define){
                 clsName = define.type;
-                if(clsName != "null")
-                {
+                mcCls = lg.nameToObject(clsName);
+                if(mcCls == null){
+                    clsName = F2C_ALIAS[clsName];
                     mcCls = lg.nameToObject(clsName);
-                    if(mcCls == null){
-                        clsName = F2C_ALIAS[clsName];
-                        mcCls = lg.nameToObject(clsName);
-                    }
                 }
                 if(mcCls == null)
                 {
-                    mcCls = lg.Animator;
-                    clsName = "lg.Animator";
+                    mcCls = isMC ? lg.MovieClip : lg.Animator;
+                    clsName = isMC ? "lg.MovieClip" : "lg.Animator";
                 }
-            }else {
-                define = this.getMc(plistFile, assetID);
-                mcCls = lg.MovieClip;
-                clsName = "lg.MovieClip";
-                if(define == null){
-                    var subAnims = this.getSubAnims(plistFile, assetID);
-                    if(subAnims.length) {
-                        assetID = assetID + "$" + subAnims[0];
-                    }else{
-                        cc.log("There is no display with assetID: "+assetID+" in plist: "+plistFile);
-                        return null;
-                    }
+            }else if(isMC) {
+                var subAnims = this.getSubAnims(plistFile, assetID);
+                if(subAnims.length) {
+                    assetID = assetID + "$" + subAnims[0];
+                    mcCls = lg.MovieClip;
+                    clsName = "lg.MovieClip";
                 }
+            }
+            if(mcCls == null) {
+                throw  "There is no display with assetID: "+assetID+" in plist: "+plistFile;
             }
         }
        this._checkCreateFunc(mcCls, clsName);
@@ -112,7 +111,7 @@ lg.AssetsManager = cc.Class.extend({
 
         var frames = [];
         //parse the frames
-        var frameDict = dict["frames"];
+        var frameDict = dict.frames;
         for(var key in frameDict)
         {
             frames.push(key);
@@ -126,7 +125,7 @@ lg.AssetsManager = cc.Class.extend({
         //parse the displays defined in the plist
         if(dict.hasOwnProperty("displays"))
         {
-            var displays = dict["displays"];
+            var displays = dict.displays;
             var displayNames = [];
             var dDefine = null;
             if(displays){
@@ -134,7 +133,7 @@ lg.AssetsManager = cc.Class.extend({
                 {
                     displayNames.push(dName);
                     dDefine = displays[dName];
-                    if(dDefine.hasOwnProperty("anchors")) dDefine["anchors"] = this._parseAnchors(dDefine["anchors"]);
+                    dDefine.anchors = this._parseAnchors(dDefine.anchors);
                     this.displayDefineCache.set(plistFile + dName, dDefine);
                     this._parseSubAnims(plistFile, dName);
                 }
@@ -142,40 +141,39 @@ lg.AssetsManager = cc.Class.extend({
             this.displaysCache.set(plistFile, displayNames);
     //        cc.log("displays: "+displayNames.length);
         }
-
         //parse the movieClipgs
         if(dict.hasOwnProperty("mcs"))
         {
-            var mcs = dict["mcs"];
+            var mcs = dict.mcs;
             for(var sName in mcs)
             {
                 var mcDefine = mcs[sName];
                 var mc = {};
-                mc.totalFrames = mcDefine["totalFrames"];
-                mc.labels = mcDefine['labels'];
-                mc.anchorX = mcDefine['anchorX'];
-                mc.anchorY = mcDefine['anchorY'];
-                mc.rect = this._strToRect(mcDefine['rect']);
-                if(mcDefine.hasOwnProperty("anchors")) mc.anchors = this._parseAnchors(mcDefine["anchors"]);
+                mc.type = mcDefine.type;
+                mc.totalFrames = mcDefine.totalFrames;
+                mc.labels = mcDefine.labels;
+                mc.anchorX = mcDefine.anchorX;
+                mc.anchorY = mcDefine.anchorY;
+                mc.rect = this._strToRect(mcDefine.rect);
+                mc.anchors = this._parseAnchors(mcDefine.anchors);
                 mc.children = {};
                 var childDefine;
-                var childrenDefine = mcDefine["children"];
+                var childrenDefine = mcDefine.children;
                 for(var childName in childrenDefine)
                 {
                     childDefine = childrenDefine[childName];
-                    mc.children[childName] = {};
-                    mc.children[childName]["frames"] = this._strToArray(childDefine["frames"]);
-                    mc.children[childName]["class"] = childDefine["class"];
-                    mc.children[childName]["zIndex"] = parseInt(childDefine["zIndex"]);
+                    var ch = mc.children[childName] = {};
+                    ch.frames = this._strToArray(childDefine.frames);
+                    ch.class = childDefine.class;
+                    ch.zIndex = parseInt(childDefine.zIndex);
                     if(childDefine.hasOwnProperty("text")) {
-                        mc.children[childName]["text"] = childDefine["text"];
-                        mc.children[childName]["align"] = childDefine["align"];
-                        mc.children[childName]["width"] = childDefine["width"];
-                        mc.children[childName]["height"] = childDefine["height"];
+                        ch.text = childDefine.text;
+                        ch.align = childDefine.align;
+                        ch.width = childDefine.width;
+                        ch.height = childDefine.height;
                     }
                 }
                 this.mcsCache.set(plistFile + sName, mc);
-
                 //see if there is a '$' sign which present sub animation of the mc
                 this._parseSubAnims(plistFile, sName);
             }
@@ -183,7 +181,7 @@ lg.AssetsManager = cc.Class.extend({
         //parse the fonts
         if(dict.hasOwnProperty("fonts"))
         {
-            var fonts = dict["fonts"];
+            var fonts = dict.fonts;
             for(var fName in fonts)
             {
                 this.fontsCache.set(plistFile + fName, fonts[fName]);
@@ -265,6 +263,7 @@ lg.AssetsManager = cc.Class.extend({
     _parseAnchors:function(anchorDict)
     {
         var dict = {};
+        if(anchorDict == null) return dict;
         for(var name in anchorDict)
         {
             dict[name] = this._strToArray(anchorDict[name]);

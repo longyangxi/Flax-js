@@ -41,6 +41,7 @@ lg.Gunner = lg.Animator.extend({
     },
     setGunParam:function(param)
     {
+        if(this.parent == null) return;
         this.gunParam = param;
         if(lg.Gun.batchCanvas == null) {
             lg.Gun.batchCanvas = cc.SpriteBatchNode.create(this.gunParam.bulletPlist, 100);
@@ -54,7 +55,6 @@ lg.Gunner = lg.Animator.extend({
         var n = this.gunAnchors.length;
         var gunAnchor = null;
         var gun = null;
-        //todo, somewhere
         while(++i < n)
         {
             gunAnchor = this.gunAnchors[i];
