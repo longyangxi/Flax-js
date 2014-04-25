@@ -3,45 +3,57 @@
  */
 var lg = lg || {};
 
-lg.Gun = cc.Node.extend({
-//    autoRecycle:false,
+lg.GunParam = cc.Class.extend({
+    bulletPlist:null,//the plist of the bullet
+    bulletID:null,//the id of the bullet asset
+    collideSize:20,//the bullet collide radius
+    targetMap:null,//the TileMap name of the target to shoot
     damage:1,//the damage of the bullet
-    speed:500,//the move speed of the bullet per second
-    interval:0.2,//the interval time between two launch
+    speed:600,//the move speed of the bullet per second
+    interval:0.15,//the interval time between two launch
     count:1,//the bullet count in one launch
     angleGap:5,//if count > 1, angle gap between two bullets at one launch
-    waveInterval:1,//the seconds interval between two wave launch, if <= 0 then no wave mode
+    waveInterval:0.3,//the seconds interval between two wave launch, if <= 0 then no wave mode
     countInWave:6,//launch times in one wave
-    collideSize:20,//the bullet collide radius
-    isMissle:false,//todo, if it's missile
+    fireSound:null,//the sound when fire
+    fireEffectID:null,//the id of fire effect, it must be packed with the bullet plist together
+    hitEffectID:null,//the id of hit effect, it must be packed with the bullet plist together
+    isMissle:false//todo, if it's missile
+});
+
+lg.GunParam.create = function(param)
+{
+    var gp = new lg.GunParam();
+    lg.copyProperties(param, gp);
+    return gp;
+}
+
+lg.Gun = cc.Node.extend({
     owner:null,
-    fireSound:null,
-    _plistFile:null,
-    _bulletID:null,
+    param:null,
     _firing:false,
     _pool:null,
     _waveTime:0,
-    _fireEffect:null,
-    _hitEffect:null,
     _maxShootDistance:0,
     _bullets:null,
     _targetMap:null,
 
-
-    onEnter:function()
+    init:function()
     {
         this._super();
-        this._pool = lg.ObjectPool.get(this._plistFile, "lg.Animator");
-        this._waveTime = this.interval*this.countInWave + this.waveInterval;
-        this._maxShootDistance = Math.max(cc.visibleRect.width, cc.visibleRect.height)*1.5;
         this._bullets = [];
     },
     start:function()
     {
         if(this._firing) return;
         this._firing = true;
-        if(this.waveInterval <= 0 || this.countInWave <= 1) {
-            this.schedule(this._createBullet, this.interval);
+
+        this._pool = lg.ObjectPool.get(this.param.bulletPlist, "lg.Animator");
+        this._waveTime = this.param.interval*this.param.countInWave + this.param.waveInterval;
+        this._maxShootDistance = Math.max(cc.visibleRect.width, cc.visibleRect.height)*1.5;
+
+        if(this.param.waveInterval <= 0 || this.param.countInWave <= 1) {
+            this.schedule(this._createBullet, this.param.interval);
         }else{
             this._waveFire();
         }
@@ -76,8 +88,12 @@ lg.Gun = cc.Node.extend({
             over = false;
             if(!cc.rectIntersectsRect(cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height), rect)){
                 over = true;
-            }else if(this._targetMap){
-                targets = this._targetMap.getCoveredTiles1(rect, true);
+            }else if(this.param.targetMap){
+                if(this._targetMap == null) this._targetMap = lg.getTileMap(this.param.targetMap);
+                if(this._targetMap) targets = this._targetMap.getCoveredTiles1(rect, true);
+                //todo, some other handle method, for example: set the targets mannually
+                else continue;
+
                 j = -1;
                 pos = lg.getPosition(b, true);
                 rot = lg.getRotation(b, true);
@@ -92,8 +108,8 @@ lg.Gun = cc.Node.extend({
 //                    if(collide.width*collide.height > this.collideSize){
                     collide = cc.rectIntersection(target.collider, rect);
 //                    if(this.collideSize == -1) this.collideSize = 2*(rect.width + rect.height)/(2*Math.PI);
-                    if(cc.pDistance(pos, target.collidCenter) < this.collideSize){
-                        if(target["onHit"]) {
+                    if(cc.pDistance(pos, target.collidCenter) < this.param.collideSize){
+                        if(target.onHit) {
                             target.dead = target.onHit(b);
                         }
                         this._showHitEffect(pos, rot);
@@ -108,28 +124,12 @@ lg.Gun = cc.Node.extend({
             }
         }
     },
-//    setParams:function(params)
-//    {
-//        if(params == null) return;
-//        lg.copyProperties(params, this);
-//        this.end();
-//        this.start();
-//    },
-    setTargetMap:function(mapId)
+    updateParam:function(param)
     {
-        this._targetMap = lg.getTileMap(mapId);
-    },
-    setFireEffect:function(plistFile, assetID)
-    {
-        //todo, pool
-        this._fireEffect = lg.assetsManager.createDisplay(plistFile, assetID);
-        this._fireEffect.autoHideWhenOver = true;
-    },
-    setHitEffect:function(plistFile, assetID)
-    {
-        //todo, pool
-        this._hitEffect = lg.assetsManager.createDisplay(plistFile, assetID);
-        this._hitEffect.autoHideWhenOver = true;
+        if(param == null) return;
+        lg.copyProperties(param, this.param);
+        this.end();
+        this.start();
     },
     isFiring:function()
     {
@@ -147,80 +147,66 @@ lg.Gun = cc.Node.extend({
             cc.log("Pls set batch canvas for me to show the bullet: lg.Gun.batchCanvas!");
             return;
         }
-        var t = this._maxShootDistance/this.speed;
+        var t = this._maxShootDistance/this.param.speed;
         var pos = this.parent.convertToWorldSpace(this.getPosition());
-        var rot = lg.getRotation(this);
+        var rot = lg.getRotation(this, true);
         var b = null;
         var i = -1;
         var r = 0;
         var d = 0;
-        var ints  = lg.createDInts(this.count);
-        while(++i < this.count)
+        var ints  = lg.createDInts(this.param.count);
+        while(++i < this.param.count)
         {
             d = ints[i];
-            r = rot + d*this.angleGap;
-            b = this._pool.fetch(this._bulletID, lg.Gun.batchCanvas);
-            b.damage = this.damage;
+            r = rot + d*this.param.angleGap;
+            b = this._pool.fetch(this.param.bulletID, lg.Gun.batchCanvas);
+            b.damage = this.param.damage;
             b.play();
             b.setPosition(pos);
-            b.setRotation(r);
-            //todo, implement in the ObjectPool.fetch里面去？
-//            if(b.getParent() && b.getParent() != lg.Gun.batchCanvas) {
-//                b.removeFromParent(false);
-//            }
-//            if(b.getParent() == null)  lg.Gun.batchCanvas.addChild(b);
+            b.setRotation(rot);
             b.runAction(cc.MoveBy.create(t,lg.getPointOnCircle(this._maxShootDistance, r)));
             this._bullets.push(b);
         }
         this._showFireEffect(pos, rot);
-        if(this.fireSound) lg.playSound(this.fireSound);
+        if(this.param.fireSound) lg.playSound(this.param.fireSound);
     },
     _createWave:function()
     {
-        this.schedule(this._createBullet, this.interval, this.countInWave - 1);
+        this.schedule(this._createBullet, this.param.interval, this.param.countInWave - 1);
     },
     _showFireEffect:function(pos, rot)
     {
-        if(this._fireEffect) {
-            if(this._fireEffect.parent == null) lg.Gun.batchCanvas.addChild(this._fireEffect, 100);
-            this._fireEffect.setVisible(true);
-            this._fireEffect.setPosition(pos);
-            this._fireEffect.setRotation(rot);
-            this._fireEffect.gotoAndPlay(1);
-        }
+        if(this.param.fireEffectID == null || this.param.fireEffectID == "") return;
+        var fireEffect = lg.assetsManager.createDisplay(this.param.bulletPlist, this.param.fireEffectID, null, true, lg.Gun.batchCanvas);
+        fireEffect.zIndex = 999;
+        fireEffect.autoDestroyWhenOver = true;
+        fireEffect.setPosition(pos);
+        fireEffect.setRotation(rot);
+        fireEffect.gotoAndPlay(0);
     },
     _showHitEffect:function(pos, rot)
     {
-        if(this._hitEffect) {
-            if(this._hitEffect.parent == null) lg.Gun.batchCanvas.addChild(this._hitEffect, 100);
-            this._hitEffect.setVisible(true);
-            this._hitEffect.setPosition(pos);
-            this._hitEffect.setRotation(rot);
-            this._hitEffect.gotoAndPlay(1);
-        }
+        if(this.param.hitEffectID == null || this.param.hitEffectID == "") return;
+        var hitEffect = lg.assetsManager.createDisplay(this.param.bulletPlist, this.param.hitEffectID, null, true, lg.Gun.batchCanvas);
+        hitEffect.zIndex = 999;
+        hitEffect.autoDestroyWhenOver = true;
+        hitEffect.setPosition(pos);
+        hitEffect.setRotation(rot);
+        hitEffect.gotoAndPlay(0);
     }
-//    destroy:function()
-//    {
-//        if(this.autoRecycle) {
-//            if(!this.inRecycle) {
-//                var pool = lg.ObjectPool.get(this.plistFile, this.clsName);
-//                pool.recycle(this);
-//            }
-//        }else{
-//            this.removeFromParent();
-//        }
-//    }
 });
 
 lg.Gun.batchCanvas = null;
 
-lg.Gun.create = function(plistFile, bulletID)
+lg.Gun.create = function(param)
 {
-    var gun = new lg.Gun();
-    if(gun.init()){
-        gun._plistFile = plistFile;
-        gun._bulletID = bulletID;
-        return gun;
+    if(param == null) {
+        cc.log("Please give me a param defiled like: lg.GunParam!");
+        return null;
     }
-    return null;
+    param = lg.GunParam.create(param);
+    var gun = new lg.Gun();
+    gun.param = param;
+    gun.init();
+    return gun;
 };

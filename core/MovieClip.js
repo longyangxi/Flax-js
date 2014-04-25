@@ -62,7 +62,7 @@ lg.MovieClip = lg.TimeLine.extend({
                         child.params = childDefine;
                         child.setString(childDefine.text);
                     }else{
-                        child = lg.assetsManager.createDisplay(this.plistFile, childDefine.class, true);
+                        child = lg.assetsManager.createDisplay(this.plistFile, childDefine.class, null, true);
                     }
                     child.name = childName;
                     this._namedChildren[childName] = child;

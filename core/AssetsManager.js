@@ -26,13 +26,28 @@ lg.AssetsManager = cc.Class.extend({
        this.subAnimsCache = new buckets.Dictionary();
        this.fontsCache = new buckets.Dictionary();
    },
-   createDisplay:function(plistFile, assetID, fromPool, parent, params)
+    /**
+     * Create a display from a plistFile with assetID
+     * @param {String} plistFile the plistFile
+     * @param {String} assetID the asset id in the plistFile
+     * @param {String} clsName the class name to create the display, if null, it'll be automatically set according by the plist
+     * @param {Boolean} fromPool if the display should fetch from the pool
+     * @param {Node} parent its parent container
+     * @param {Object} params params could be set to the target with attr function
+     * */
+   createDisplay:function(plistFile, assetID, clsName, fromPool, parent, params)
    {
+       if(plistFile == null || assetID == null){
+           throw  "Pleas give me plistFile and assetID!";
+       }
        this.addPlist(plistFile);
 
-       var clsName = assetID;
+       var clsPreDefined = false;
+       if(clsName) clsPreDefined = true;
+       else clsName = assetID;
+
         var mcCls = lg.nameToObject(clsName);
-        if(mcCls == null) {
+        if(mcCls == null && !clsPreDefined) {
             var define = this.getDisplayDefine(plistFile, assetID);
             if(define){
                 clsName = define.type;
@@ -78,7 +93,9 @@ lg.AssetsManager = cc.Class.extend({
    },
     _checkCreateFunc:function(target, clsName)
     {
-        if(target.create == null){
+        if(target == null) {
+            throw "The class: "+clsName+" is not found!";
+        }else if(target.create == null){
             throw "Please implement  a create(plistFile, assetID) method for the target class: "+clsName;
         }
     },

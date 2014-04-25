@@ -131,7 +131,8 @@ lg.getAngle = function(startPoint, endPoint, forDegree)
 lg.getAngle1 = function(dx, dy, forDegree)
 {
     if(forDegree === undefined) forDegree = true;
-    var angle = Math.PI/2 - Math.atan2(dy, dx);
+    var angle = Math.atan2(dx, dy);
+    if(angle < 0) angle += 2*Math.PI;
     if(forDegree)
     {
         angle *= RADIAN_TO_DEGREE;
@@ -140,7 +141,7 @@ lg.getAngle1 = function(dx, dy, forDegree)
 };
 lg.getPointOnCircle = function(radius, angle)
 {
-    angle = 90 - angle;
+    angle = - angle;
     angle *= DEGREE_TO_RADIAN;
     return new cc.Point(radius*Math.cos(angle), radius*Math.sin(angle));
 };
