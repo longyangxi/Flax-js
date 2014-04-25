@@ -22,7 +22,7 @@ lg.InputManager = cc.Layer.extend({
 
     /**
      * @param{cc.Node}target the target want to receive the mouse/touch/keyboard input
-     * @param{function}function to call back, func(touch, itemTouched), the scope is the TARGET itself in the function
+     * @param{function}function to call back, func(touch, target, itemTouched), the scope is the TARGET itself in the function
      * @param{string}event type as InputType said
      * @param{Integer}priority the priority is bigger than the target will receive callback earlier
      * Note: if the target has _tilemap, the performance will be very good
@@ -278,8 +278,7 @@ lg.InputManager = cc.Layer.extend({
                 if(target.isVisible() && target.isRunning()
                     && (target == this._itemTouched || lg.isChildOf(this._itemTouched, target)))
                 {
-//                    call.func.apply(target, [touch, this._itemTouched]);
-                    call.func.apply(target, [touch, target]);
+                    call.func.apply(target, [touch, target, this._itemTouched]);
                 }
             }
         }
