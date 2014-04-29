@@ -225,6 +225,16 @@ lg.isChildOf = function(child, parent)
     return false;
 };
 
+lg.findButton = function(sprite)
+{
+    var p = sprite;
+    while(p){
+        if(p instanceof lg.Button) return p;
+        p = p.parent;
+    }
+    return null;
+}
+
 /**
  * Convert a name to a Object or a Function
  * @param {String}name cc.Sprite

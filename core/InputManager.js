@@ -128,7 +128,7 @@ lg.InputManager = cc.Layer.extend({
     {
         if(!this.enabled || !this.isVisible()) return null;
         //except the priority, zIndex doesn't need sorting, this may impact the performance when mouse moving
-        //todo,if the targets are not in the same container, then the zIndex sort is not perfect
+        //todo,if the targets are not in the same container, then the zIndex sort is not necessary
         this._targets.sort(this._sortTargets);
         return this._searchChildren(this._targets, touch);
     },
@@ -193,7 +193,7 @@ lg.InputManager = cc.Layer.extend({
         this._doTouched = false;
         this._itemTouched = this.findTouchedItem(pTouch);
         if(this._itemTouched){
-            var btn = this._findButton(this._itemTouched);
+            var btn = lg.findButton(this._itemTouched);
             if(btn) this._setButtonState(btn, ButtonState.DOWN);
         }
         this._dispatch(pTouch, InputType.press);
@@ -207,7 +207,7 @@ lg.InputManager = cc.Layer.extend({
 //        cc.log("touch end: "+this.name+", "+this.type+", "+this._itemTouched);
         if(this._itemTouched)
         {
-            var btn = this._findButton(this._itemTouched);
+            var btn = lg.findButton(this._itemTouched);
             if(btn) {
                 if(btn.isSelectable())
                 {
@@ -229,7 +229,7 @@ lg.InputManager = cc.Layer.extend({
         var touched = this.findTouchedItem(touch);
         if(touched != this._itemTouched) {
             if(this._itemTouched) {
-                var btn = this._findButton(this._itemTouched);
+                var btn = lg.findButton(this._itemTouched);
                 if(btn){
                     var state = (btn.isSelectable() && btn.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
                     btn.setState(state);
@@ -240,7 +240,7 @@ lg.InputManager = cc.Layer.extend({
             if(touched) {
                 this._itemTouched = touched;
 //                cc.log("moved: "+this._inTouching+", "+Types.isSimpleButton(this._itemTouched)+", "+touched.name);
-                var btn = this._findButton(this._itemTouched);
+                var btn = lg.findButton(this._itemTouched);
                 if(btn){
                     var state = this._inTouching ? ButtonState.DOWN : ButtonState.OVER;
                     this._setButtonState(btn, state);
@@ -254,7 +254,7 @@ lg.InputManager = cc.Layer.extend({
         this._inTouching = false;
         if(this._itemTouched)
         {
-            var btn = this._findButton(this._itemTouched);
+            var btn = lg.findButton(this._itemTouched);
             if(btn){
                 var state = (btn.isSelectable() && btn.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
                 btn.setState(state);
@@ -305,40 +305,7 @@ lg.InputManager = cc.Layer.extend({
         }else {
             return -1;
         }
-    },
-    _findButton:function(item)
-    {
-        var p = item;
-        while(p){
-            if(p instanceof lg.Button) return p;
-            p = p.parent;
-        }
-        return p;
     }
-//    onKeyDown:function(keycode)
-//    {
-////        cc.KEY.w
-//    },
-//    onKeyUp:function(keycode)
-//    {
-//
-//    },
-//    onMouseDown:function(mouse)
-//    {
-//        this.handleTouchBegan(mouse);
-//    },
-//    onMouseUp:function(mouse)
-//    {
-//        this.handleTouchEnded(mouse);
-//    },
-//    onMouseMoved:function(mouse)
-//    {
-//        this.handleTouchMoved(mouse);
-//    },
-//    onMouseDragged:function (mouse) {
-//        //todo
-//        return false;
-//    }
 });
 
 lg.InputManager.create = function()

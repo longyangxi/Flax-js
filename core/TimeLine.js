@@ -166,14 +166,15 @@ lg.TimeLine = cc.Sprite.extend({
         this._animSequence.length = 0;
     },
     playSequence:function(anims){
-        if(anims == null) return;
+        if(anims == null) return false;
         if(!(anims instanceof  Array)) {
             anims = Array.prototype.slice.call(arguments);
         }
-        if(anims.length == 0) return;
+        if(anims.length == 0) return false;
 
-        this.gotoAndPlay(anims.shift());
+        var ok = this.gotoAndPlay(anims.shift());
         this._animSequence = anims;
+        return ok;
     },
     setSubAnim:function(anim, autoPlay)
     {
