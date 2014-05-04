@@ -137,11 +137,11 @@ lg.TimeLine = cc.Sprite.extend({
         }
         if(alwaysBind !== false) this._anchorBindings.push(node);
         node.__anchor__ = anchorName;
+        this._updateAnchorNode(node, this._getAnchor(anchorName));
         if(node.parent != this){
             node.removeFromParent(false);
             this.addChild(node);
         }
-        this._updateAnchorNode(node, this._getAnchor(anchorName));
         return true;
     },
     getCurrentLabel:function()
@@ -460,8 +460,9 @@ lg.TimeLine = cc.Sprite.extend({
         this.stopAllActions();
         this.unscheduleAllCallbacks();
         if(this._tileMap) this._tileMap.removeObject(this);
+        lg.inputManager.removeListener(this);
         this._tileInited = false;
-        this.setPosition(-1000, -1000);
+//        this.setPosition(-1000, -1000);
         this._animSequence.length = 0;
 
         //remove all anchor nodes

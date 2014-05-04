@@ -69,8 +69,7 @@ lg.MovieClip = lg.TimeLine.extend({
                     if(this.autoPlayChildren) {
                         this.playing ? child.gotoAndPlay(0) : child.gotoAndStop(0);
                     }
-                    //todo, this doesn't point to really sub class this
-//                    if(this.hasOwnProperty(childName)) this[childName] = child;
+                    this[childName] = child;
                     this.onNewChild(child);
                 }
                 var x = frameDefine[0];

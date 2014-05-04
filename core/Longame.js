@@ -65,6 +65,7 @@ lg.replaceScene = function(sceneName)
     }
     lg.ObjectPool.release();
     lg.currentSceneName = sceneName;
+    lg.inputManager.reset();
     lg.currentScene = new s.scene();
     lg.preload(s.res,function(){
         lg.inputManager.removeFromParent(false);
@@ -277,6 +278,12 @@ Array.prototype.shuffle = function(len)
         this[j] = v;
     }
 };
+lg.restrictValue = function(value, min, max)
+{
+    value = Math.max(min, value);
+    value = Math.min(max, value);
+    return value;
+}
 lg.randInt = function (start, end)
 {
     return start + Math.floor(Math.random()*(end - start));

@@ -12,6 +12,7 @@ var InputType = {
 lg.InputManager = cc.Layer.extend({
     checkMouseMove:true,
     enabled:true,
+    _listener:null,
     _callbacks:{},
     _ignoreChildren:[],
     _itemTouched:null,
@@ -24,11 +25,12 @@ lg.InputManager = cc.Layer.extend({
      * @param{cc.Node}target the target want to receive the mouse/touch/keyboard input
      * @param{function}function to call back, func(touch, target, itemTouched), the scope is the TARGET itself in the function
      * @param{string}event type as InputType said
+     * @param{cc.Node}context the callback context of "THIS", if null, use target as the context
      * @param{Integer}priority the priority is bigger than the target will receive callback earlier
      * Note: if the target has _tilemap, the performance will be very good
      * Note: Pls call this in onEnter function and removeListener in onExit function
      * */
-    addListener:function(target, func, type, priority)
+    addListener:function(target, func, type, context, priority)
     {
         if(target == null || func == null) {
             throw "Event target is null!"
@@ -39,7 +41,7 @@ lg.InputManager = cc.Layer.extend({
             arr = [];
             this._callbacks[type] = arr;
         }
-        arr.push({target:target,func:func});
+        arr.push({target:target,func:func, context:context || target});
 
         if(this._targets.indexOf(target) == -1) {
             this._targets.push(target);
@@ -82,12 +84,18 @@ lg.InputManager = cc.Layer.extend({
             }
         }
     },
+    reset:function()
+    {
+        this._targets = [];
+        this._ignoreChildren = [];
+        this._callbacks = {};
+    },
     onEnter:function()
     {
         this._super();
         var self = this;
 
-        var listener = cc.EventListener.create({
+        this._listener = cc.EventListener.create({
             event: cc.EventListener.TOUCH_ONE_BY_ONE,
             swallowTouches: true,
             onTouchBegan:function(touch, event)
@@ -103,7 +111,7 @@ lg.InputManager = cc.Layer.extend({
                 self.handleTouchMoved(touch);
             }
         });
-        cc.eventManager.addListener(listener, this);
+        cc.eventManager.addListener(this._listener, this);
 
 //        var listener = cc.EventListener.create({
 //            event: cc.EventListener.MOUSE,
@@ -120,9 +128,7 @@ lg.InputManager = cc.Layer.extend({
     onExit:function()
     {
         this._super();
-        this._targets = [];
-        this._ignoreChildren = [];
-        this._callbacks = {};
+        cc.eventManager.removeListener(this._listener);
     },
     findTouchedItem:function(touch)
     {
@@ -278,7 +284,7 @@ lg.InputManager = cc.Layer.extend({
                 if(target.isVisible() && target.isRunning()
                     && (target == this._itemTouched || lg.isChildOf(this._itemTouched, target)))
                 {
-                    call.func.apply(target, [touch, target, this._itemTouched]);
+                    call.func.apply(call.context, [touch, target, this._itemTouched]);
                 }
             }
         }
