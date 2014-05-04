@@ -323,6 +323,27 @@ lg.copyProperties = function(params, target)
     }
 };
 /**
+ * Clone a new display from the target, if autoAdd = true, it'll be auto added to the target's parent
+ * It only supports lg.TimeLine or its sub classes
+ * */
+lg.cloneDisplay = function(target, autoAdd)
+{
+    if(!(target instanceof lg.TimeLine)) {
+        throw "cloneDisplay only support lg.TimeLine type!"
+    }
+    var clsName = target.clsName;
+    var cls = lg.nameToObject(clsName);
+    var obj = new cls();
+    obj.setPlist(target.plistFile, target.assetID);
+    obj.clsName = clsName;
+    obj.setPosition(target.getPosition());
+    obj.setScale(target.getScale());
+    obj.setRotation(target.rotation);
+    obj.zIndex = target.zIndex;
+    if(autoAdd && target.parent) target.parent.addChild(obj);
+    return obj;
+}
+/**
  * Create an int array like this: [0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6, -7, 7, ...]
  * */
 lg.createDInts = function(count, centerInt)
