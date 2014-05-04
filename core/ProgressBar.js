@@ -16,7 +16,6 @@ lg.ProgressBar = cc.ClippingNode.extend({
     {
         this._tempPos = new cc.Point();
         this._super(stencil);
-
         var size = this._bar.getContentSize();
         this.setContentSize(size);
         this.setAnchorPoint(this._bar.getAnchorPoint());
@@ -33,6 +32,10 @@ lg.ProgressBar = cc.ClippingNode.extend({
 
         this.addChild(this._bar);
         this._updateProgress();
+    },
+    setVisible:function (Var) {
+        cc.Node.prototype.setVisible.call(this,Var);
+        if(this._stencil) this._stencil.visible = Var;
     },
     setProgress:function(value, tween)
     {
@@ -63,7 +66,6 @@ lg.ProgressBar = cc.ClippingNode.extend({
     },
     _updateValueTween:function(delta)
     {
-        this._progress += this._valueTweeningGap;
         this.setProgress(this._progress + this._valueTweeningGap);
     },
     _updateProgress:function(tween)
