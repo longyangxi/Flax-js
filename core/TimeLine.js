@@ -91,8 +91,8 @@ lg.TimeLine = cc.Sprite.extend({
                 this.setAnchorPoint(anchorX, anchorY);
             }
             this.onNewSheet();
-            var frame = this.isValideFrame(this.currentFrame) ? this.currentFrame : 0;
-            this.renderFrame(frame, true);
+            this.currentFrame = 0;
+            this.renderFrame(this.currentFrame, true);
         }else {
             this.init();
             cc.log("There is no display named: "+assetID+" in plist: "+plistFile);
