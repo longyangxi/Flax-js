@@ -57,7 +57,6 @@ lg.registerScene = function(name, scene, resources)
 }
 lg.replaceScene = function(sceneName)
 {
-    if(lg.currentSceneName == sceneName) return;
     var s = lg._scenesDict[sceneName];
     if(s == null){
         throw "Please register the scene: "+sceneName+" firstly!";

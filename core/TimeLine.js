@@ -110,7 +110,7 @@ lg.TimeLine = cc.Sprite.extend({
     {
         return this.getLabels(label) != null;
     },
-    _getAnchor:function(name)
+    getAnchor:function(name)
     {
         if(this.define.anchors){
             var an = this.define.anchors[name];
@@ -137,7 +137,7 @@ lg.TimeLine = cc.Sprite.extend({
         }
         if(alwaysBind !== false) this._anchorBindings.push(node);
         node.__anchor__ = anchorName;
-        this._updateAnchorNode(node, this._getAnchor(anchorName));
+        this._updateAnchorNode(node, this.getAnchor(anchorName));
         if(node.parent != this){
             node.removeFromParent(false);
             this.addChild(node);
@@ -330,7 +330,7 @@ lg.TimeLine = cc.Sprite.extend({
         while(++i < n) {
             node = this._anchorBindings[i];
             if(!node.visible) continue;
-            anchor = this._getAnchor(node.__anchor__);
+            anchor = this.getAnchor(node.__anchor__);
             if(anchor == null) continue;
             this._updateAnchorNode(node, anchor);
         }
