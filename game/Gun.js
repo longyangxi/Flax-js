@@ -18,6 +18,8 @@ lg.GunParam = cc.Class.extend({
     fireSound:null,//the sound when fire
     fireEffectID:null,//the id of fire effect, it must be packed with the bullet plist together
     hitEffectID:null,//the id of hit effect, it must be packed with the bullet plist together
+    alwaysLive:false,//if true, when the bullet hurt target, it'll not disappear, continue to hurt next enemy on the path
+    bulletPlayOnce:false,//if true, the bullet will play only once after fire, otherwise always play again and again
     isMissle:false//todo, if it's missile
 });
 
@@ -54,6 +56,7 @@ lg.Gun = cc.Node.extend({
 
         if(this.param.waveInterval <= 0 || this.param.countInWave <= 1) {
             this.schedule(this._createBullet, this.param.interval);
+            this._createBullet();
         }else{
             this._waveFire();
         }
@@ -118,7 +121,7 @@ lg.Gun = cc.Node.extend({
                     }
                 }
             }
-            if(over) {
+            if(over && !this.param.alwaysLive) {
                 b.destroy();
                 this._bullets.splice(i, 1);
             }
@@ -149,6 +152,7 @@ lg.Gun = cc.Node.extend({
         }
         var t = this._maxShootDistance/this.param.speed;
         var pos = this.parent.convertToWorldSpace(this.getPosition());
+        pos = lg.Gun.batchCanvas.convertToNodeSpace(pos);
         var rot = lg.getRotation(this, true);
         var b = null;
         var i = -1;
@@ -161,7 +165,8 @@ lg.Gun = cc.Node.extend({
             r = rot + d*this.param.angleGap;
             b = this._pool.fetch(this.param.bulletID, lg.Gun.batchCanvas);
             b.damage = this.param.damage;
-            b.play();
+            b.gotoAndPlay(0);
+            b.autoStopWhenOver = this.param.bulletPlayOnce;
             b.setPosition(pos);
             b.setRotation(rot);
             b.runAction(cc.MoveBy.create(t,lg.getPointOnCircle(this._maxShootDistance, r)));

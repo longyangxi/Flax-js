@@ -66,10 +66,18 @@ lg.Gunner = lg.Animator.extend({
         }
         if(this._shooting) this.beginShoot();
     },
-    beginShoot:function()
+    beginShoot:function(delay)
     {
         this._shooting = true;
         if(this._guns == null || this._guns.length == 0) return;
+        if(delay > 0){
+            this.scheduleOnce(this._doBeginShoot, delay);
+        }else{
+            this._doBeginShoot();
+        }
+    },
+    _doBeginShoot:function()
+    {
         var i = -1;
         var n = this._guns.length;
         while(++i < n)
