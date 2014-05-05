@@ -91,9 +91,8 @@ lg.TimeLine = cc.Sprite.extend({
                 this.setAnchorPoint(anchorX, anchorY);
             }
             this.onNewSheet();
-            //todo, to be verified
-//            this.renderFrame(this.currentFrame, true);
-            this.renderFrame(0, true);
+            this.renderFrame(this.currentFrame, true);
+//            this.o(0, true);
         }else {
             this.init();
             cc.log("There is no display named: "+assetID+" in plist: "+plistFile);
@@ -433,7 +432,6 @@ lg.TimeLine = cc.Sprite.extend({
     onReset:function()
     {
         this.inRecycle = false;
-        this.visible = true;
         if(this._tileMap && !this._tileInited) {
             this._tileMap.addObject(this);
             this._tileInited = true;
@@ -447,7 +445,8 @@ lg.TimeLine = cc.Sprite.extend({
         this.inRecycle = true;
         //when recycled, reset all the prarams as default
         this.autoRecycle = false;
-        this.zIndex = 0;
+        //todo, if reset zIndex to 0, when it is reused, the zIndex is not correct!
+//        this.zIndex = 0;
         this.setScale(1);
         this.opacity = 255;
         this.rotation = 0;
@@ -462,7 +461,7 @@ lg.TimeLine = cc.Sprite.extend({
         if(this._tileMap) this._tileMap.removeObject(this);
         lg.inputManager.removeListener(this);
         this._tileInited = false;
-//        this.setPosition(-1000, -1000);
+        this.setPosition(0, 0);
         this._animSequence.length = 0;
 
         //remove all anchor nodes
