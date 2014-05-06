@@ -366,8 +366,10 @@ lg.TimeLine = cc.Sprite.extend({
         if(this._tileMap) this._tileMap.removeObject(this);
         this._tileMap = map;
         if(this._tileMap == null) return;
-        var newTx = this._tileMap.getTileIndexX(this.getPositionX());
-        var newTy = this._tileMap.getTileIndexY(this.getPositionY());
+        var pos = this.getPosition();
+        if(this.parent) pos = this.parent.convertToWorldSpace(pos);
+        var newTx = this._tileMap.getTileIndexX(pos.x);
+        var newTy = this._tileMap.getTileIndexY(pos.y);
         this.setTile(newTx, newTy, true);
     },
     setPosition:function(pos, yValue)
@@ -382,8 +384,10 @@ lg.TimeLine = cc.Sprite.extend({
         }
         if(!dirty || this.inRecycle) return;
         if(this.autoUpdateTileWhenMove && this._tileMap){
-            var newTx = this._tileMap.getTileIndexX(this.getPositionX());
-            var newTy = this._tileMap.getTileIndexY(this.getPositionY());
+            var pos = this.getPosition();
+            if(this.parent) pos = this.parent.convertToWorldSpace(pos);
+            var newTx = this._tileMap.getTileIndexX(pos.x);
+            var newTy = this._tileMap.getTileIndexY(pos.y);
             this.setTile(newTx, newTy);
         }
 

@@ -13,7 +13,7 @@ lg.GunParam = cc.Class.extend({
     interval:0.15,//the interval time between two launch
     count:1,//the bullet count in one launch
     angleGap:5,//if count > 1, angle gap between two bullets at one launch
-    waveInterval:0.3,//the seconds interval between two wave launch, if <= 0 then no wave mode
+    waveInterval:0,//the seconds interval between two wave launch, if <= 0 then no wave mode
     countInWave:6,//launch times in one wave
     fireSound:null,//the sound when fire
     fireEffectID:null,//the id of fire effect, it must be packed with the bullet plist together

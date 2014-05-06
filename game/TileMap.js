@@ -169,7 +169,9 @@ lg.TileMap = cc.Class.extend({
         if(!(sprite instanceof cc.Node)) return;
         if(tx === undefined) tx = this.getTileIndexX(sprite.getPositionX());
         if(ty === undefined) ty = this.getTileIndexY(sprite.getPositionY());
-        sprite.setPosition(this.getTiledPositionX(tx), this.getTiledPositionY(ty));
+        var pos = cc.p(this.getTiledPositionX(tx), this.getTiledPositionY(ty));
+        if(sprite.parent) pos = sprite.parent.convertToNodeSpace(pos);
+        sprite.setPosition(pos);
         if(autoAdd === true) {
             sprite.setTileMap(this);
         }
