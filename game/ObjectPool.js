@@ -47,11 +47,13 @@ lg.ObjectPool = cc.Class.extend({
         obj.autoRecycle = true;
         obj.visible = true;
 
+        //to fix the zIndex bug
         if(params){
-            //to fix the zIndex bug
             if(!("zIndex" in params)) params.zIndex = 0;
-            obj.attr(params);
+        }else{
+            params = {zIndex:0};
         }
+        obj.attr(params);
         if(parent && obj.parent != parent){
             obj.removeFromParent(false);
             parent.addChild(obj);

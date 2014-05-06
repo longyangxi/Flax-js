@@ -217,6 +217,7 @@ lg.TimeLine = cc.Sprite.extend({
             this.loopEnd = this.totalFrames - 1;
             this.currentFrame = frameOrLabel;
         }
+        this.renderFrame(this.currentFrame);
         this.updatePlaying(true);
         this._animSequence.length = 0;
         return true;
