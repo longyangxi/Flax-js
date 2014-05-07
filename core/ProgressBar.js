@@ -8,10 +8,10 @@ lg.ProgressBarType = {
     RADIAL:"radial"
 };
 lg.ProgressBar = lg.Animator.extend({
+    noOpacity:true,
     pBar:null,
     _type:null,
     _reversed:false,
-    _percentage:0,
     _tween:null,
     init:function()
     {
@@ -25,12 +25,12 @@ lg.ProgressBar = lg.Animator.extend({
     },
     getPercentage:function()
     {
-        return this._percentage;
+        if(this.pBar) return this.pBar.percentage;
+        return 0;
     },
     setPercentage:function(p)
     {
         if(this.pBar) this.pBar.percentage = p;
-        this._percentage = this.pBar.percentage;
     },
     getType:function()
     {

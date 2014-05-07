@@ -6,6 +6,7 @@ var lg = lg || {};
 
 lg.MovieClip = lg.TimeLine.extend({
     autoPlayChildren:false,
+    noOpacity:true,
     _namedChildren:null,
     _theRect:null,
 
@@ -84,8 +85,8 @@ lg.MovieClip = lg.TimeLine.extend({
                 if(rotation != child.rotation) child.rotation = rotation;
                 if(scaleX != child.scaleX) child.scaleX = scaleX;
                 if(scaleY != child.scaleY) child.scaleY = scaleY;
-                //todo, movieclip can not set opacity..., maybe we could override the setOpacity function, but some difficult
-                if(!(child instanceof lg.MovieClip) && child.setOpacity && opacity != child.opacity) child.opacity = opacity;
+                //todo, movieclip adn progressbar can not set opacity on canvas render mode..., maybe we could override the setOpacity function, but some difficult
+                if(child.noOpacity !== true && child.setOpacity && opacity != child.opacity) child.opacity = opacity;
                 child.visible = true;
                 if(this.autoPlayChildren) {
                     this.playing ? child.play() : child.stop();
