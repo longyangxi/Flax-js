@@ -41,7 +41,21 @@ lg.InputManager = cc.Layer.extend({
             arr = [];
             this._callbacks[type] = arr;
         }
-        arr.push({target:target,func:func, context:context || target});
+
+        var i = arr.length;
+        var has = false;
+        while(i--){
+            if(arr[i].target == target && arr[i].func == func) {
+                has = true;
+                break;
+            }
+        }
+        if(!has) {
+            var callback = {target:target,func:func, context:context || target};
+            arr.push(callback);
+            if(target.__input__callbacks == null) target.__input__callbacks = [];
+            target.__input__callbacks.push(callback);
+        }
 
         if(this._targets.indexOf(target) == -1) {
             this._targets.push(target);
@@ -50,37 +64,49 @@ lg.InputManager = cc.Layer.extend({
     },
     removeListener:function(target, func, type)
     {
-        //remove all the callbacks for the target, if funcName == null
-        var i = this._targets.indexOf(target);
-        var exist = (i > -1);
-        if(func == null && exist) {
-            this._targets.splice(i, 1);
-            delete target.__input__priority;
-        }
-        if(!exist) return;
-
-        var arr = null;
-        if(type != null){
-            arr = this._callbacks[type];
-            this._removeCallback(arr, target, func);
-        }else{
-            for(var t in InputType){
-                arr = this._callbacks[InputType[t]];
-                this._removeCallback(arr, target, func);
+        //to fix the bug when removeListener on loop
+        this.scheduleOnce(function(){
+            //remove all the callbacks for the target, if funcName == null
+            var i = this._targets.indexOf(target);
+            var exist = (i > -1);
+            if(func == null && exist) {
+                this._targets.splice(i, 1);
+                delete target.__input__priority;
             }
-        }
+            if(!exist) return;
+            var calls = null;
+            if(type != null){
+                calls = this._callbacks[type];
+                this._removeCallback(calls, target, func);
+            }else{
+                for(var t in InputType){
+                    calls = this._callbacks[InputType[t]];
+                    this._removeCallback(calls, target, func);
+                }
+            }
+        },0.01);
     },
     _removeCallback:function(calls, target, func)
     {
         if(calls == null) return;
-        var i = -1;
+        var i = calls.length;
         var call = null;
-        while(++i < calls.length)
+        while(i--)
         {
             call = calls[i];
             if(call.target == target && (func == null || call.func == func)){
                 calls.splice(i, 1);
+                var j = target.__input__callbacks.indexOf(call);
+                if(j > -1) target.__input__callbacks.splice(j, 1);
                 break;
+            }
+        }
+        if(target.__input__callbacks.length == 0){
+            i = this._targets.indexOf(target);
+            if(i > -1) {
+                this._targets.splice(i, 1);
+                delete target.__input__priority;
+                delete target.__input__callbacks;
             }
         }
     },
@@ -281,7 +307,7 @@ lg.InputManager = cc.Layer.extend({
             {
                 call = calls[i];
                 target = call.target;
-                if(target.isVisible() && target.isRunning()
+                if(target.isVisible() && target.running
                     && (target == this._itemTouched || lg.isChildOf(this._itemTouched, target)))
                 {
                     call.func.apply(call.context, [touch, target, this._itemTouched]);

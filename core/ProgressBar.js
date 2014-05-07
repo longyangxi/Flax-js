@@ -1,90 +1,136 @@
 /**
- * Created by long on 14-2-8.
+ * Created by long on 14-5-7.
  */
-
 var lg = lg || {};
-
-lg.ProgressBar = cc.ClippingNode.extend({
-    tweenSpeed:1000,
-    _bar:null,
-    _progress:1.0,
-    _tempPos:null,
-    _valueTweeningGap:0,
-    _toValue:null,
-
-    init:function(stencil)
+lg.ProgressBarType = {
+    HORIZONTAL:"horizontal",
+    VERTICAL:"vertical",
+    RADIAL:"radial"
+};
+lg.ProgressBar = lg.Animator.extend({
+    pBar:null,
+    _type:null,
+    _reversed:false,
+    _percentage:0,
+    _tween:null,
+    init:function()
     {
-        this._tempPos = new cc.Point();
-        this._super(stencil);
-        var size = this._bar.getContentSize();
-        this.setContentSize(size);
-        this.setAnchorPoint(this._bar.getAnchorPoint());
-        this._bar.setAnchorPoint(0, 0);
-        this._bar.setPosition(cc.p());
-
-        this._stencil = cc.DrawNode.create();
-        var rectangle = [cc.p(0, 0),cc.p(size.width, 0),
-            cc.p(size.width, size.height),
-            cc.p(0, size.height)];
-
-        var white = cc.color(1, 1, 1, 0);
-        this._stencil.drawPoly(rectangle, white, 1, white);
-
-        this.addChild(this._bar);
-        this._updateProgress();
+        this._super();
+        if(this._type == null) this._type = lg.ProgressBarType.HORIZONTAL;
     },
-    setVisible:function (Var) {
-        cc.Node.prototype.setVisible.call(this,Var);
-        if(this._stencil) this._stencil.visible = Var;
-    },
-    setProgress:function(value, tween)
+    onReset:function()
     {
-        if(this._progress == value) return;
-        this._progress = value;
-        this._progress = lg.restrictValue(this._progress, 0, 1);
-        this._updateProgress(tween);
+        this._super();
+        this.setOpacity(0);
     },
-    getProgress:function()
+    getPercentage:function()
     {
-        return this._progress;
+        return this._percentage;
     },
-    tweenValue:function(from, to, t)
+    setPercentage:function(p)
     {
-        from = lg.restrictValue(from, 0, 1);
-        to = lg.restrictValue(to, 0, 1);
-        if(from == to) return;
-        this.setProgress(from, true);
-        this._toValue = to;
-        var interval = Math.min(t, 0.1);
-        var count = t/interval;
-        this._valueTweeningGap = (to - from)/count;
-        this.schedule(this._updateValueTween,interval,count - 1);
+        if(this.pBar) this.pBar.percentage = p;
+        this._percentage = this.pBar.percentage;
     },
-    stopTweenValue:function()
+    getType:function()
     {
-        this.unschedule(this._updateValueTween);
+        return this._type;
     },
-    _updateValueTween:function(delta)
+    setType:function(type)
     {
-        this.setProgress(this._progress + this._valueTweeningGap);
+        if(this._type == type) return;
+        this._type = type;
+        this._updatePBar();
     },
-    _updateProgress:function(tween)
+    getReversed:function()
     {
-        this._tempPos.x = - (1.0 - this._progress)*this.width;
-        this._tempPos.y = this._stencil.y;
-        if(this.tweenSpeed > 0 && tween !== false) {
-            this._stencil.stopAllActions();
-            var t = Math.abs(this._tempPos.x - this.x)/this.tweenSpeed;
-            this._stencil.runAction(cc.MoveTo.create(t, this._tempPos));
+        return this._reversed;
+    },
+    setReversed:function(r)
+    {
+        if(this._reversed == r) return;
+        this._reversed = r;
+        this._updatePBar();
+        //to fix the setReverse bug
+        this.percentage += 0.1;
+        this.percentage -= 0.1;
+    },
+    tween:function(from, to, duration)
+    {
+        if(this.pBar == null) return;
+        if(this._tween) this.pBar.stopAction(this._tween);
+        this._tween = cc.ProgressFromTo.create(duration, from, to);
+        this.pBar.runAction(this._tween);
+    },
+    stopTween:function()
+    {
+        if(this._tween && this.pBar) {
+            this.pBar.stopAction(this._tween);
+            this._tween = null;
         }
-        else this._stencil.setPosition(this._tempPos);
+    },
+    doRenderFrame:function(frame)
+    {
+        var sFrame = cc.spriteFrameCache.getSpriteFrame(this.frameNames[frame]);
+        if(sFrame) {
+            //todo, is there some performance issue? pool?
+            var frameSprite = cc.Sprite.create(sFrame);
+            if(this.pBar == null){
+                this.width = frameSprite.width;
+                this.height = frameSprite.height;
+
+                this.pBar = cc.ProgressTimer.create(frameSprite);
+
+                this._updatePBar();
+
+                this.pBar.setAnchorPoint(this.getAnchorPoint());
+                this.pBar.setPosition(this.getAnchorPointInPoints());
+                this.addChild(this.pBar);
+            }else{
+                this.pBar.setSprite(frameSprite);
+            }
+        }
+    },
+    _updatePBar:function()
+    {
+        if(this.pBar == null) return;
+        if(this._type == lg.ProgressBarType.RADIAL) {
+            this.pBar.type = cc.PROGRESS_TIMER_TYPE_RADIAL;
+            this.pBar.setReverseDirection(this._reversed);
+            this.pBar.midPoint = cc.p(0.5, 0.5);
+        }else{
+            this.pBar.type = cc.PROGRESS_TIMER_TYPE_BAR;
+            var isHorizontal = this._type == lg.ProgressBarType.HORIZONTAL;
+            var mid = cc.p(0, 0);
+            var cRate = cc.p(isHorizontal ? 1: 0, isHorizontal ? 0 : 1);
+            if(this._reversed){
+                if(isHorizontal) mid.x = 1;
+                else mid.y = 1;
+            }
+            this.pBar.midPoint = mid;
+            this.pBar.barChangeRate = cRate;
+        }
     }
 });
-
 lg.ProgressBar.create = function(plistFile, assetID)
 {
-    var bar = new lg.ProgressBar();
-    bar._bar = lg.Animator.create(plistFile, assetID);
-    bar.init();
-    return bar;
+    var p = new lg.ProgressBar();
+    p.setPlist(plistFile, assetID);
+    p.clsName = "lg.ProgressBar";
+    return p;
 };
+
+window._p = lg.ProgressBar.prototype;
+
+/** @expose */
+_p.percentage;
+cc.defineGetterSetter(_p, "percentage", _p.getPercentage, _p.setPercentage);
+/** @expose */
+_p.type;
+cc.defineGetterSetter(_p, "type", _p.getType, _p.setType);
+/** @expose */
+_p.reversed;
+cc.defineGetterSetter(_p, "reversed", _p.getReversed, _p.setReversed);
+
+delete window._p;
+

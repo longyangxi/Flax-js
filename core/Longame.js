@@ -172,7 +172,7 @@ lg.getRotation = function(sprite, global)
 lg.getRect = function(sprite, global)
 {
     var rect;
-    if(sprite instanceof  lg.MovieClip) {
+    if(sprite.getRect) {
         rect = sprite.getRect(global);
         if(rect) return rect;
     }

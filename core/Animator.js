@@ -4,7 +4,6 @@
 var lg = lg || {};
 
 lg.Animator = lg.TimeLine.extend({
-    frameName:null,
     frameNames:null,
     onNewSheet:function()
     {
@@ -18,11 +17,6 @@ lg.Animator = lg.TimeLine.extend({
             cc.log("There is no frame for display: "+this.assetID);
             return;
         }
-    },
-    onEnter:function()
-    {
-        this._super();
-//        lg.drawRect(lg.getRect(this,true));
     },
     doRenderFrame:function(frame)
     {
