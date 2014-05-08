@@ -158,7 +158,7 @@ lg.InputManager = cc.Layer.extend({
     },
     findTouchedItem:function(touch)
     {
-        if(!this.enabled || !this.isVisible()) return null;
+        if(!this.enabled || !this.visible) return null;
         //except the priority, zIndex doesn't need sorting, this may impact the performance when mouse moving
         //todo,if the targets are not in the same container, then the zIndex sort is not necessary
         this._targets.sort(this._sortTargets);
@@ -203,9 +203,8 @@ lg.InputManager = cc.Layer.extend({
     ifTargetIgnore:function(child)
     {
         if(child == null) return true;
-        if(!child.isRunning()) return true;
-        if(!child.isVisible()) return true;
-        if(!child.isRunning()) return true;
+        if(!child.running) return true;
+        if(!child.visible) return true;
         if(!child._tileMap && child["isMouseEnabled"] && child.isMouseEnabled() === false) return true;
         var i = -1;
         var ignoreName = null;
@@ -218,7 +217,7 @@ lg.InputManager = cc.Layer.extend({
     },
     handleTouchBegan:function(pTouch)
     {
-        if (!this.enabled || !this.isVisible()) {
+        if (!this.enabled || !this.visible) {
             return false;
         }
         this._inTouching = true;
@@ -234,7 +233,7 @@ lg.InputManager = cc.Layer.extend({
     },
     handleTouchEnded:function(pTouch)
     {
-        if(!this.enabled || !this.isVisible()) return;
+        if(!this.enabled || !this.visible) return;
         this._inTouching = false;
 //        cc.log("touch end: "+this.name+", "+this.type+", "+this._itemTouched);
         if(this._itemTouched)
@@ -256,7 +255,7 @@ lg.InputManager = cc.Layer.extend({
     },
     handleTouchMoved:function(touch)
     {
-        if(!this.enabled || !this.isVisible()) return;
+        if(!this.enabled || !this.visible) return;
         if(!this.checkMouseMove) return;
         var touched = this.findTouchedItem(touch);
         if(touched != this._itemTouched) {
@@ -307,7 +306,7 @@ lg.InputManager = cc.Layer.extend({
             {
                 call = calls[i];
                 target = call.target;
-                if(target.isVisible() && target.running
+                if(target.visible && target.running
                     && (target == this._itemTouched || lg.isChildOf(this._itemTouched, target)))
                 {
                     call.func.apply(call.context, [touch, target, this._itemTouched]);

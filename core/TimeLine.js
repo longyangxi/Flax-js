@@ -300,7 +300,6 @@ lg.TimeLine = cc.Sprite.extend({
                 var anims = this._animSequence.concat();
                 this.gotoAndPlay(anims.shift());
                 this._animSequence = anims;
-//                this._recoverOldAnim();
             }else{
                 this.currentFrame = this.loopStart;
             }
@@ -496,6 +495,7 @@ lg.TimeLine = cc.Sprite.extend({
     },
     getDefine:function()
     {
+
         return null;
     },
     onNewSheet:function()
