@@ -44,7 +44,8 @@ lg.Gunner = lg.Animator.extend({
         if(this.parent == null) return;
         this.gunParam = param;
         if(lg.Gun.batchCanvas == null) {
-            lg.Gun.batchCanvas = cc.SpriteBatchNode.create(this.gunParam.bulletPlist, 100);
+            var texturePath = cc.path.changeBasename(this.gunParam.bulletPlist, ".png");
+            lg.Gun.batchCanvas = cc.SpriteBatchNode.create(texturePath, 100);
             this.parent.addChild(lg.Gun.batchCanvas, 999999);
         }
         if(this.gunAnchors == null){

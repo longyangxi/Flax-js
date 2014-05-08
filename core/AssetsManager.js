@@ -122,8 +122,7 @@ lg.AssetsManager = cc.Class.extend({
         }
         if(this.framesCache.containsKey(plistFile)) return false;
         var dict = this._getFrameConfig(plistFile);
-//        var ext = lg.getFileExtension(plistFile);
-        cc.spriteFrameCache.addSpriteFrames(plistFile);//, plistFile.replace("."+ext, ".png"));
+        cc.spriteFrameCache.addSpriteFrames(plistFile);
 
         var frames = [];
         //parse the frames
