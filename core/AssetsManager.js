@@ -19,12 +19,12 @@ lg.AssetsManager = cc.Class.extend({
 
    init:function()
    {
-       this.framesCache = new buckets.Dictionary();
-       this.displaysCache = new buckets.Dictionary();
-       this.displayDefineCache = new buckets.Dictionary();
-       this.mcsCache = new buckets.Dictionary();
-       this.subAnimsCache = new buckets.Dictionary();
-       this.fontsCache = new buckets.Dictionary();
+       this.framesCache = {};
+       this.displaysCache = {};
+       this.displayDefineCache = {};
+       this.mcsCache = {};
+       this.subAnimsCache = {};
+       this.fontsCache = {};
    },
     /**
      * Create a display from a plistFile with assetID
@@ -120,7 +120,7 @@ lg.AssetsManager = cc.Class.extend({
             cc.log("Plist File can't be null!");
             return;
         }
-        if(this.framesCache.containsKey(plistFile)) return false;
+        if(plistFile in this.framesCache) return false;
         var dict = this._getFrameConfig(plistFile);
         cc.spriteFrameCache.addSpriteFrames(plistFile);
 
@@ -134,7 +134,7 @@ lg.AssetsManager = cc.Class.extend({
         //sort ascending
         frames.sort();
 
-        this.framesCache.set(plistFile, frames);
+        this.framesCache[plistFile] = frames;
     //    cc.log("frames: "+frames.length);
 
         //parse the displays defined in the plist
@@ -149,11 +149,11 @@ lg.AssetsManager = cc.Class.extend({
                     displayNames.push(dName);
                     dDefine = displays[dName];
                     dDefine.anchors = this._parseAnchors(dDefine.anchors);
-                    this.displayDefineCache.set(plistFile + dName, dDefine);
+                    this.displayDefineCache[plistFile + dName] = dDefine;
                     this._parseSubAnims(plistFile, dName);
                 }
             }
-            this.displaysCache.set(plistFile, displayNames);
+            this.displaysCache[plistFile] = displayNames;
     //        cc.log("displays: "+displayNames.length);
         }
         //parse the movieClipgs
@@ -188,7 +188,7 @@ lg.AssetsManager = cc.Class.extend({
                         ch.height = childDefine.height;
                     }
                 }
-                this.mcsCache.set(plistFile + sName, mc);
+                this.mcsCache[plistFile + sName] = mc;
                 //see if there is a '$' sign which present sub animation of the mc
                 this._parseSubAnims(plistFile, sName);
             }
@@ -199,7 +199,7 @@ lg.AssetsManager = cc.Class.extend({
             var fonts = dict.fonts;
             for(var fName in fonts)
             {
-                this.fontsCache.set(plistFile + fName, fonts[fName]);
+                this.fontsCache[plistFile + fName] = fonts[fName];
     //            cc.log("add font: "+fName);
             }
         }
@@ -207,10 +207,10 @@ lg.AssetsManager = cc.Class.extend({
     },
     getFrameNames:function(plistFile, startFrame, endFrame)
     {
-        if(!this.framesCache.containsKey(plistFile)) {
+        if(!( plistFile in this.framesCache)) {
             this.addPlist(plistFile);
         }
-        var frames = this.framesCache.get(plistFile);
+        var frames = this.framesCache[plistFile];
         if(frames == null) return [];
         if(startFrame == -1) startFrame = 0;
         if(endFrame == -1) endFrame = frames.length - 1;
@@ -219,19 +219,19 @@ lg.AssetsManager = cc.Class.extend({
     getDisplayDefine:function(plistFile, assetID)
     {
         var key = plistFile + assetID;
-        if(!this.displayDefineCache.containsKey(key))
+        if(!(key in this.displayDefineCache))
         {
             this.addPlist(plistFile);
         }
-        return this.displayDefineCache.get(key);
+        return this.displayDefineCache[key];
     },
     getDisplayNames:function(plistFile)
     {
-        if(!this.displaysCache.containsKey(plistFile))
+        if(!(plistFile in this.displaysCache))
         {
             this.addPlist(plistFile);
         }
-        return this.displaysCache.get(plistFile) || [];
+        return this.displaysCache[plistFile] || [];
     },
     getRandomDisplayName:function(plistFile)
     {
@@ -242,23 +242,23 @@ lg.AssetsManager = cc.Class.extend({
     getMc:function(plistFile, assetID)
     {
         var key = plistFile + assetID;
-        if(!this.mcsCache.containsKey(key)) {
+        if(!(key in this.mcsCache)) {
             this.addPlist(plistFile);
         }
-        return this.mcsCache.get(key);
+        return this.mcsCache[key];
     },
     getSubAnims:function(plistFile, theName)
     {
         var akey = plistFile + theName;
-        return this.subAnimsCache.get(akey) || [];
+        return this.subAnimsCache[akey] || [];
     },
     getFont:function(plistFile, fontName)
     {
         var key = plistFile + fontName;
-        if(!this.fontsCache.containsKey(key)) {
+        if(!(key in  this.fontsCache)) {
             this.addPlist(plistFile);
         }
-        return this.fontsCache.get(key);
+        return this.fontsCache[key];
     },
     _parseSubAnims:function(plistFile, assetID)
     {
@@ -267,10 +267,10 @@ lg.AssetsManager = cc.Class.extend({
         var aname = aarr[1];
         if(rname && aname && rname != '' && aname != ''){
             var akey = plistFile + rname;
-            var anims = this.subAnimsCache.get(akey);
+            var anims = this.subAnimsCache[akey];
             if(anims == null) {
                 anims = [];
-                this.subAnimsCache.set(akey, anims);
+                this.subAnimsCache[akey] = anims;
             }
             anims.push(aname);
         }
