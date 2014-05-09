@@ -50,7 +50,7 @@ lg.Gun = cc.Node.extend({
         if(this._firing) return;
         this._firing = true;
 
-        this._pool = lg.ObjectPool.get(this.param.bulletPlist, "lg.Animator");
+        this._pool = lg.ObjectPool.get(this.param.bulletPlist, "lg.Animator",this.param.bulletID);
         this._waveTime = this.param.interval*this.param.countInWave + this.param.waveInterval;
         this._maxShootDistance = Math.max(cc.visibleRect.width, cc.visibleRect.height)*1.5;
 
@@ -61,7 +61,8 @@ lg.Gun = cc.Node.extend({
             this._waveFire();
         }
         this.scheduleUpdate();
-        this.schedule(this.update, 0.1, cc.REPEAT_FOREVER);
+        var rate = cc.game.config.frameRate;
+        this.schedule(this.update, 1/rate, cc.REPEAT_FOREVER);
     },
     end:function()
     {
@@ -87,9 +88,14 @@ lg.Gun = cc.Node.extend({
         //Note: how to delete item of an Array in a loop, this is a template!
         while(i--) {
             b = this._bullets[i];
+
+            var dis = b.__speed*delta;
+            b.setPosition(cc.pAdd(b.getPosition(), lg.getPointOnCircle(dis, b.__moveRotation)));
+
             rect = b.collider;
             over = false;
-            if(!cc.rectIntersectsRect(cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height), rect)){
+            var outofScreen = !cc.rectIntersectsRect(cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height), rect);
+            if(outofScreen){
                 over = true;
             }else if(this.param.targetMap){
                 if(this._targetMap == null) this._targetMap = lg.getTileMap(this.param.targetMap);
@@ -107,10 +113,6 @@ lg.Gun = cc.Node.extend({
                     if(this.owner && target.camp == this.owner.camp) continue;
                     //hit the target
 //                    collide = cc.rectIntersection(target.collider, rect);
-//                    if(this.collideSize == -1) this.collideSize = (rect.width*rect.height)/2;
-//                    if(collide.width*collide.height > this.collideSize){
-                    collide = cc.rectIntersection(target.collider, rect);
-//                    if(this.collideSize == -1) this.collideSize = 2*(rect.width + rect.height)/(2*Math.PI);
                     if(cc.pDistance(pos, target.collidCenter) < this.param.collideSize){
                         if(target.onHit) {
                             target.dead = target.onHit(b);
@@ -168,11 +170,14 @@ lg.Gun = cc.Node.extend({
             b.gotoAndPlay(0);
             b.autoStopWhenOver = this.param.bulletPlayOnce;
             b.setPosition(pos);
-            b.setRotation(rot);
-            b.runAction(cc.MoveBy.create(t,lg.getPointOnCircle(this._maxShootDistance, r)));
+            b.setRotation(r);
+
+            b.__speed = this.param.speed;
+            b.__moveRotation = r;
+//            b.runAction(cc.MoveBy.create(t,lg.getPointOnCircle(this._maxShootDistance, r)));
             this._bullets.push(b);
         }
-        this._showFireEffect(pos, rot);
+        this._showFireEffect(pos, r);
         if(this.param.fireSound) lg.playSound(this.param.fireSound);
     },
     _createWave:function()

@@ -63,6 +63,7 @@ lg.replaceScene = function(sceneName)
         return;
     }
     lg.ObjectPool.release();
+    if(lg.Gun) lg.Gun.batchCanvas = null;
     lg.currentSceneName = sceneName;
     lg.inputManager.reset();
     lg.currentScene = new s.scene();
@@ -262,7 +263,7 @@ lg.nameToObject = function(name, type) {
 lg.createBGLayer = function(scene, color)
 {
     if(color == null) color = cc.color(255, 255, 255, 255);
-    var layer = cc.LayerColor.create(color, lg.visibleRect.width, cc.visibleRect.height);
+    var layer = cc.LayerColor.create(color, cc.visibleRect.width, cc.visibleRect.height);
     scene.addChild(layer, 0);
     return layer;
 };

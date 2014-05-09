@@ -327,11 +327,9 @@ lg.InputManager = cc.Layer.extend({
      * */
     _sortTargets:function(target1, target2)
     {
-        if(target1.zIndex == target2.zIndex)
-        {
+        if(target1.zIndex == target2.zIndex){
             return target1.__input__priority > target2.__input__priority ? 1 : -1;
-        }else if(target1.zIndex > target2.zIndex)
-        {
+        }else if(target1.zIndex > target2.zIndex){
             return 1;
         }else {
             return -1;
