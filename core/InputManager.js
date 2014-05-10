@@ -5,125 +5,167 @@ var lg = lg || {};
 
 var InputType = {
     press:"onPress",
+    up:"onUp",
     click:"onClick",
     move:"onMouseMove"
 };
 
-lg.InputManager = cc.Layer.extend({
-    checkMouseMove:true,
+lg.InputManager = cc.Node.extend({
     enabled:true,
-    _listener:null,
     _callbacks:{},
-    _ignoreChildren:[],
     _itemTouched:null,
-    _doTouched:false,
     _inTouching:false,
-    _targets:[],
-    _tempResult:null,
-
-    /**
-     * @param{cc.Node}target the target want to receive the mouse/touch/keyboard input
-     * @param{function}function to call back, func(touch, target, itemTouched), the scope is the TARGET itself in the function
-     * @param{string}event type as InputType said
-     * @param{cc.Node}context the callback context of "THIS", if null, use target as the context
-     * @param{Integer}priority the priority is bigger than the target will receive callback earlier
-     * Note: if the target has _tilemap, the performance will be very good
-     * Note: Pls call this in onEnter function and removeListener in onExit function
-     * */
-    addListener:function(target, func, type, context, priority)
-    {
-        if(target == null || func == null) {
-            throw "Event target is null!"
-        }
-        type = (type == null) ? InputType.click : type;
-        var arr = this._callbacks[type];
-        if(arr == null){
-            arr = [];
-            this._callbacks[type] = arr;
-        }
-
-        var i = arr.length;
-        var has = false;
-        while(i--){
-            if(arr[i].target == target && arr[i].func == func) {
-                has = true;
-                break;
-            }
-        }
-        if(!has) {
-            var callback = {target:target,func:func, context:context || target};
-            arr.push(callback);
-            if(target.__input__callbacks == null) target.__input__callbacks = [];
-            target.__input__callbacks.push(callback);
-        }
-
-        if(this._targets.indexOf(target) == -1) {
-            this._targets.push(target);
-            target.__input__priority = (priority === undefined) ? 0 : parseInt(priority);
-        }
-    },
-    removeListener:function(target, func, type)
-    {
-        //to fix the bug when removeListener on loop
-        this.scheduleOnce(function(){
-            //remove all the callbacks for the target, if funcName == null
-            var i = this._targets.indexOf(target);
-            var exist = (i > -1);
-            if(func == null && exist) {
-                this._targets.splice(i, 1);
-                delete target.__input__priority;
-            }
-            if(!exist) return;
-            var calls = null;
-            if(type != null){
-                calls = this._callbacks[type];
-                this._removeCallback(calls, target, func);
-            }else{
-                for(var t in InputType){
-                    calls = this._callbacks[InputType[t]];
-                    this._removeCallback(calls, target, func);
-                }
-            }
-        },0.01);
-    },
-    _removeCallback:function(calls, target, func)
-    {
-        if(calls == null) return;
-        var i = calls.length;
-        var call = null;
-        while(i--)
-        {
-            call = calls[i];
-            if(call.target == target && (func == null || call.func == func)){
-                calls.splice(i, 1);
-                var j = target.__input__callbacks.indexOf(call);
-                if(j > -1) target.__input__callbacks.splice(j, 1);
-                break;
-            }
-        }
-        if(target.__input__callbacks.length == 0){
-            i = this._targets.indexOf(target);
-            if(i > -1) {
-                this._targets.splice(i, 1);
-                delete target.__input__priority;
-                delete target.__input__callbacks;
-            }
-        }
-    },
-    reset:function()
-    {
-        this._targets = [];
-        this._ignoreChildren = [];
-        this._callbacks = {};
-    },
+    _globalListener:null,
     onEnter:function()
     {
         this._super();
         var self = this;
-
-        this._listener = cc.EventListener.create({
+        var listener = cc.EventListener.create({
             event: cc.EventListener.TOUCH_ONE_BY_ONE,
-            swallowTouches: true,
+            swallowTouches: false,
+            onTouchBegan:function(touch, event)
+            {
+                self._dispatchOne(self, touch, event, InputType.press);
+                return true;
+            },
+            onTouchEnded:function(touch, event)
+            {
+                self._dispatchOne(self, touch, event, InputType.up);
+                self._dispatchOne(self, touch, event, InputType.click);
+            },
+            onTouchMoved:function(touch, event)
+            {
+                self._dispatchOne(self, touch, event, InputType.move);
+            }
+        })
+        cc.eventManager.addListener(listener, this);
+    },
+    onExit:function(){
+        this._super();
+        this._inTouching = false;
+        this._callbacks = {};
+        cc.eventManager.removeAllListeners();
+    },
+    /**
+     * @param{cc.Node}target the target want to receive the touch event, if target is null, then global event will be triggered
+     * @param{function}function to call back, func(touch, event),{event.currentTarget, event.target}
+     * @param{string}event type as InputType said
+     * @param{cc.Node}context the callback context of "THIS", if null, use target as the context
+     * */
+    addListener:function(target, func, type, context)
+    {
+        if(func == null) {
+            throw "Event callback can not be null!"
+        }
+        if(target == null) target = this;
+
+        type = (type == null) ? InputType.click : type;
+
+        var arr = this._callbacks[target.__instanceId];
+        if(arr == null){
+            arr = [];
+            this._callbacks[target.__instanceId] = arr;
+            if(target != this) this._createListener(target, true);
+        }
+
+        var i = arr.length;
+        while(i--){
+            if(arr[i].type == type && arr[i].func == func)  return;
+        }
+        var callback = {type:type, func:func, context:context || target};
+        arr.push(callback);
+    },
+    removeListener:function(target, func, type)
+    {
+        var calls = this._callbacks[target.__instanceId];
+        if(!calls) return;
+
+        var call = null;
+        var i = calls.length;
+        if(func || type) {
+            while(i--){
+                call = calls[i];
+                if((type && call.type == type) || (func && call.func == func)) calls.splice(i, 1);
+            }
+        }
+        if(calls.length == 0 || (!func && !type)){
+            delete this._callbacks[target.__instanceId];
+        }
+    },
+    handleTouchBegan:function(touch, event)
+    {
+        if (!this.enabled) return false;
+
+        var target = event.getCurrentTarget();
+
+        if(this._ifTargetIgnore(target, touch)) return false;
+
+        this._inTouching = true;
+        this._itemTouched = target;
+        if(target instanceof lg.Button) this._setButtonState(target, ButtonState.DOWN);
+        event.currentTarget = target;
+        event.target = this._findRealTarget(target, touch.getLocation()) || target;
+
+        this._dispatch(target, touch, event, InputType.press);
+//        cc.log("touch begin result: "+target.name+", "+target.assetID);
+        return true;
+    },
+    handleTouchEnded:function(touch, event)
+    {
+        this._inTouching = false;
+        var target = event.getCurrentTarget();
+        if(this._ifTargetIgnore(target, touch)) return;
+
+        event.currentTarget = target;
+        event.target = this._findRealTarget(target, touch.getLocation()) || target;
+
+        this._dispatch(target, touch, event, InputType.up);
+//        cc.log("touch end: "+this.name+", "+this.type+", "+this._itemTouched);
+        if(target == this._itemTouched)
+        {
+            if(target instanceof  lg.Button){
+                if(target.isSelectable())
+                {
+                    if (!target.isSelected()) target.setState(ButtonState.SELECTED);
+                    else target.setState(ButtonState.UP);
+                }
+                var state = ButtonState.OVER;
+                this._setButtonState(target, state);
+            }
+            this._dispatch(target, touch, event, InputType.click);
+        }else if(this._itemTouched){
+            var state = ButtonState.UP;//(lg.isChildOf(newTouched, target)) ? ButtonState.OVER : ButtonState.UP;
+            this._setButtonState(this._itemTouched, state);
+        }
+        this._itemTouched = null;
+    },
+    handleTouchMoved:function(touch, event)
+    {
+        var target = event.getCurrentTarget();
+
+        if(this._ifTargetIgnore(target, touch)) return;
+
+        if(target != this._itemTouched) {
+            if(this._itemTouched && this._itemTouched instanceof lg.Button) {
+                var state = (this._itemTouched.isSelectable() && this._itemTouched.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
+                this._itemTouched.setState(state);
+            }
+
+            this._itemTouched = target;
+            if(target instanceof lg.Button){
+                var state = this._inTouching ? ButtonState.DOWN : ButtonState.OVER;
+                this._setButtonState(target, state);
+            }
+        }
+//        cc.log("moving: "+target.clsName);
+        this._dispatch(target, touch, event, InputType.move);
+    },
+    _createListener:function(target, swallow)
+    {
+        var self = this;
+        listener = cc.EventListener.create({
+            event: cc.EventListener.TOUCH_ONE_BY_ONE,
+            swallowTouches: swallow,
             onTouchBegan:function(touch, event)
             {
                 return self.handleTouchBegan(touch, event);
@@ -134,185 +176,42 @@ lg.InputManager = cc.Layer.extend({
             },
             onTouchMoved:function(touch, event)
             {
-                self.handleTouchMoved(touch);
+                self.handleTouchMoved(touch, event);
             }
-        });
-        cc.eventManager.addListener(this._listener, this);
-
-//        var listener = cc.EventListener.create({
-//            event: cc.EventListener.MOUSE,
-//            onMouseDown: function(event) {
-//                cc.log("onMouseDown");
-//            },
-//            onMouseMove: function(event) {
-//                cc.log("mouse move: "+event.getLocationX());
-//                self.handleTouchMoved(cc.p(event.getLocationX(), event.getLocationY()));
-//            }
-//        });
-//        cc.eventManager.addListener(listener, this);
+        })
+        cc.eventManager.addListener(listener, target);
     },
-    onExit:function()
+    /**
+     * Find the real target that clicked, the basic element in the targets...
+     * */
+    _findRealTarget:function(targets, pos)
     {
-        this._super();
-        cc.eventManager.removeListener(this._listener);
-    },
-    findTouchedItem:function(touch)
-    {
-        if(!this.enabled || !this.visible) return null;
-        //except the priority, zIndex doesn't need sorting, this may impact the performance when mouse moving
-        //todo,if the targets are not in the same container, then the zIndex sort is not necessary
-        this._targets.sort(this._sortTargets);
-        return this._searchChildren(this._targets, touch);
-    },
-    _searchChildren:function(children, touch)
-    {
-        var child = null;
-        var tileMap = null;
-        var tiles = null;
-        var pos = touch;
-        if(touch instanceof cc.Touch) pos = touch.getLocation();
-        var i = children.length;
-        while(--i >= 0){
-            child = children[i];
-            if(this.ifTargetIgnore(child)) continue;
-            if(child._children.length > 0){
-                //if child is a tiled layer, then use the high performance searching
-                tileMap = child._tileMap;
-                if(tileMap){
-                    //todo, maybe should convert the space coordinate
-                    tiles = tileMap.getObjects1(pos.x, pos.y);
-                    if(tiles.length) {
-                        this._doTouched = true;
-                        //the last child would be the toppest child in zOrder
-                        return tiles[tiles.length - 1];
-                    }
-                }
-                this._tempResult = this._searchChildren(child._children, touch);
-                if(this._tempResult) {
-                    this._doTouched = true;
-                    return this._tempResult;
+        if(!(targets instanceof Array)) targets = [targets];
+        var target = null;
+        var i = targets.length;
+        while(i--){
+            target = targets[i];
+            if(this._ifTargetIgnore(target)) continue;
+            if(target.children.length > 0){
+                this._temp = this._findRealTarget(target.children, pos);
+                if(this._temp) {
+                    return this._temp;
                 }
             }
-            if(lg.ifTouched(child, pos)){
-                this._doTouched = true;
-                return child;
+            if(lg.ifTouched(target, pos)){
+                return target;
             }
         }
         return null;
     },
-    ifTargetIgnore:function(child)
+    _ifTargetIgnore:function(target, touch)
     {
-        if(child == null) return true;
-        if(!child.running) return true;
-        if(!child.visible) return true;
-        if(!child._tileMap && child["isMouseEnabled"] && child.isMouseEnabled() === false) return true;
-        var i = -1;
-        var ignoreName = null;
-        while(++i < this._ignoreChildren.length)
-        {
-            ignoreName = this._ignoreChildren[i];
-            if(child.name == ignoreName) return true;
-        }
+        if(target == null) return true;
+        if(!target.running) return true;
+        if(!target.visible) return true;
+        if(target.isMouseEnabled && target.isMouseEnabled() === false) return true;
+        if(touch && !lg.ifTouched(target, touch.getLocation())) return true;
         return false;
-    },
-    handleTouchBegan:function(pTouch)
-    {
-        if (!this.enabled || !this.visible) {
-            return false;
-        }
-        this._inTouching = true;
-        this._doTouched = false;
-        this._itemTouched = this.findTouchedItem(pTouch);
-        if(this._itemTouched){
-            var btn = lg.findButton(this._itemTouched);
-            if(btn) this._setButtonState(btn, ButtonState.DOWN);
-        }
-        this._dispatch(pTouch, InputType.press);
-//        cc.log("touch begin result: "+this.name+", "+this.type+", "+this._doTouched);
-        return this._doTouched;
-    },
-    handleTouchEnded:function(pTouch)
-    {
-        if(!this.enabled || !this.visible) return;
-        this._inTouching = false;
-//        cc.log("touch end: "+this.name+", "+this.type+", "+this._itemTouched);
-        if(this._itemTouched)
-        {
-            var btn = lg.findButton(this._itemTouched);
-            if(btn) {
-                if(btn.isSelectable())
-                {
-                    if (!btn.isSelected()) btn.setState(ButtonState.SELECTED);
-                    else btn.setState(ButtonState.UP);
-                }
-                var newTouched = this.findTouchedItem(pTouch);
-                var state = (lg.isChildOf(newTouched, btn)) ? ButtonState.OVER : ButtonState.UP;
-                this._setButtonState(btn, state);
-            }
-        }
-        this._dispatch(pTouch, InputType.click);
-        this._itemTouched = null;
-    },
-    handleTouchMoved:function(touch)
-    {
-        if(!this.enabled || !this.visible) return;
-        if(!this.checkMouseMove) return;
-        var touched = this.findTouchedItem(touch);
-        if(touched != this._itemTouched) {
-            if(this._itemTouched) {
-                var btn = lg.findButton(this._itemTouched);
-                if(btn){
-                    var state = (btn.isSelectable() && btn.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
-                    btn.setState(state);
-                }
-                this._itemTouched = null;
-            }
-
-            if(touched) {
-                this._itemTouched = touched;
-//                cc.log("moved: "+this._inTouching+", "+Types.isSimpleButton(this._itemTouched)+", "+touched.name);
-                var btn = lg.findButton(this._itemTouched);
-                if(btn){
-                    var state = this._inTouching ? ButtonState.DOWN : ButtonState.OVER;
-                    this._setButtonState(btn, state);
-                }
-            }
-        }
-        this._dispatch(touch, InputType.move);
-    },
-    handleToucheCanceled:function(touch, event)
-    {
-        this._inTouching = false;
-        if(this._itemTouched)
-        {
-            var btn = lg.findButton(this._itemTouched);
-            if(btn){
-                var state = (btn.isSelectable() && btn.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
-                btn.setState(state);
-            }
-            this._itemTouched = null;
-        }
-    },
-    _dispatch:function(touch, type)
-    {
-        if(!this._itemTouched || (this._itemTouched["isMouseEnabled"] && this._itemTouched.isMouseEnabled() === false)) return;
-
-        var calls = this._callbacks[type];
-        var call = null;
-        var target = null;
-        if(calls){
-            var i = calls.length;
-            while(i--)
-            {
-                call = calls[i];
-                target = call.target;
-                if(target.visible && target.running
-                    && (target == this._itemTouched || lg.isChildOf(this._itemTouched, target)))
-                {
-                    call.func.apply(call.context, [touch, target, this._itemTouched]);
-                }
-            }
-        }
     },
     _setButtonState:function(button, state)
     {
@@ -322,25 +221,32 @@ lg.InputManager = cc.Layer.extend({
         }
         button.setState(state);
     },
-    /**
-     * Sort the targets ascending according its zIndex firstly and the __input_priority secondly
-     * */
-    _sortTargets:function(target1, target2)
+    _dispatch:function(target, touch, event, type){
+        var p = target;
+        //if the child triggered some event, then its parent should also be informed
+        while(p){
+            this._dispatchOne(p, touch, event, type);
+            p = p.parent;
+        }
+    },
+    _dispatchOne:function(target, touch, event, type)
     {
-        if(target1.zIndex == target2.zIndex){
-            return target1.__input__priority > target2.__input__priority ? 1 : -1;
-        }else if(target1.zIndex > target2.zIndex){
-            return 1;
-        }else {
-            return -1;
+        var calls = this._callbacks[target.__instanceId];
+        if(!calls) return;
+        var call = null;
+        var i = calls.length;
+        while(i--){
+            call = calls[i];
+            if(call.type == type) {
+                event.currentTarget = target;
+                call.func.apply(call.context, [touch, event]);
+            }
         }
     }
 });
 
-lg.InputManager.create = function()
-{
-    var layer = new lg.InputManager();
-    layer.init();
-    layer.checkMouseMove = true;
-    return layer;
-};
+lg.InputManager.create = function(){
+    var im = new lg.InputManager();
+    im.init();
+    return im;
+}

@@ -65,10 +65,10 @@ lg.replaceScene = function(sceneName)
     lg.ObjectPool.release();
     if(lg.Gun) lg.Gun.batchCanvas = null;
     lg.currentSceneName = sceneName;
-    lg.inputManager.reset();
+    lg.inputManager.removeFromParent(false);
     lg.currentScene = new s.scene();
     lg.preload(s.res,function(){
-        lg.inputManager.removeFromParent(false);
+//        lg.inputManager.removeFromParent(false);
         lg.currentScene.addChild(lg.inputManager, 999999);
         cc.director.runScene(lg.currentScene);
     });
@@ -226,12 +226,26 @@ lg.isChildOf = function(child, parent)
     return false;
 };
 
-lg.findButton = function(sprite)
+lg.findParentWithClass = function(sprite, cls)
 {
     var p = sprite;
     while(p){
-        if(p instanceof lg.Button) return p;
+        if(p instanceof cls) return p;
         p = p.parent;
+    }
+    return null;
+}
+
+lg.findChildWithClass = function(sprite, cls)
+{
+    var children = sprite.children;
+    var i = children.length;
+    var child;
+    while(i--){
+        child = children[i];
+        if(child instanceof cls) return child;
+        child = lg.findChildWithClass(child, cls);
+        if(child) return child;
     }
     return null;
 }
