@@ -37,13 +37,13 @@ lg.Gun = cc.Node.extend({
     _pool:null,
     _waveTime:0,
     _maxShootDistance:0,
-    _bullets:null,
+//    _bullets:null,
     _targetMap:null,
 
     init:function()
     {
         this._super();
-        this._bullets = [];
+//        this._bullets = [];
     },
     start:function()
     {
@@ -60,9 +60,7 @@ lg.Gun = cc.Node.extend({
         }else{
             this._waveFire();
         }
-        this.scheduleUpdate();
-        var rate = cc.game.config.frameRate;
-        this.schedule(this.update, 1/rate, cc.REPEAT_FOREVER);
+//        this.scheduleUpdate();
     },
     end:function()
     {
@@ -70,7 +68,83 @@ lg.Gun = cc.Node.extend({
         this._firing = false;
         this.unschedule(this._createBullet);
         this.unschedule(this._createWave);
-        this.unschedule(this.update);
+//        this.unscheduleUpdate();
+    },
+    updateParam:function(param)
+    {
+        if(param == null) return;
+        lg.copyProperties(param, this.param);
+        this.end();
+        this.start();
+    },
+    isFiring:function()
+    {
+        return this._firing;
+    },
+    _waveFire:function()
+    {
+        if(!this._firing) return;
+        this._createWave();
+        this.schedule(this._createWave, this._waveTime, cc.REPEAT_FOREVER);
+    },
+    _createBullet:function()
+    {
+        if(lg.bulletCanvas == null) {
+            cc.log("Pls set batch canvas for me to show the bullet: lg.bulletCanvas!");
+            return;
+        }
+        var t = this._maxShootDistance/this.param.speed;
+        var pos = this.parent.convertToWorldSpace(this.getPosition());
+        pos = lg.bulletCanvas.convertToNodeSpace(pos);
+        var rot = lg.getRotation(this, true);
+        var b = null;
+        var i = -1;
+        var r = 0;
+        var d = 0;
+        var ints  = lg.createDInts(this.param.count);
+        while(++i < this.param.count)
+        {
+            d = ints[i];
+            r = rot + d*this.param.angleGap;
+            b = this._pool.fetch(this.param.bulletID, lg.bulletCanvas);
+            b.owner = this.owner;
+            b.param = this.param;
+            b.targetMap = lg.getTileMap(this.param.targetMap);
+            b.damage = this.param.damage;
+            b.gotoAndPlay(0);
+            b.autoStopWhenOver = this.param.bulletPlayOnce;
+            b.setPosition(pos);
+            b.setRotation(r);
+
+            b.__speed = this.param.speed;
+            b.__moveRotation = r;
+//            b.runAction(cc.MoveBy.create(t,lg.getPointOnCircle(this._maxShootDistance, r)));
+            lg.bulletCanvas._bullets.push(b);
+        }
+        this._showFireEffect(pos, r);
+        if(this.param.fireSound) lg.playSound(this.param.fireSound);
+    },
+    _createWave:function()
+    {
+        this.schedule(this._createBullet, this.param.interval, this.param.countInWave - 1);
+    },
+    _showFireEffect:function(pos, rot)
+    {
+        if(this.param.fireEffectID == null || this.param.fireEffectID == "") return;
+        var fireEffect = lg.assetsManager.createDisplay(this.param.bulletPlist, this.param.fireEffectID, null, true, lg.bulletCanvas);
+        fireEffect.zIndex = 999;
+        fireEffect.autoDestroyWhenOver = true;
+        fireEffect.setPosition(pos);
+        fireEffect.setRotation(rot);
+        fireEffect.gotoAndPlay(0);
+    }
+});
+lg.BulletCanvas = cc.SpriteBatchNode.extend({
+    _bullets:null,
+    onEnter:function(){
+        this._super();
+        this._bullets = [];
+        this.scheduleUpdate();
     },
     update:function(delta)
     {
@@ -97,107 +171,41 @@ lg.Gun = cc.Node.extend({
             var outofScreen = !cc.rectIntersectsRect(cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height), rect);
             if(outofScreen){
                 over = true;
-            }else if(this.param.targetMap){
-                if(this._targetMap == null) this._targetMap = lg.getTileMap(this.param.targetMap);
-                if(this._targetMap) targets = this._targetMap.getCoveredTiles1(rect, true);
-                //todo, some other handle method, for example: set the targets mannually
-                else continue;
+            }else if(b.targetMap){
+                targets = b.targetMap.getCoveredTiles1(rect, true);
+//                //todo, some other handle method, for example: set the targets mannually
+//                else continue;
 
                 j = -1;
                 pos = lg.getPosition(b, true);
                 rot = lg.getRotation(b, true);
                 while(++j < targets.length) {
                     target = targets[j];
-                    if(target == this.owner) continue;
+                    if(target == b.owner) continue;
                     if(target.dead === true) continue;
-                    if(this.owner && target.camp == this.owner.camp) continue;
+                    if(b.owner && target.camp == b.owner.camp) continue;
                     //hit the target
 //                    collide = cc.rectIntersection(target.collider, rect);
-                    if(cc.pDistance(pos, target.collidCenter) < this.param.collideSize){
+                    if(cc.pDistance(pos, target.collidCenter) < b.param.collideSize){
                         if(target.onHit) {
                             target.dead = target.onHit(b);
                         }
-                        this._showHitEffect(pos, rot);
+                        this._showHitEffect(b, pos, rot);
                         over = true;
                         break;
                     }
                 }
             }
-            if(over && !this.param.alwaysLive) {
+            if(over && !b.param.alwaysLive) {
                 b.destroy();
                 this._bullets.splice(i, 1);
             }
         }
     },
-    updateParam:function(param)
+    _showHitEffect:function(bullet, pos, rot)
     {
-        if(param == null) return;
-        lg.copyProperties(param, this.param);
-        this.end();
-        this.start();
-    },
-    isFiring:function()
-    {
-        return this._firing;
-    },
-    _waveFire:function()
-    {
-        if(!this._firing) return;
-        this._createWave();
-        this.schedule(this._createWave, this._waveTime, cc.REPEAT_FOREVER);
-    },
-    _createBullet:function()
-    {
-        if(lg.Gun.batchCanvas == null) {
-            cc.log("Pls set batch canvas for me to show the bullet: lg.Gun.batchCanvas!");
-            return;
-        }
-        var t = this._maxShootDistance/this.param.speed;
-        var pos = this.parent.convertToWorldSpace(this.getPosition());
-        pos = lg.Gun.batchCanvas.convertToNodeSpace(pos);
-        var rot = lg.getRotation(this, true);
-        var b = null;
-        var i = -1;
-        var r = 0;
-        var d = 0;
-        var ints  = lg.createDInts(this.param.count);
-        while(++i < this.param.count)
-        {
-            d = ints[i];
-            r = rot + d*this.param.angleGap;
-            b = this._pool.fetch(this.param.bulletID, lg.Gun.batchCanvas);
-            b.damage = this.param.damage;
-            b.gotoAndPlay(0);
-            b.autoStopWhenOver = this.param.bulletPlayOnce;
-            b.setPosition(pos);
-            b.setRotation(r);
-
-            b.__speed = this.param.speed;
-            b.__moveRotation = r;
-//            b.runAction(cc.MoveBy.create(t,lg.getPointOnCircle(this._maxShootDistance, r)));
-            this._bullets.push(b);
-        }
-        this._showFireEffect(pos, r);
-        if(this.param.fireSound) lg.playSound(this.param.fireSound);
-    },
-    _createWave:function()
-    {
-        this.schedule(this._createBullet, this.param.interval, this.param.countInWave - 1);
-    },
-    _showFireEffect:function(pos, rot)
-    {
-        if(this.param.fireEffectID == null || this.param.fireEffectID == "") return;
-        var fireEffect = lg.assetsManager.createDisplay(this.param.bulletPlist, this.param.fireEffectID, null, true, lg.Gun.batchCanvas);
-        fireEffect.zIndex = 999;
-        fireEffect.autoDestroyWhenOver = true;
-        fireEffect.setPosition(pos);
-        fireEffect.setRotation(rot);
-        fireEffect.gotoAndPlay(0);
-    },
-    _showHitEffect:function(pos, rot)
-    {
-        if(this.param.hitEffectID == null || this.param.hitEffectID == "") return;
-        var hitEffect = lg.assetsManager.createDisplay(this.param.bulletPlist, this.param.hitEffectID, null, true, lg.Gun.batchCanvas);
+        if(bullet.param.hitEffectID == null || bullet.param.hitEffectID == "") return;
+        var hitEffect = lg.assetsManager.createDisplay(bullet.param.bulletPlist, bullet.param.hitEffectID, null, true, this);
         hitEffect.zIndex = 999;
         hitEffect.autoDestroyWhenOver = true;
         hitEffect.setPosition(pos);
@@ -206,7 +214,9 @@ lg.Gun = cc.Node.extend({
     }
 });
 
-lg.Gun.batchCanvas = null;
+lg.BulletCanvas.create = function (fileImage) {
+    return new lg.BulletCanvas(fileImage, 100);
+};
 
 lg.Gun.create = function(param)
 {

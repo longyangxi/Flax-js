@@ -63,12 +63,11 @@ lg.replaceScene = function(sceneName)
         return;
     }
     lg.ObjectPool.release();
-    if(lg.Gun) lg.Gun.batchCanvas = null;
+    if(lg.bulletCanvas) lg.bulletCanvas = null;
     lg.currentSceneName = sceneName;
     lg.inputManager.removeFromParent(false);
     lg.currentScene = new s.scene();
     lg.preload(s.res,function(){
-//        lg.inputManager.removeFromParent(false);
         lg.currentScene.addChild(lg.inputManager, 999999);
         cc.director.runScene(lg.currentScene);
     });
