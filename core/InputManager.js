@@ -5,15 +5,14 @@ var lg = lg || {};
 
 var InputType = {
     press:"onPress",
-    up:"onUp",
+    up:"onUp",//The touch position maybe not within the press target
     click:"onClick",
-    move:"onMouseMove"
+    move:"onMouseMove"//The touch position maybe not within the press target
 };
 
 lg.InputManager = cc.Node.extend({
     enabled:true,
     _callbacks:{},
-    _itemTouched:null,
     _inTouching:false,
     _globalListener:null,
     onEnter:function()
@@ -77,20 +76,22 @@ lg.InputManager = cc.Node.extend({
     },
     removeListener:function(target, func, type)
     {
+        if(target == null) target = this;
         var calls = this._callbacks[target.__instanceId];
         if(!calls) return;
-
-        var call = null;
-        var i = calls.length;
-        if(func || type) {
-            while(i--){
-                call = calls[i];
-                if((type && call.type == type) || (func && call.func == func)) calls.splice(i, 1);
+        this.scheduleOnce(function(){
+            var call = null;
+            var i = calls.length;
+            if(func || type) {
+                while(i--){
+                    call = calls[i];
+                    if((type && call.type == type) || (func && call.func == func)) calls.splice(i, 1);
+                }
             }
-        }
-        if(calls.length == 0 || (!func && !type)){
-            delete this._callbacks[target.__instanceId];
-        }
+            if(calls.length == 0 || (!func && !type)){
+                delete this._callbacks[target.__instanceId];
+            }
+        },0.01);
     },
     handleTouchBegan:function(touch, event)
     {
@@ -101,7 +102,6 @@ lg.InputManager = cc.Node.extend({
         if(this._ifTargetIgnore(target, touch)) return false;
 
         this._inTouching = true;
-        this._itemTouched = target;
         if(target instanceof lg.Button) this._setButtonState(target, ButtonState.DOWN);
         event.currentTarget = target;
         event.target = this._findRealTarget(target, touch.getLocation()) || target;
@@ -114,47 +114,36 @@ lg.InputManager = cc.Node.extend({
     {
         this._inTouching = false;
         var target = event.getCurrentTarget();
-        if(this._ifTargetIgnore(target, touch)) return;
 
         event.currentTarget = target;
         event.target = this._findRealTarget(target, touch.getLocation()) || target;
 
         this._dispatch(target, touch, event, InputType.up);
 //        cc.log("touch end: "+this.name+", "+this.type+", "+this._itemTouched);
-        if(target == this._itemTouched)
-        {
-            if(target instanceof  lg.Button){
-                if(target.isSelectable())
-                {
-                    if (!target.isSelected()) target.setState(ButtonState.SELECTED);
-                    else target.setState(ButtonState.UP);
-                }
-                var state = ButtonState.OVER;
-                this._setButtonState(target, state);
+        var onTarget = lg.ifTouched(target, touch.getLocation());
+        if(onTarget && target instanceof  lg.Button){
+            if(target.isSelectable())
+            {
+                if (!target.isSelected()) target.setState(ButtonState.SELECTED);
+                else target.setState(ButtonState.UP);
+            }else{
+                target.setState(ButtonState.UP);
             }
-            this._dispatch(target, touch, event, InputType.click);
-        }else if(this._itemTouched){
-            var state = ButtonState.UP;//(lg.isChildOf(newTouched, target)) ? ButtonState.OVER : ButtonState.UP;
-            this._setButtonState(this._itemTouched, state);
         }
-        this._itemTouched = null;
+        if(onTarget) this._dispatch(target, touch, event, InputType.click);
     },
     handleTouchMoved:function(touch, event)
     {
         var target = event.getCurrentTarget();
-
-        if(this._ifTargetIgnore(target, touch)) return;
-
-        if(target != this._itemTouched) {
-            if(this._itemTouched && this._itemTouched instanceof lg.Button) {
-                var state = (this._itemTouched.isSelectable() && this._itemTouched.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
-                this._itemTouched.setState(state);
-            }
-
-            this._itemTouched = target;
-            if(target instanceof lg.Button){
-                var state = this._inTouching ? ButtonState.DOWN : ButtonState.OVER;
-                this._setButtonState(target, state);
+//        if(this._itemTouched && this._itemTouched instanceof lg.Button) {
+//            var state = (this._itemTouched.isSelectable() && this._itemTouched.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
+//            this._itemTouched.setState(state);
+//        }
+        if(target instanceof lg.Button){
+            if(lg.ifTouched(target, touch.getLocation())){
+                this._setButtonState(target, ButtonState.DOWN);
+            }else{
+                this._setButtonState(target, ButtonState.UP);
             }
         }
 //        cc.log("moving: "+target.clsName);
@@ -217,7 +206,8 @@ lg.InputManager = cc.Node.extend({
     {
         if(button.isSelectable() && button.isSelected())
         {
-            state = "selected_"+state;
+            if(state == ButtonState.UP) state = ButtonState.SELECTED;
+            else state = "selected_"+state;
         }
         button.setState(state);
     },
