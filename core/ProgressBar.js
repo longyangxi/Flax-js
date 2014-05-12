@@ -10,14 +10,9 @@ lg.ProgressBarType = {
 lg.ProgressBar = lg.Animator.extend({
     noOpacity:true,
     pBar:null,
-    _type:null,
+    _type:lg.ProgressBarType.HORIZONTAL,
     _reversed:false,
     _tween:null,
-    init:function()
-    {
-        this._super();
-        if(this._type == null) this._type = lg.ProgressBarType.HORIZONTAL;
-    },
     onReset:function()
     {
         this._super();
@@ -114,8 +109,7 @@ lg.ProgressBar = lg.Animator.extend({
 });
 lg.ProgressBar.create = function(plistFile, assetID)
 {
-    var p = new lg.ProgressBar();
-    p.setPlist(plistFile, assetID);
+    var p = new lg.ProgressBar(plistFile, assetID);
     p.clsName = "lg.ProgressBar";
     return p;
 };

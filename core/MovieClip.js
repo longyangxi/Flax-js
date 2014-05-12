@@ -194,8 +194,7 @@ lg.MovieClip = lg.TimeLine.extend({
 });
 lg.MovieClip.create = function(plistFile, assetID)
 {
-    var mc = new lg.MovieClip();
-    mc.setPlist(plistFile, assetID);
+    var mc = new lg.MovieClip(plistFile, assetID);
     mc.clsName = "lg.MovieClip";
     return mc;
 };

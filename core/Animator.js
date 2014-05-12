@@ -31,8 +31,7 @@ lg.Animator = lg.TimeLine.extend({
 
 lg.Animator.create = function(plistFile, assetID)
 {
-    var mc = new lg.Animator();
-    mc.setPlist(plistFile, assetID);
+    var mc = new lg.Animator(plistFile, assetID);
     mc.clsName = "lg.Animator";
     return mc;
 };

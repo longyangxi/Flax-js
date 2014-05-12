@@ -40,19 +40,14 @@ lg.TimeLine = cc.Sprite.extend({
     _subAnims:null,
     _animSequence:null,
 
-    init:function()
-    {
-        if(this._inited) return false;
-        if(this._super()){
-            this.doInit();
-            this._inited = true;
-            this._anchorBindings = [];
-            this._animSequence = [];
-            this.collidCenter = cc.p();
-            this.onAnimationOver = new signals.Signal();
-            return true;
-        }
-        return false;
+    ctor:function(plistFile, assetID){
+        cc.Sprite.prototype.ctor.call(this);
+        if(!plistFile || !assetID) throw "Please set plistFile and assetID to me!"
+        this._anchorBindings = [];
+        this._animSequence = [];
+        this.collidCenter = cc.p();
+        this.onAnimationOver = new signals.Signal();
+        this.setPlist(plistFile, assetID);
     },
     /**
      * @param {String} plistFile the plist file path
@@ -83,7 +78,6 @@ lg.TimeLine = cc.Sprite.extend({
         this.assetID = assetID;
         this.define = this.getDefine();
         if(this.define) {
-            this.init();
             //set the anchor
             var anchorX = this.define.anchorX;
             var anchorY = this.define.anchorY;
@@ -94,7 +88,6 @@ lg.TimeLine = cc.Sprite.extend({
             this.currentFrame = 0;
             this.renderFrame(this.currentFrame, true);
         }else {
-            this.init();
             cc.log("There is no display named: "+assetID+" in plist: "+plistFile);
         }
     },
@@ -488,14 +481,8 @@ lg.TimeLine = cc.Sprite.extend({
     {
         this._mouseEnabled = value;
     },
-
-    doInit:function()
-    {
-
-    },
     getDefine:function()
     {
-
         return null;
     },
     onNewSheet:function()
@@ -506,8 +493,7 @@ lg.TimeLine = cc.Sprite.extend({
 
 lg.TimeLine.create = function(plistFile, assetID)
 {
-    var tl = new lg.TimeLine();
-    tl.setPlist(plistFile, assetID);
+    var tl = new lg.TimeLine(plistFile, assetID);
     tl.clsName = "lg.TimeLine";
     return tl;
 };

@@ -12,6 +12,7 @@ var InputType = {
 
 lg.InputManager = cc.Node.extend({
     enabled:true,
+    _masks:[],
     _callbacks:{},
     _inTouching:false,
     _globalListener:null,
@@ -41,9 +42,54 @@ lg.InputManager = cc.Node.extend({
     },
     onExit:function(){
         this._super();
+        _masks = [];
         this._inTouching = false;
         this._callbacks = {};
         cc.eventManager.removeAllListeners();
+    },
+    /**
+     * Add a Sprite node which will permitted the lower sprite to get touch event callback
+     * */
+    addMask:function(mask){
+        if(this._masks.indexOf(mask) > -1) return;
+        this._masks.push(mask);
+    },
+    removeMask:function(mask){
+        var i = this._masks.indexOf(mask);
+        if(i > -1) this._masks.splice(i, 1);
+    },
+    _compareRealZIndex:function(node0, node1){
+        if(!node0.parent || !node1.parent) return 1;
+        if(node0.parent == node1.parent) return this._childIsOnFront(node0, node1);
+
+        var theSameParent = null;
+        var theSameIndex = 0;
+
+        var parents0 = [];
+        var node = node0.parent;
+        while(node){
+            parents0.push(node);
+            node = node.parent;
+        }
+
+        var parents1 = [];
+        node = node1.parent;
+        while(node){
+            theSameIndex = parents0.indexOf(node);
+            if(theSameIndex > -1) {
+                theSameParent = node;
+                break;
+            }
+            parents1.push(node);
+            node = node.parent;
+        }
+        parents0 = parents0.slice(0, theSameIndex);
+        var front = this._childIsOnFront(parents0[parents0.length - 1] || node0, parents1[parents1.length - 1] || node1, theSameParent);
+        return front ? 1 : -1;
+    },
+    _childIsOnFront:function(child0, child1, parent){
+        if(parent == null) parent = child0.parent;
+        return parent.children.indexOf(child0) > parent.children.indexOf(child1);
     },
     /**
      * @param{cc.Node}target the target want to receive the touch event, if target is null, then global event will be triggered
@@ -100,6 +146,20 @@ lg.InputManager = cc.Node.extend({
         var target = event.getCurrentTarget();
 
         if(this._ifTargetIgnore(target, touch)) return false;
+
+        //handle the masks
+        var i = this._masks.length;
+        var mask = null;
+        var maskTouchedItem = null;
+        while(i--){
+            mask = this._masks[i];
+            if(target == mask || lg.isChildOf(target, mask) || lg.isChildOf(mask, target)) continue;
+            if(this._ifTargetIgnore(mask)) continue;
+            if(this._compareRealZIndex(mask, target) == 1){
+                maskTouchedItem = this._findRealTarget(mask, touch.getLocation());
+                if(maskTouchedItem) return false;
+            }
+        }
 
         this._inTouching = true;
         if(target instanceof lg.Button) this._setButtonState(target, ButtonState.DOWN);

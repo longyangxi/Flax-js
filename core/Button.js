@@ -54,8 +54,7 @@ lg.Button = lg.MovieClip.extend({
 });
 lg.Button.create = function(plistFile, assetID)
 {
-    var btn = new lg.Button();
-    btn.setPlist(plistFile, assetID);
+    var btn = new lg.Button(plistFile, assetID);
     btn.setState(ButtonState.UP);
     return btn;
 };

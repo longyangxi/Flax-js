@@ -157,7 +157,6 @@ lg.Gunner.enemies = [];
 
 lg.Gunner.create = function(plistFile, assetID)
 {
-    var h = new lg.Gunner();
-    h.setPlist(plistFile, assetID);
+    var h = new lg.Gunner(plistFile, assetID);
     return h;
 };
