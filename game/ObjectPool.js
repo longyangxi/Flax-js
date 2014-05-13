@@ -49,7 +49,7 @@ lg.ObjectPool = cc.Class.extend({
 
         //to fix the zIndex bug
         if(params){
-            if(!("zIndex" in params)) params.zIndex = 0;
+            if(typeof params.zIndex === "undefined") params.zIndex = 0;
         }else{
             params = {zIndex:0};
         }

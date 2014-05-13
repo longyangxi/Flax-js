@@ -120,7 +120,8 @@ lg.AssetsManager = cc.Class.extend({
             cc.log("Plist File can't be null!");
             return;
         }
-        if(plistFile in this.framesCache) return false;
+        if(typeof this.framesCache[plistFile] !== "undefined") return false;
+
         var dict = this._getFrameConfig(plistFile);
         cc.spriteFrameCache.addSpriteFrames(plistFile);
 
@@ -207,7 +208,7 @@ lg.AssetsManager = cc.Class.extend({
     },
     getFrameNames:function(plistFile, startFrame, endFrame)
     {
-        if(!( plistFile in this.framesCache)) {
+        if(typeof this.framesCache[plistFile] === "undefined") {
             this.addPlist(plistFile);
         }
         var frames = this.framesCache[plistFile];
@@ -227,7 +228,7 @@ lg.AssetsManager = cc.Class.extend({
     },
     getDisplayNames:function(plistFile)
     {
-        if(!(plistFile in this.displaysCache))
+        if(typeof this.displaysCache[plistFile] === "undefined")
         {
             this.addPlist(plistFile);
         }
@@ -255,7 +256,7 @@ lg.AssetsManager = cc.Class.extend({
     getFont:function(plistFile, fontName)
     {
         var key = plistFile + fontName;
-        if(!(key in  this.fontsCache)) {
+        if(typeof this.fontsCache[key] === "undefined"){
             this.addPlist(plistFile);
         }
         return this.fontsCache[key];

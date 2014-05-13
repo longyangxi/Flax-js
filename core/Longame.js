@@ -77,8 +77,7 @@ lg.replaceScene = function(sceneName)
 lg._tileMaps = {};
 lg.getTileMap = function(id)
 {
-    if(id == null) id = "default";
-    if(lg._tileMaps.hasOwnProperty(id)) return lg._tileMaps[id];
+    if(typeof lg._tileMaps[id] !== "undefined") return lg._tileMaps[id];
     cc.log("The tileMap: "+id+" hasn't been defined, pls use lg.registerTileMap to define it firstly!");
     return null;
 }

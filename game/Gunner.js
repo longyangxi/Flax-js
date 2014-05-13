@@ -8,7 +8,7 @@ var GunnerCamp = {
     enemy:"Enemy"
 };
 
-lg.Gunner = lg.Animator.extend({
+lg._gunnerDefine = {
     camp:"Player",
     gunParam:null,//see lg.GunParam
     gunAnchors:null,//["weapon1","weapon2"]
@@ -150,7 +150,10 @@ lg.Gunner = lg.Animator.extend({
     {
         return true;
     }
-});
+};
+
+lg.Gunner = lg.Animator.extend(lg._gunnerDefine);
+lg.MCGunner = lg.MovieClip.extend(lg._gunnerDefine);
 
 lg.Gunner.players = [];
 lg.Gunner.enemies = [];
@@ -158,5 +161,16 @@ lg.Gunner.enemies = [];
 lg.Gunner.create = function(plistFile, assetID)
 {
     var h = new lg.Gunner(plistFile, assetID);
+    h.clsName = "lg.Gunner";
     return h;
 };
+
+lg.MCGunner.create = function(plistFile, assetID)
+{
+    var h = new lg.MCGunner(plistFile, assetID);
+    h.clsName = "lg.MCGunner";
+    return h;
+};
+
+
+

@@ -140,6 +140,7 @@ lg.Gun = cc.Node.extend({
     }
 });
 lg.BulletCanvas = cc.SpriteBatchNode.extend({
+//lg.BulletCanvas = cc.Sprite.extend({
     _bullets:null,
     onEnter:function(){
         this._super();
@@ -215,6 +216,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
 });
 
 lg.BulletCanvas.create = function (fileImage) {
+//    return new lg.BulletCanvas();
     return new lg.BulletCanvas(fileImage, 100);
 };
 
