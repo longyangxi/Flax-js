@@ -1,4 +1,4 @@
-FlaCocosH5
+Flax-js
 ==========
 
-Game engine based on cocos2d html5 and Flash
+Game tool and engine based on cocos2d html5 and Flash
