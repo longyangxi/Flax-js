@@ -17,6 +17,7 @@ lg._scenesDict = {};
 lg._resourcesLoaded = [];
 lg._soundEnabled = true;
 lg._inited = false;
+lg._orientationTip = null;
 
 lg.startGame = function(scene, resources){
 
@@ -70,6 +71,7 @@ lg.replaceScene = function(sceneName)
     lg.preload(s.res,function(){
         lg.currentScene.addChild(lg.inputManager, 999999);
         cc.director.runScene(lg.currentScene);
+        lg._checkDeviceOrientation();
     });
 }
 lg._tileMaps = {};
@@ -120,6 +122,24 @@ lg.playSound = function(path)
 }
 //----------------------sound about-------------------------------------------------------
 
+lg._checkDeviceOrientation = function(){
+    if(!lg._orientationTip && cc.sys.isMobile && cc.game.config.rotateImg){
+        lg._orientationTip = cc.LayerColor.create(cc.color(0,0,0), cc.visibleRect.width, cc.visibleRect.height);
+        var img =  cc.Sprite.create(cc.game.config.rotateImg);
+        img.setPosition(cc.visibleRect.center);
+        lg._orientationTip.__icon = img;
+        lg._orientationTip.addChild(img);
+        lg.currentScene.addChild(lg._orientationTip, 1000000);
+        var orientationEvent = ("onorientationchange" in window) ? "orientationchange" : "resize";
+        window.addEventListener(orientationEvent, lg._showOrientaionTip, true);
+        lg._showOrientaionTip();
+    }
+}
+lg._showOrientaionTip = function(){
+    var landscape = (Math.abs(window.orientation) == 90);
+    lg._orientationTip.visible = (cc.game.config.landscape != landscape);
+    lg._orientationTip.__icon.rotation = (landscape ? -90 : 0);
+}
 
 ///---------------------utils-------------------------------------------------------------
 lg.getAngle = function(startPoint, endPoint, forDegree)
@@ -335,6 +355,7 @@ lg.copyProperties = function(params, target)
         }
     }
 };
+
 /**
  * Create an int array like this: [0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6, -7, 7, ...]
  * */

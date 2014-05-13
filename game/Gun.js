@@ -50,7 +50,7 @@ lg.Gun = cc.Node.extend({
         if(this._firing) return;
         this._firing = true;
 
-        this._pool = lg.ObjectPool.get(this.param.bulletPlist, "lg.Animator",this.param.bulletID);
+        this._pool = lg.ObjectPool.get(this.param.bulletPlist, "lg.Animator","___bullet");//this.param.bulletID);
         this._waveTime = this.param.interval*this.param.countInWave + this.param.waveInterval;
         this._maxShootDistance = Math.max(cc.visibleRect.width, cc.visibleRect.height)*1.5;
 

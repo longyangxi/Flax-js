@@ -146,6 +146,7 @@ lg.InputManager = cc.Node.extend({
         var target = event.getCurrentTarget();
 
         if(this._ifTargetIgnore(target, touch)) return false;
+        var pos = touch.getLocation();
 
         //handle the masks
         var i = this._masks.length;
@@ -156,7 +157,7 @@ lg.InputManager = cc.Node.extend({
             if(target == mask || lg.isChildOf(target, mask) || lg.isChildOf(mask, target)) continue;
             if(this._ifTargetIgnore(mask)) continue;
             if(this._compareRealZIndex(mask, target) == 1){
-                maskTouchedItem = this._findRealTarget(mask, touch.getLocation());
+                maskTouchedItem = this._findRealTarget(mask, pos);
                 if(maskTouchedItem) return false;
             }
         }
@@ -164,7 +165,7 @@ lg.InputManager = cc.Node.extend({
         this._inTouching = true;
         if(target instanceof lg.Button) this._setButtonState(target, ButtonState.DOWN);
         event.currentTarget = target;
-        event.target = this._findRealTarget(target, touch.getLocation()) || target;
+        event.target = this._findRealTarget(target, pos) || target;
 
         this._dispatch(target, touch, event, InputType.press);
 //        cc.log("touch begin result: "+target.name+", "+target.assetID);
