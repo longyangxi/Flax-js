@@ -113,7 +113,7 @@ lg.TimeLine = cc.Sprite.extend({
         }
         return null;
     },
-    bindAchor:function(anchorName, node, alwaysBind)
+    bindAnchor:function(anchorName, node, alwaysBind)
     {
         if(!this.define.anchors) {
             cc.log(this.assetID+": there is no any anchor!");
@@ -227,8 +227,8 @@ lg.TimeLine = cc.Sprite.extend({
             if(lbl == null){
                 return this.setSubAnim(frameOrLabel, false);
             }
-            frameOrLabel = lbl.start;
             this.currentAnim = frameOrLabel;
+            frameOrLabel = lbl.start;
         }else{
             this.currentAnim = null;
         }
@@ -261,14 +261,13 @@ lg.TimeLine = cc.Sprite.extend({
     {
         if(this.playing)
         {
-            this.schedule(this.onFrame, 1.0/this.fps, cc.REPEAT_FOREVER, 0.0);
+            if(this.totalFrames > 1) this.schedule(this.onFrame, 1.0/this.fps, cc.REPEAT_FOREVER, 0.0);
         }else{
             this.unschedule(this.onFrame);
         }
     },
     onFrame:function(delta)
     {
-        if(!this.playing || this.totalFrames <= 1) return;
         if(!this._visible || this.inRecycle) return;
         this.renderFrame(this.currentFrame);
         this.currentFrame++;
@@ -329,11 +328,10 @@ lg.TimeLine = cc.Sprite.extend({
      },
     _updateAnchorNode:function(node, anchor)
     {
-//        if(node._position._x != anchor[0] || node._position._y != anchor[0]) {
-            node.x = anchor[0];
-            node.y = anchor[1];
-            if(anchor.length > 2) node.zIndex = anchor[2];
-//        }
+        if(anchor == null) return;
+        node.x = anchor[0];
+        node.y = anchor[1];
+        if(anchor.length > 2) node.zIndex = anchor[2];
     },
     onEnter:function()
     {
@@ -419,9 +417,10 @@ lg.TimeLine = cc.Sprite.extend({
                 var pool = lg.ObjectPool.get(this.plistFile, this.clsName, this.__pool__id__ || "");
                 pool.recycle(this);
             }
-        }else{
-            this.removeFromParent();
-        }
+        }//else{
+//            this.removeFromParent();
+//        }
+        this.removeFromParent();
     },
     /**
      * Reset some parameters, called when onEnter, or fetch from the pool
@@ -450,11 +449,9 @@ lg.TimeLine = cc.Sprite.extend({
         this.autoDestroyWhenOver = false;
         this.autoStopWhenOver = false;
         this.autoHideWhenOver = false;
-        //hide the object
-        this.visible = false;
-        this.stop();
-        this.stopAllActions();
-        this.unscheduleAllCallbacks();
+        this.gotoAndStop(0);
+//        this.stopAllActions();
+//        this.unscheduleAllCallbacks();
         if(this._tileMap) this._tileMap.removeObject(this);
         lg.inputManager.removeListener(this);
         this._tileInited = false;

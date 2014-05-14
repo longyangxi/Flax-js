@@ -142,9 +142,11 @@ lg.Gun = cc.Node.extend({
 lg.BulletCanvas = cc.SpriteBatchNode.extend({
 //lg.BulletCanvas = cc.Sprite.extend({
     _bullets:null,
+    _stageRect:null,
     onEnter:function(){
         this._super();
         this._bullets = [];
+        this._stageRect = cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height);
         this.scheduleUpdate();
     },
     update:function(delta)
@@ -169,7 +171,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
 
             rect = b.collider;
             over = false;
-            var outofScreen = !cc.rectIntersectsRect(cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height), rect);
+            var outofScreen = !cc.rectIntersectsRect(this._stageRect, rect);
             if(outofScreen){
                 over = true;
             }else if(b.targetMap){

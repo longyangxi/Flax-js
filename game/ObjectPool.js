@@ -54,12 +54,15 @@ lg.ObjectPool = cc.Class.extend({
             params = {zIndex:0};
         }
         obj.attr(params);
-        if(parent && obj.parent != parent){
-            obj.removeFromParent(false);
-            parent.addChild(obj);
-        }else if(obj.parent){
-            if(obj instanceof lg.TimeLine) obj.onReset();
-        }
+        //todo
+//        if(parent && obj.parent != parent){
+//            obj.removeFromParent(false);
+//            parent.addChild(obj);
+//        }else if(obj.parent){
+//            if(obj instanceof lg.TimeLine) obj.onReset();
+//        }
+        if(parent) parent.addChild(obj);
+
         return obj;
     },
     recycle:function(object)
@@ -68,13 +71,19 @@ lg.ObjectPool = cc.Class.extend({
             cc.log("The object to recycle is not the same type with this pool: "+this._cls);
             return;
         }
-        if(this._pool.length > this.maxCount){
-            object.removeFromParent();
-        }else{
-            object.visible = false;
+        //todo
+//        if(this._pool.length > this.maxCount){
+//            object.removeFromParent();
+//        }else{
+//            object.visible = false;
+//            if(object.onRecycle) object.onRecycle();
+//            this._pool.push(object);
+//        }
+        if(this._pool.length < this.maxCount){
             if(object.onRecycle) object.onRecycle();
             this._pool.push(object);
         }
+//        object.removeFromParent();
     },
     release:function()
     {

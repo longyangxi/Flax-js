@@ -19,7 +19,6 @@ lg._buttonDefine = {
 
     setState:function(state)
     {
-        if(this._state == ButtonState.DISABLED) return;
         if(this._state == state) return;
         this._state = state;
         if(!this.gotoAndStop(this._state))

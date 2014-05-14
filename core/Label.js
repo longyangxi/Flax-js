@@ -119,6 +119,10 @@ lg.Label = cc.SpriteBatchNode.extend({
             }
         }
         this.setContentSize(this.mlWidth, this.mlHeight);
+    },
+    destroy:function()
+    {
+        this.removeFromParent();
     }
 });
 

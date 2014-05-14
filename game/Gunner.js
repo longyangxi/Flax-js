@@ -60,7 +60,7 @@ lg._gunnerDefine = {
         {
             gunAnchor = this.gunAnchors[i];
             gun = lg.Gun.create(this.gunParam);
-            if(this.bindAchor(gunAnchor, gun)) {
+            if(this.bindAnchor(gunAnchor, gun)) {
                 gun.owner = this;
                 this._guns.push(gun);
             }

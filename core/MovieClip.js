@@ -27,9 +27,9 @@ lg.MovieClip = lg.TimeLine.extend({
     },
     onNewSheet:function()
     {
-//        this.removeAllChildren();
         for(var childName in this._namedChildren){
             this._namedChildren[childName].destroy();
+            delete  this[childName];
         }
         this._namedChildren = {};
         this.totalFrames = this.define.totalFrames;
@@ -182,9 +182,9 @@ lg.MovieClip = lg.TimeLine.extend({
         var label = this.getChildByName(labelName, ifNest === undefined ? true : ifNest);
         if(label && (label instanceof lg.Label)) {
             label.setString(text);
-            return true;
+            return label;
         }
-        return false;
+        return null;
     },
     onRecycle:function()
     {
