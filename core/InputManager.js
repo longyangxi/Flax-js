@@ -227,6 +227,9 @@ lg.InputManager = cc.Node.extend({
             onTouchMoved:function(touch, event)
             {
                 self.handleTouchMoved(touch, event);
+            },
+            onTouchCancelled:function(touch, event){
+                self.handleTouchEnded(touch, event);
             }
         })
         cc.eventManager.addListener(listener, target);

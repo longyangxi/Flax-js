@@ -123,21 +123,32 @@ lg.playSound = function(path)
 
 lg._checkDeviceOrientation = function(){
     if(!lg._orientationTip && cc.sys.isMobile && cc.game.config.rotateImg){
-        lg._orientationTip = cc.LayerColor.create(cc.color(0,0,0), cc.visibleRect.width, cc.visibleRect.height);
+        lg._orientationTip = cc.LayerColor.create(cc.color(0,0,0), cc.visibleRect.width + 10, cc.visibleRect.height +10);
         var img =  cc.Sprite.create(cc.game.config.rotateImg);
         img.setPosition(cc.visibleRect.center);
         lg._orientationTip.__icon = img;
         lg._orientationTip.addChild(img);
-        lg.currentScene.addChild(lg._orientationTip, 1000000);
         var orientationEvent = ("onorientationchange" in window) ? "orientationchange" : "resize";
         window.addEventListener(orientationEvent, lg._showOrientaionTip, true);
         lg._showOrientaionTip();
     }
+    if(lg._orientationTip){
+        lg._orientationTip.removeFromParent();
+        lg.currentScene.addChild(lg._orientationTip, 1000000);
+    }
 }
+lg._oldGamePauseState = false;
 lg._showOrientaionTip = function(){
     var landscape = (Math.abs(window.orientation) == 90);
     lg._orientationTip.visible = (cc.game.config.landscape != landscape);
     lg._orientationTip.__icon.rotation = (landscape ? -90 : 0);
+    document.body.scrollTop = 0;
+    if(lg._orientationTip.visible) {
+        lg._oldGamePauseState = cc.director.isPaused();
+        cc.director.pause();
+    }else if(!lg._oldGamePauseState){
+        cc.director.resume();
+    }
 }
 
 ///---------------------utils-------------------------------------------------------------
