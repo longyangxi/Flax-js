@@ -41,8 +41,8 @@ lg._gunnerDefine = {
     },
     setGunParam:function(param)
     {
-        if(this.parent == null) return;
         this.gunParam = param;
+        if(this.parent == null) return;
         if(lg.bulletCanvas == null) {
             var texturePath = cc.path.changeBasename(this.gunParam.bulletPlist, ".png");
             lg.bulletCanvas = lg.BulletCanvas.create(texturePath);

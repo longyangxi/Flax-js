@@ -356,11 +356,27 @@ lg.TimeLine = cc.Sprite.extend({
         if(this._tileMap) this._tileMap.removeObject(this);
         this._tileMap = map;
         if(this._tileMap == null) return;
-        var pos = this.getPosition();
+        if(this._parent) {
+            this._updateTileMap(true);
+            this._updateCollider();
+        }
+    },
+    _updateTileMap:function(forceUpdate){
+        var pos = this._position;
         if(this.parent) pos = this.parent.convertToWorldSpace(pos);
         var newTx = this._tileMap.getTileIndexX(pos.x);
         var newTy = this._tileMap.getTileIndexY(pos.y);
-        this.setTile(newTx, newTy, true);
+        this.setTile(newTx, newTy, forceUpdate);
+    },
+    _updateCollider:function(){
+        if(this.collider == null) {
+            this.collider = lg.getRect(this, true);
+        }else{
+            //todo
+            this.collider = lg.getRect(this, true);
+        }
+        this.collidCenter.x = this.collider.x + this.collider.width/2;
+        this.collidCenter.y = this.collider.y + this.collider.height/2;
     },
     setPosition:function(pos, yValue)
     {
@@ -374,21 +390,9 @@ lg.TimeLine = cc.Sprite.extend({
         }
         if(!dirty || this.inRecycle) return;
         if(this.autoUpdateTileWhenMove && this._tileMap){
-            var pos = this.getPosition();
-            if(this.parent) pos = this.parent.convertToWorldSpace(pos);
-            var newTx = this._tileMap.getTileIndexX(pos.x);
-            var newTy = this._tileMap.getTileIndexY(pos.y);
-            this.setTile(newTx, newTy);
+            this._updateTileMap();
         }
-
-        if(this.collider == null) {
-            this.collider = lg.getRect(this, true);
-        }else{
-            //todo
-            this.collider = lg.getRect(this, true);
-        }
-        this.collidCenter.x = this.collider.x + this.collider.width/2;
-        this.collidCenter.y = this.collider.y + this.collider.height/2;
+        this._updateCollider();
     },
     setTile:function(tx, ty, forceUpdate)
     {
@@ -429,8 +433,8 @@ lg.TimeLine = cc.Sprite.extend({
     {
         this.inRecycle = false;
         if(this._tileMap && !this._tileInited) {
-            this._tileMap.addObject(this);
-            this._tileInited = true;
+            this._updateTileMap(true);
+            this._updateCollider();
         }
     },
     /**
