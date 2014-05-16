@@ -103,10 +103,12 @@ lg.ScrollingBG = cc.Node.extend({
     _doScroll:function(dist)
     {
         if(dist == 0) return;
-        if(dist == null) dist = (this._speedX != 0) ? this._size.width : this._size.height;
-        var t = dist/Math.abs(this._speedY);
-        this.bg0.runAction(cc.MoveBy.create(t, cc.p(0, dist*this._d)));
-        this.bg1.runAction(cc.MoveBy.create(t, cc.p(0, dist*this._d)));
+        var xDirect = (this._speedX != 0);
+        if(dist == null) dist = xDirect ? this._size.width : this._size.height;
+        var t = dist/Math.abs(xDirect ? this._speedX : this._speedY);
+        var dist1 = dist*this._d;
+        this.bg0.runAction(cc.MoveBy.create(t, cc.p(xDirect ? dist1 : 0, xDirect ? 0 : dist1)));
+        this.bg1.runAction(cc.MoveBy.create(t, cc.p(xDirect ? dist1 : 0, xDirect ? 0 : dist1)));
         this.scheduleOnce(function(){
             if(this._scrolling && !this._paused){
                 var temp = this.bg0;
