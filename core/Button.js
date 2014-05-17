@@ -52,20 +52,20 @@ lg._buttonDefine = {
     }
 }
 
-lg.Button = lg.MovieClip.extend(lg._buttonDefine);
-lg.Button.create = function(plistFile, assetID)
-{
-    var btn = new lg.Button(plistFile, assetID);
-    btn.clsName = "lg.Button";
-    btn.setState(ButtonState.UP);
-    return btn;
-};
-
 lg.SimpleButton = lg.Animator.extend(lg._buttonDefine);
 lg.SimpleButton.create = function(plistFile, assetID)
 {
     var btn = new lg.SimpleButton(plistFile, assetID);
     btn.clsName = "lg.SimpleButton";
+    btn.setState(ButtonState.UP);
+    return btn;
+};
+
+lg.Button = lg.MovieClip.extend(lg._buttonDefine);
+lg.Button.create = function(plistFile, assetID)
+{
+    var btn = new lg.Button(plistFile, assetID);
+    btn.clsName = "lg.Button";
     btn.setState(ButtonState.UP);
     return btn;
 };

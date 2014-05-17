@@ -5,6 +5,7 @@
 var lg = lg || {};
 
 F2C_ALIAS = {mc:"lg.MovieClip",
+             btn:"lg.SimpleButton",
              button:"lg.Button",
              progress:"lg.ProgressBar"
             };
