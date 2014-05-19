@@ -8,7 +8,7 @@ lg.GunParam = cc.Class.extend({
     bulletID:null,//the id of the bullet asset
     collideSize:20,//the bullet collide radius
     targetMap:null,//the TileMap name of the target to shoot
-    damage:1,//the damage of the bullet
+    damage:1,//the damage of the bullet, if it's Array with two elements, set a random value between them
     speed:600,//the move speed of the bullet per second
     interval:0.15,//the interval time between two launch
     count:1,//the bullet count in one launch
@@ -110,11 +110,17 @@ lg.Gun = cc.Node.extend({
             b.owner = this.owner;
             b.param = this.param;
             b.targetMap = lg.getTileMap(this.param.targetMap);
-            b.damage = this.param.damage;
             b.gotoAndPlay(0);
             b.autoStopWhenOver = this.param.bulletPlayOnce;
             b.setPosition(pos);
             b.setRotation(r);
+
+            var dmg = this.param.damage;
+            if(dmg instanceof Array){
+                if(dmg.length == 1) dmg = dmg[0];
+                else if(dmg.length >= 2) dmg = lg.randInt(dmg[0], dmg[1]);
+            }
+            b.damage = dmg;
 
             b.__speed = this.param.speed;
             b.__moveRotation = r;

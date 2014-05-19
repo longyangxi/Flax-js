@@ -261,10 +261,17 @@ lg.InputManager = cc.Node.extend({
     {
         if(target == null) return true;
         if(!target.running) return true;
-        if(!target.visible) return true;
+        if(!this._ifTargetVisible(target)) return true;
         if(target.isMouseEnabled && target.isMouseEnabled() === false) return true;
         if(touch && !lg.ifTouched(target, touch.getLocation())) return true;
         return false;
+    },
+    _ifTargetVisible:function(target){
+        while(target){
+            if(!target.visible) return false;
+            target = target.parent;
+        }
+        return true;
     },
     _setButtonState:function(button, state)
     {
