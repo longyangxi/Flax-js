@@ -434,8 +434,8 @@ lg.TimeLine = cc.Sprite.extend({
         this.inRecycle = false;
         if(this._tileMap && !this._tileInited) {
             this._updateTileMap(true);
-            this._updateCollider();
         }
+        this._updateCollider();
     },
     /**
      * Do some thins when the object recycled by the pool
