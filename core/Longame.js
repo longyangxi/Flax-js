@@ -49,6 +49,7 @@ lg.init = function()
     lg._inited = true;
     lg.assetsManager = lg.AssetsManager.create();
     lg.inputManager = lg.InputManager.create();
+    if(cc.game.config.timeScale)  cc.director.getScheduler().setTimeScale(cc.game.config.timeScale);
 }
 
 lg.registerScene = function(name, scene, resources)
