@@ -43,8 +43,9 @@ lg._buttonDefine = {
     },
     setMouseEnabled:function(enable)
     {
-        if(this.isMouseEnabled() == enable) return;
+        if(this.isMouseEnabled() == enable) return false;
         this.setState(enable ? ButtonState.UP : ButtonState.DISABLED);
+        return true;
     },
     isMouseEnabled:function()
     {
