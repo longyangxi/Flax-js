@@ -180,10 +180,10 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
             var outofScreen = !cc.rectIntersectsRect(this._stageRect, rect);
             if(outofScreen){
                 over = true;
-            }else if(b.targetMap){
-                targets = b.targetMap.getCoveredTiles1(rect, true);
-//                //todo, some other handle method, for example: set the targets mannually
-//                else continue;
+            }else {
+                if(b.targetMap) targets = b.targetMap.getCoveredTiles1(rect, true);
+                else targets = b.owner.targets;
+                if(!targets || !targets.length) continue;
 
                 j = -1;
                 pos = lg.getPosition(b, true);

@@ -12,6 +12,7 @@ lg._gunnerDefine = {
     camp:"Player",
     gunParam:null,//see lg.GunParam
     gunAnchors:null,//["weapon1","weapon2"]
+    targets:null,//the targets array of the enemy
     maxHealth:100,
     health:100,
     dead:false,

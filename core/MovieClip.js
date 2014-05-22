@@ -160,8 +160,7 @@ lg.MovieClip = lg.TimeLine.extend({
     },
     getRect:function(global)
     {
-        if(this._theRect == null) return null;
-        global = (global === true);
+        global = (global !== false);
         if(!global) return this._theRect;
         var w = this._theRect.width;
         var h = this._theRect.height;

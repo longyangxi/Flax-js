@@ -205,9 +205,9 @@ lg.getRect = function(sprite, global)
     var rect;
     if(sprite.getRect) {
         rect = sprite.getRect(global);
-        if(rect) return rect;
+        return rect;
     }
-    global = (global === true);
+    global = (global !== false);
     var pos = sprite.getPosition();
     if(global && sprite.parent) pos = sprite.parent.convertToWorldSpace(pos);
     var size = sprite.getContentSize();

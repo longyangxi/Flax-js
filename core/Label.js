@@ -5,7 +5,7 @@
 SPACE_CHAR_GAP = 10;
 
 var lg = lg || {};
-lg.Label = cc.SpriteBatchNode.extend({
+lg.Label = cc.Sprite.extend({
     mlWidth:0.0,
     mlHeight:0.0,
     //font gap, 1.f means the gap between two fonts is zero
@@ -18,6 +18,7 @@ lg.Label = cc.SpriteBatchNode.extend({
     plistFile:null,
     name:null,
     params:null,
+    _charCanvas:null,
     _fontDefine:null,
 
     getString:function()
@@ -54,7 +55,12 @@ lg.Label = cc.SpriteBatchNode.extend({
     },
     _updateStr:function()
     {
-        this.removeAllChildren();
+        if(this._charCanvas == null) {
+            var imgFile = this.plistFile.replace("."+lg.getFileExtension(this.plistFile), ".png");
+            this._charCanvas = new cc.SpriteBatchNode(imgFile, this.str.length);
+            this.addChild(this._charCanvas);
+        }
+        this._charCanvas.removeAllChildren();
         this.mlWidth = 0;
         this.mlHeight = 0;
         for(var i = 0; i < this.str.length ; i++)
@@ -95,7 +101,7 @@ lg.Label = cc.SpriteBatchNode.extend({
             sprite.y = 0;
             this.mlWidth += size.width * this.gapScale;
             this.mlHeight = size.height > this.mlHeight ? size.height : this.mlHeight;
-            this.addChild(sprite);
+            this._charCanvas.addChild(sprite);
         }
         if(this.params){
             //restrain the text within the rectangle
@@ -104,21 +110,39 @@ lg.Label = cc.SpriteBatchNode.extend({
             var r = Math.max(rx, ry);
             var deltaY = 0;
             if(r > 1){
-                this.scale = 1/r;
+                var rscale = 1/r;
+                this._charCanvas.scale = rscale;
                 deltaY = this.mlHeight*(1 - 1/r)*r;
-                this.mlWidth *= this.scale;
-                this.mlHeight *= this.scale;
+                this.mlWidth *= rscale;
+                this.mlHeight *= rscale;
 
             }
             //enable the center align
             var deltaX = (this.params.width - this.mlWidth)/2;
-            var i = this.childrenCount;
+            var i = this._charCanvas.childrenCount;
+            var charChild = null;
             while(i--){
-                if(this.params.align == "center") this.children[i].x += deltaX;
-                this.children[i].y -= deltaY;
+                charChild = this._charCanvas.children[i];
+                if(this.params.align == "center") charChild.x += deltaX;
+                charChild.y -= deltaY;
             }
         }
+        this._charCanvas.setContentSize(this.mlWidth, this.mlHeight);
         this.setContentSize(this.mlWidth, this.mlHeight);
+        this.setOpacity(0);
+    },
+    getRect:function(global)
+    {
+        global = (global !== false);
+        var border = 2;
+        var rect = cc.rect(0.5*this.width/this.str.length, -this.params.height, this.width, this.height + border);
+        rect.y += (this.params.height - this.height)/2 - border/2;
+        if(!global) return rect;
+        var w = rect.width;
+        var h = rect.height;
+        var origin = cc.p(rect.x, rect.y);
+        origin = this.convertToWorldSpace(origin);
+        return cc.rect(origin.x, origin.y, w, h);
     },
     destroy:function()
     {
@@ -128,10 +152,10 @@ lg.Label = cc.SpriteBatchNode.extend({
 
 lg.Label.create = function(plistFile, fontName)
 {
-    var imgFile = plistFile.replace("."+lg.getFileExtension(plistFile), ".png");
-    var lbl = new lg.Label(imgFile, 10);
+    var lbl = new lg.Label();
     lbl.plistFile = plistFile;
     lg.assetsManager.addPlist(plistFile);
     lbl.setFontName(fontName);
+    lbl.setAnchorPoint(0, 0);
     return lbl;
 };
