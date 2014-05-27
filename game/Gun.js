@@ -175,7 +175,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
             var dis = b.__speed*delta;
             b.setPosition(cc.pAdd(b.getPosition(), lg.getPointOnCircle(dis, b.__moveRotation)));
 
-            rect = b.collider;
+            rect = lg.getRect(b, true);
             over = false;
             var outofScreen = !cc.rectIntersectsRect(this._stageRect, rect);
             if(outofScreen){
@@ -194,8 +194,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
                     if(target.dead === true) continue;
                     if(b.owner && target.camp == b.owner.camp) continue;
                     //hit the target
-//                    collide = cc.rectIntersection(target.collider, rect);
-                    if(cc.pDistance(pos, target.collidCenter) < b.param.collideSize){
+                    if(b.mainCollider.checkCollision(target.mainCollider)){
                         if(target.onHit) {
                             target.dead = target.onHit(b);
                         }

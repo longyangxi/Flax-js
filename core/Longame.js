@@ -198,6 +198,23 @@ lg.getRotation = function(sprite, global)
     return r;
 };
 /**
+ * Get the sprite's global scale
+ * */
+lg.getScale = function(sprite, global)
+{
+    if(global !== true) return cc.p(sprite.scaleX, sprite.scaleY);
+    var sx = 1.0;
+    var sy = 1.0;
+    var p = sprite;
+    while(p)
+    {
+        sx *= p.scaleX;
+        sy *= p.scaleY;
+        p = p.parent;
+    }
+    return cc.p(sx, sy);
+};
+/**
  * Get the bounding rect of the sprite, maybe should refer the getBoundingBoxToWorld of the cc.Node
  * */
 lg.getRect = function(sprite, global)

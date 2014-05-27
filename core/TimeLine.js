@@ -2,6 +2,63 @@
  * Created by long on 14-2-14.
  */
 var lg = lg || {};
+lg.ColliderType = {
+    rect: "Rect",
+    circle: "Circle"
+}
+lg.Collider = cc.Class.extend({
+    name:null,
+    owner:null,
+    type:lg.ColliderType.rect,
+    x:0,
+    y:0,
+    width:0,
+    height:0,
+    rotation:0,
+    _bottomLeft:null,
+    ctor:function(arr, centerAnchor){
+        this.type = arr[0];
+        this.x = arr[1];
+        this.y = arr[2];
+        this.width = arr[3];
+        this.height = arr[4];
+        this.rotation = arr[5];
+        if(centerAnchor === false) this._bottomLeft = cc.p(this.x, this.y);
+        else this._bottomLeft = cc.p(this.x - this.width/2, this.y - this.height/2);
+    },
+    clone:function(){
+        var c = new lg.Collider([this.type,this.x, this.y, this.width, this.height, this.rotation]);
+        c.name = this.name;
+        c.owner = this.owner;
+        return c;
+    },
+    checkCollision:function(collider){
+        if(collider.type == this.type && this.type == lg.ColliderType.rect){
+            return cc.rectIntersectsRect(this.getRect(), collider.getRect());
+        }
+        //todo, add more
+        //todo, if rotation
+    },
+    getRect:function(global){
+        global = (global !== false);
+        var pos = this.owner.convertToWorldSpace(this._bottomLeft);
+        if(this.owner.parent && !global) pos = this.owner.parent.convertToNodeSpace(pos);
+        var s = lg.getScale(this.owner, global);
+        var rect = cc.rect(pos.x, pos.y, this.width*Math.abs(s.x), this.height*Math.abs(s.y));
+        return rect;
+    }
+});
+
+lg.Anchor = cc.Class.extend({
+    x:0,
+    y:0,
+    zIndex:0,
+    ctor:function(arr){
+        this.x = arr[0];
+        this.y = arr[1];
+        if(arr.length > 2) this.zIndex = arr[2];
+    }
+});
 
 lg.TimeLine = cc.Sprite.extend({
     onAnimationOver:null,
@@ -24,8 +81,9 @@ lg.TimeLine = cc.Sprite.extend({
     fps:30,
     playing:false,
     inRecycle:false,
-    collider:null,
-    collidCenter:null,
+    _colliders:null,
+    _mainCollider:null,
+//    collidCenter:null,
     _anchorBindings:null,
     _inited:false,
     tx:0,
@@ -45,7 +103,7 @@ lg.TimeLine = cc.Sprite.extend({
         if(!plistFile || !assetID) throw "Please set plistFile and assetID to me!"
         this._anchorBindings = [];
         this._animSequence = [];
-        this.collidCenter = cc.p();
+//        this.collidCenter = cc.p();
         this.onAnimationOver = new signals.Signal();
         this.setPlist(plistFile, assetID);
     },
@@ -87,6 +145,7 @@ lg.TimeLine = cc.Sprite.extend({
             this.onNewSheet();
             this.currentFrame = 0;
             this.renderFrame(this.currentFrame, true);
+            this._initColliders();
         }else {
             cc.log("There is no display named: "+assetID+" in plist: "+plistFile);
         }
@@ -102,13 +161,76 @@ lg.TimeLine = cc.Sprite.extend({
     {
         return this.getLabels(label) != null;
     },
+    getMainCollider:function(){
+        return this._mainCollider;
+    },
+    getCollider:function(name){
+        if(this._colliders){
+            var an = this._colliders[name];
+            if(an != null) {
+                an = an[this.currentFrame];
+                return an;
+            }
+        }
+        return null;
+    },
+    _initColliders:function(){
+        this._mainCollider = null;
+        this._colliders = {};
+        var cs = this.define.colliders;
+        if(cs){
+            var cd = null;
+            for(var k in cs){
+                this._colliders[k] = [];
+                var cArr = cs[k];
+                var frame = -1;
+                while(++frame < cArr.length){
+                    if(cArr[frame] == null) {
+                        this._colliders[k][frame] = null;
+                        continue;
+                    }
+                    cd = this._colliders[k][frame] = cArr[frame].clone();
+                    cd.name = k;
+                    cd.owner = this;
+                    if(k == "main") this._mainCollider = cd;
+                }
+
+            }
+            if(this._mainCollider == null && cd) {
+                this._mainCollider = cd;
+            }
+        }
+        if(this._mainCollider == null){
+            this._mainCollider = new lg.Collider(["Rect", 0, 0, this.width, this.height, 0], false);
+            this._mainCollider.name = "main";
+            this._mainCollider.owner = this;
+        }
+    },
+    getRect:function(global)
+    {
+        global = (global !== false);
+        //handle collider if it exists
+        if(this._mainCollider){
+            return this._mainCollider.getRect(global);
+        }
+        var pos = cc.p(this._position);
+        if(global && this.parent) pos = this.parent.convertToWorldSpace(pos);
+        var size = this._contentSize;
+        var anchor = this._anchorPoint;
+        var rect = cc.rect(pos.x - size.width * anchor.x,pos.y - size.height * anchor.y,size.width, size.height);
+        return rect;
+    },
+    getCenter:function(global){
+        var rect = this.getRect(global);
+        return cc.p(rect.x + rect.width/2, rect.y + rect.height/2);
+    },
     getAnchor:function(name)
     {
         if(this.define.anchors){
             var an = this.define.anchors[name];
             if(an != null) {
-              an = an[this.currentFrame];
-              return an;
+                an = an[this.currentFrame];
+                return an;
             }
         }
         return null;
@@ -306,6 +428,7 @@ lg.TimeLine = cc.Sprite.extend({
         if(this.prevFrame == frame && forceUpdate != true) return;
         if(this.prevFrame != frame) this.prevFrame = frame;
         this._handleAnchorBindings();
+        this._updateCollider();
         this.doRenderFrame(frame);
     },
     doRenderFrame:function(frame)
@@ -325,13 +448,13 @@ lg.TimeLine = cc.Sprite.extend({
             if(anchor == null) continue;
             this._updateAnchorNode(node, anchor);
         }
-     },
+    },
     _updateAnchorNode:function(node, anchor)
     {
         if(anchor == null) return;
-        node.x = anchor[0];
-        node.y = anchor[1];
-        if(anchor.length > 2) node.zIndex = anchor[2];
+        node.x = anchor.x;
+        node.y = anchor.y;
+        node.zIndex = anchor.zIndex;
     },
     onEnter:function()
     {
@@ -369,14 +492,14 @@ lg.TimeLine = cc.Sprite.extend({
         this.setTile(newTx, newTy, forceUpdate);
     },
     _updateCollider:function(){
-        if(this.collider == null) {
-            this.collider = lg.getRect(this, true);
-        }else{
-            //todo
-            this.collider = lg.getRect(this, true);
-        }
-        this.collidCenter.x = this.collider.x + this.collider.width/2;
-        this.collidCenter.y = this.collider.y + this.collider.height/2;
+//        if(this._mainCollider == null) {
+//            this._mainCollider = lg.getRect(this, true);
+//        }else{
+        //todo
+//            this._mainCollider = lg.getRect(this, true);
+//        }
+//        this.collidCenter.x = this._mainCollider.x + this._mainCollider.width/2;
+//        this.collidCenter.y = this._mainCollider.y + this._mainCollider.height/2;
     },
     setPosition:function(pos, yValue)
     {
@@ -498,3 +621,15 @@ lg.TimeLine.create = function(plistFile, assetID)
     tl.clsName = "lg.TimeLine";
     return tl;
 };
+
+window._p = lg.TimeLine.prototype;
+
+/** @expose */
+_p.mainCollider;
+cc.defineGetterSetter(_p, "mainCollider", _p.getMainCollider);
+
+/** @expose */
+_p.center;
+cc.defineGetterSetter(_p, "center", _p.getCenter);
+
+delete window._p;

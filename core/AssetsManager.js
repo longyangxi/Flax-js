@@ -150,7 +150,8 @@ lg.AssetsManager = cc.Class.extend({
                 {
                     displayNames.push(dName);
                     dDefine = displays[dName];
-                    dDefine.anchors = this._parseAnchors(dDefine.anchors);
+                    dDefine.anchors = this._parseFrames(dDefine.anchors, lg.Anchor);
+                    dDefine.colliders = this._parseFrames(dDefine.colliders, lg.Collider);
                     this.displayDefineCache[plistFile + dName] = dDefine;
                     this._parseSubAnims(plistFile, dName);
                 }
@@ -172,7 +173,8 @@ lg.AssetsManager = cc.Class.extend({
                 mc.anchorX = mcDefine.anchorX;
                 mc.anchorY = mcDefine.anchorY;
                 mc.rect = this._strToRect(mcDefine.rect);
-                mc.anchors = this._parseAnchors(mcDefine.anchors);
+                mc.anchors = this._parseFrames(mcDefine.anchors, lg.Anchor);
+                mc.colliders = this._parseFrames(mcDefine.colliders, lg.Collider);
                 mc.children = {};
                 var childDefine;
                 var childrenDefine = mcDefine.children;
@@ -277,17 +279,17 @@ lg.AssetsManager = cc.Class.extend({
             anims.push(aname);
         }
     },
-    _parseAnchors:function(anchorDict)
+    _parseFrames:function(frameDict, cls)
     {
         var dict = {};
-        if(anchorDict == null) return dict;
-        for(var name in anchorDict)
+        if(frameDict == null) return dict;
+        for(var name in frameDict)
         {
-            dict[name] = this._strToArray(anchorDict[name]);
+            dict[name] = this._strToArray(frameDict[name], cls);
         }
         return dict;
     },
-    _strToArray:function(str)
+    _strToArray:function(str, cls)
     {
         var frames = str.split("|");
         var i = -1;
@@ -298,6 +300,7 @@ lg.AssetsManager = cc.Class.extend({
             if(frame === "null") sArr.push(null);
             //"" means the params is the same as prev frame
             else if(frame === "") sArr.push(sArr[i - 1]);//sArr.push("");
+            else if(cls) sArr.push(new cls(this._strToArray2(frame)));
             else sArr.push(this._strToArray2(frame));
         }
         return sArr;
@@ -307,8 +310,11 @@ lg.AssetsManager = cc.Class.extend({
         var fs = str.split(",");
         for(var fi = 0; fi < fs.length; fi++)
         {
-            if(fs[fi].indexOf(".") > -1) fs[fi] = parseFloat(fs[fi]);
-            else fs[fi] = parseInt(fs[fi]);
+            //if it's a number string
+            if(!isNaN(parseInt(fs[fi], 10))){
+                if(fs[fi].indexOf(".") > -1) fs[fi] = parseFloat(fs[fi]);
+                else fs[fi] = parseInt(fs[fi]);
+            }
         }
         return fs;
     },

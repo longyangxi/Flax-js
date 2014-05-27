@@ -165,10 +165,11 @@ lg.MovieClip = lg.TimeLine.extend({
         var w = this._theRect.width;
         var h = this._theRect.height;
         var origin = cc.p(this._theRect.x, this._theRect.y);
-        if(this._scaleX < 0) origin.x = origin.x + w;
-        if(this._scaleY < 0) origin.y = origin.y + h;
+        var s = lg.getScale(this, global);
+        if(s.x < 0) origin.x = origin.x + w;
+        if(s.y < 0) origin.y = origin.y + h;
         origin = this.convertToWorldSpace(origin);
-        return cc.rect(origin.x, origin.y, w*Math.abs(this._scaleX), h*Math.abs(this._scaleY));
+        return cc.rect(origin.x, origin.y, w*Math.abs(s.x), h*Math.abs(s.y));
     },
     getLabelText:function(labelName, ifNest)
     {
