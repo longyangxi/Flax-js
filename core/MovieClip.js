@@ -165,6 +165,11 @@ lg.MovieClip = lg.TimeLine.extend({
         var w = this._theRect.width;
         var h = this._theRect.height;
         var origin = cc.p(this._theRect.x, this._theRect.y);
+        if(this._definedMainCollider){
+            w = this._mainCollider.width;
+            h = this._mainCollider.height;
+            origin = cc.p(this._mainCollider._bottomLeft.x, this._mainCollider._bottomLeft.y);
+        }
         var s = lg.getScale(this, global);
         if(s.x < 0) origin.x = origin.x + w;
         if(s.y < 0) origin.y = origin.y + h;

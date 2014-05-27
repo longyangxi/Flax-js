@@ -10,8 +10,8 @@ lg.Collider = cc.Class.extend({
     name:null,
     owner:null,
     type:lg.ColliderType.rect,
-    x:0,
-    y:0,
+    x:0,//center x
+    y:0,//center y
     width:0,
     height:0,
     rotation:0,
@@ -23,8 +23,13 @@ lg.Collider = cc.Class.extend({
         this.width = arr[3];
         this.height = arr[4];
         this.rotation = arr[5];
-        if(centerAnchor === false) this._bottomLeft = cc.p(this.x, this.y);
-        else this._bottomLeft = cc.p(this.x - this.width/2, this.y - this.height/2);
+        if(centerAnchor === false) {
+            this._bottomLeft = cc.p(this.x, this.y);
+            this.x += this.width/2;
+            this.y += this.height/2;
+        }else{
+            this._bottomLeft = cc.p(this.x - this.width/2, this.y - this.height/2);
+        }
     },
     clone:function(){
         var c = new lg.Collider([this.type,this.x, this.y, this.width, this.height, this.rotation]);
@@ -36,7 +41,7 @@ lg.Collider = cc.Class.extend({
         if(collider.type == this.type && this.type == lg.ColliderType.rect){
             return cc.rectIntersectsRect(this.getRect(), collider.getRect());
         }
-        //todo, add more
+        //todo, add more type check
         //todo, if rotation
     },
     getRect:function(global){
@@ -83,6 +88,7 @@ lg.TimeLine = cc.Sprite.extend({
     inRecycle:false,
     _colliders:null,
     _mainCollider:null,
+    _definedMainCollider:false,
 //    collidCenter:null,
     _anchorBindings:null,
     _inited:false,
@@ -194,13 +200,10 @@ lg.TimeLine = cc.Sprite.extend({
                     cd.owner = this;
                     if(k == "main") this._mainCollider = cd;
                 }
-
-            }
-            if(this._mainCollider == null && cd) {
-                this._mainCollider = cd;
             }
         }
-        if(this._mainCollider == null){
+        this._definedMainCollider = (this._mainCollider != null);
+        if(!this._definedMainCollider){
             this._mainCollider = new lg.Collider(["Rect", 0, 0, this.width, this.height, 0], false);
             this._mainCollider.name = "main";
             this._mainCollider.owner = this;
@@ -208,17 +211,7 @@ lg.TimeLine = cc.Sprite.extend({
     },
     getRect:function(global)
     {
-        global = (global !== false);
-        //handle collider if it exists
-        if(this._mainCollider){
-            return this._mainCollider.getRect(global);
-        }
-        var pos = cc.p(this._position);
-        if(global && this.parent) pos = this.parent.convertToWorldSpace(pos);
-        var size = this._contentSize;
-        var anchor = this._anchorPoint;
-        var rect = cc.rect(pos.x - size.width * anchor.x,pos.y - size.height * anchor.y,size.width, size.height);
-        return rect;
+        return this._mainCollider.getRect(global);
     },
     getCenter:function(global){
         var rect = this.getRect(global);
