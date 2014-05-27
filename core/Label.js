@@ -18,6 +18,7 @@ lg.Label = cc.Sprite.extend({
     plistFile:null,
     name:null,
     params:null,
+    noOpacity:true,
     _charCanvas:null,
     _fontDefine:null,
 

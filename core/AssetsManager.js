@@ -95,13 +95,13 @@ lg.AssetsManager = cc.Class.extend({
      * Clone a new display from the target, if fromPool = true, it'll be fetched from the pool
      * It only supports lg.TimeLine or its sub classes
      * */
-    cloneDisplay:function(target, fromPool)
+    cloneDisplay:function(target, fromPool, autoAdd)
     {
         if(!(target instanceof lg.TimeLine)) {
             throw "cloneDisplay only support lg.TimeLine type!"
         }
-        var obj = this.createDisplay(target.plistFile, target.assetID, target.clsName, fromPool, target.parent);
-        obj.setPosition(target.getPosition());
+        var obj = this.createDisplay(target.plistFile, target.assetID, target.clsName, fromPool, autoAdd ? target.parent : null);
+        if(autoAdd) obj.setPosition(target.getPosition());
         obj.setScale(target.getScale());
         obj.setRotation(target.rotation);
         obj.zIndex = target.zIndex;

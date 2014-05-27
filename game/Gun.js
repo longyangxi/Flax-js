@@ -6,9 +6,9 @@ var lg = lg || {};
 lg.GunParam = cc.Class.extend({
     bulletPlist:null,//the plist of the bullet
     bulletID:null,//the id of the bullet asset
-    collideSize:20,//the bullet collide radius
     targetMap:null,//the TileMap name of the target to shoot
     damage:1,//the damage of the bullet, if it's Array with two elements, set a random value between them
+    damageRadius:0,//if damageRadius > 1, bullet will make splash damage to the enemies around it
     speed:600,//the move speed of the bullet per second
     interval:0.15,//the interval time between two launch
     count:1,//the bullet count in one launch
@@ -146,7 +146,6 @@ lg.Gun = cc.Node.extend({
     }
 });
 lg.BulletCanvas = cc.SpriteBatchNode.extend({
-//lg.BulletCanvas = cc.Sprite.extend({
     _bullets:null,
     _stageRect:null,
     onEnter:function(){
@@ -161,7 +160,6 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
         if(i == 0) return;
         var b = null;
         var targets = null;
-        var target = null;
         var j = -1;
         var rect = null;
         var over = false;
@@ -177,38 +175,57 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
 
             rect = lg.getRect(b, true);
             over = false;
+            targets = null;
             var outofScreen = !cc.rectIntersectsRect(this._stageRect, rect);
             if(outofScreen){
                 over = true;
-            }else {
-                if(b.targetMap) targets = b.targetMap.getCoveredTiles1(rect, true);
-                else targets = b.owner.targets;
-                if(!targets || !targets.length) continue;
-
-                j = -1;
+            }else{
+                targets = this._checkHittedTarget(b, rect, false);
+            }
+            if(targets && targets.length){
                 pos = lg.getPosition(b, true);
                 rot = lg.getRotation(b, true);
-                while(++j < targets.length) {
-                    target = targets[j];
-                    if(target == b.owner) continue;
-                    if(target.dead === true) continue;
-                    if(b.owner && target.camp == b.owner.camp) continue;
-                    //hit the target
-                    if(b.mainCollider.checkCollision(target.mainCollider)){
-                        if(target.onHit) {
-                            target.dead = target.onHit(b);
-                        }
-                        this._showHitEffect(b, pos, rot);
-                        over = true;
-                        break;
+                var radius = b.param.damageRadius;
+                if(radius > 0){
+                    rect = cc.rect(pos.x - radius/2, pos.y - radius/2, radius, radius);
+//                    lg.drawRect(rect);
+                    targets = this._checkHittedTarget(b, rect, true);
+                }
+                var t;
+                j = targets.length;
+                while(j--){
+                    t = targets[j];
+                    if(t.onHit) {
+                        t.dead = t.onHit(b);
                     }
                 }
+                this._showHitEffect(b, pos, rot);
+                over = true;
             }
             if(over && !b.param.alwaysLive) {
                 b.destroy();
                 this._bullets.splice(i, 1);
             }
         }
+    },
+    _checkHittedTarget:function(b, rect, multiple){
+        var hittedTargets = [];
+        var targets = null;
+        if(b.targetMap) targets = b.targetMap.getCoveredTiles1(rect, true);
+        else targets = b.owner.targets;
+        if(!targets || !targets.length) return hittedTargets;
+
+        var i = -1;
+        while(++i < targets.length) {
+            target = targets[i];
+            if(target == b.owner || target.dead === true || b.owner && target.camp == b.owner.camp) continue;
+            //hit the target
+            if(b.mainCollider.checkCollision(target.mainCollider)) {
+                if(!multiple) return [target];
+                hittedTargets.push(target);
+            }
+        }
+        return hittedTargets;
     },
     _showHitEffect:function(bullet, pos, rot)
     {
