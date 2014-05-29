@@ -17,6 +17,12 @@ lg._buttonDefine = {
     name:null,
     _state:null,
 
+    onEnter:function(){
+        this._super();
+    },
+    onExit:function(){
+        this._super();
+    },
     setState:function(state)
     {
         if(this._state == state) return;
@@ -70,3 +76,7 @@ lg.Button.create = function(plistFile, assetID)
     btn.setState(ButtonState.UP);
     return btn;
 };
+
+lg.isButton = function(sprite){
+    return sprite instanceof lg.SimpleButton || sprite instanceof lg.Button;
+}

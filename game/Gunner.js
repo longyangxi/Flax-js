@@ -19,7 +19,7 @@ lg._gunnerDefine = {
     _guns:null,
     _shooting:false,
 
-    onReset:function()
+    onEnter:function()
     {
         this._super();
         this._guns = [];

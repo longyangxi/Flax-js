@@ -8,7 +8,7 @@ var lg = lg || {};
 lg.Label = cc.Sprite.extend({
     mlWidth:0.0,
     mlHeight:0.0,
-    //font gap, 1.f means the gap between two fonts is zero
+    //font gap, 1.0 means the gap between two fonts is zero
     gapScale:1.0,
     str:null,
     fontName:null,

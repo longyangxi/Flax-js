@@ -13,7 +13,7 @@ lg.ProgressBar = lg.Animator.extend({
     _type:lg.ProgressBarType.HORIZONTAL,
     _reversed:false,
     _tween:null,
-    onReset:function()
+    onEnter:function()
     {
         this._super();
         this.setOpacity(0);

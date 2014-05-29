@@ -36,7 +36,7 @@ lg.MovieClip = lg.TimeLine.extend({
         this._theRect = cc.rect(this.define.rect);
         this.setContentSize(this._theRect.width, this._theRect.height);
     },
-    onReset:function()
+    onEnter:function()
     {
         this._super();
         this.setContentSize(this._theRect.width, this._theRect.height);
@@ -161,15 +161,16 @@ lg.MovieClip = lg.TimeLine.extend({
     getRect:function(global)
     {
         global = (global !== false);
-        if(!global) return this._theRect;
-        var w = this._theRect.width;
-        var h = this._theRect.height;
-        var origin = cc.p(this._theRect.x, this._theRect.y);
-        if(this._definedMainCollider){
-            w = this._mainCollider.width;
-            h = this._mainCollider.height;
-            origin = cc.p(this._mainCollider._bottomLeft.x, this._mainCollider._bottomLeft.y);
-        }
+//        if(!global) return this._theRect;
+//        var w = this._theRect.width;
+//        var h = this._theRect.height;
+//        var origin = cc.p(this._theRect.x, this._theRect.y);
+//        if(this._definedMainCollider){
+        if(!global) return this._mainCollider;
+        var w = this._mainCollider.width;
+        var h = this._mainCollider.height;
+        var origin = cc.p(this._mainCollider._bottomLeft.x, this._mainCollider._bottomLeft.y);
+//        }
         var s = lg.getScale(this, global);
         if(s.x < 0) origin.x = origin.x + w;
         if(s.y < 0) origin.y = origin.y + h;

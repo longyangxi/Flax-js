@@ -452,7 +452,11 @@ lg.TimeLine = cc.Sprite.extend({
     onEnter:function()
     {
         this._super();
-        this.onReset();
+        this.inRecycle = false;
+        if(this._tileMap && !this._tileInited) {
+            this._updateTileMap(true);
+        }
+        this._updateCollider();
     },
     onExit:function()
     {
@@ -537,21 +541,8 @@ lg.TimeLine = cc.Sprite.extend({
                 var pool = lg.ObjectPool.get(this.plistFile, this.clsName, this.__pool__id__ || "");
                 pool.recycle(this);
             }
-        }//else{
-//            this.removeFromParent();
-//        }
-        this.removeFromParent();
-    },
-    /**
-     * Reset some parameters, called when onEnter, or fetch from the pool
-     * */
-    onReset:function()
-    {
-        this.inRecycle = false;
-        if(this._tileMap && !this._tileInited) {
-            this._updateTileMap(true);
         }
-        this._updateCollider();
+        this.removeFromParent();
     },
     /**
      * Do some thins when the object recycled by the pool
