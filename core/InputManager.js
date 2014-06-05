@@ -166,6 +166,10 @@ lg.InputManager = cc.Node.extend({
         if(lg.isButton(target)) this._setButtonState(target, ButtonState.DOWN);
         event.currentTarget = target;
         event.target = this._findRealTarget(target, pos) || target;
+        //if currentTarget is cc.Layer or lg.MovieClip and hasn't touch any of it's child, then ignore!
+        if((target instanceof cc.Layer || target instanceof lg.MovieClip) && event.target == target) {
+            return false;
+        }
 
         this._dispatch(target, touch, event, InputType.press);
 //        cc.log("touch begin result: "+target.name+", "+target.assetID);
