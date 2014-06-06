@@ -7,7 +7,9 @@ var lg = lg || {};
 F2C_ALIAS = {mc:"lg.MovieClip",
              btn:"lg.SimpleButton",
              button:"lg.Button",
-             progress:"lg.ProgressBar"
+             progress:"lg.ProgressBar",
+             scrollPane:"lg.ScrollPane",
+             scrollPane1:"lg.ScrollPane1"
             };
 
 lg.AssetsManager = cc.Class.extend({

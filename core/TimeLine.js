@@ -16,6 +16,7 @@ lg.Collider = cc.Class.extend({
     height:0,
     rotation:0,
     _bottomLeft:null,
+    _localRect:null,
     ctor:function(arr, centerAnchor){
         this.type = arr[0];
         this.x = arr[1];
@@ -30,6 +31,7 @@ lg.Collider = cc.Class.extend({
         }else{
             this._bottomLeft = cc.p(this.x - this.width/2, this.y - this.height/2);
         }
+        this._localRect = cc.rect(this._bottomLeft.x, this._bottomLeft.y, this.width, this.height);
     },
     clone:function(){
         var c = new lg.Collider([this.type,this.x, this.y, this.width, this.height, this.rotation]);
@@ -46,9 +48,10 @@ lg.Collider = cc.Class.extend({
     },
     getRect:function(global){
         global = (global !== false);
+        if(!global) return this._localRect;
         var pos = this.owner.convertToWorldSpace(this._bottomLeft);
-        if(this.owner.parent && !global) pos = this.owner.parent.convertToNodeSpace(pos);
-        var s = lg.getScale(this.owner, global);
+//        if(this.owner.parent && !global) pos = this.owner.parent.convertToNodeSpace(pos);
+        var s = lg.getScale(this.owner, true);
         var rect = cc.rect(pos.x, pos.y, this.width*Math.abs(s.x), this.height*Math.abs(s.y));
         return rect;
     }
