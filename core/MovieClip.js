@@ -88,6 +88,7 @@ lg.MovieClip = lg.TimeLine.extend({
                 //todo, movieclip adn progressbar can not set opacity on canvas render mode..., maybe we could override the setOpacity function, but some difficult
                 if(child.noOpacity !== true && child.setOpacity && opacity != child.opacity) child.opacity = opacity;
                 child.visible = true;
+                child.autoPlayChildren = this.autoPlayChildren;
                 if(this.autoPlayChildren) {
                     this.playing ? child.play() : child.stop();
                 }

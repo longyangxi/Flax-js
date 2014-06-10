@@ -167,9 +167,14 @@ lg.TileMap = cc.Class.extend({
     snapToTile:function(sprite, tx, ty, autoAdd)
     {
         if(!(sprite instanceof cc.Node)) return;
-        if(tx === undefined) tx = this.getTileIndexX(sprite.getPositionX());
-        if(ty === undefined) ty = this.getTileIndexY(sprite.getPositionY());
-        var pos = cc.p(this.getTiledPositionX(tx), this.getTiledPositionY(ty));
+        var pos = null;
+        if(tx === undefined || ty === undefined) {
+            pos = sprite.getPosition();
+            if(sprite.parent) pos = sprite.parent.convertToWorldSpace(pos);
+            tx = this.getTileIndexX(pos.x);
+            ty = this.getTileIndexY(pos.y);
+        }
+        pos = cc.p(this.getTiledPositionX(tx), this.getTiledPositionY(ty));
         if(sprite.parent) pos = sprite.parent.convertToNodeSpace(pos);
         sprite.setPosition(pos);
         if(autoAdd === true) {
