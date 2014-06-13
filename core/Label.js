@@ -50,6 +50,9 @@ lg.Label = cc.Sprite.extend({
         if(this.fontName != null && this.fontName == font) return;
         this.fontName = font;
         this._fontDefine = lg.assetsManager.getFont(this.plistFile, this.fontName);
+        if(this._fontDefine == null){
+            throw "Can't find the font named: " + this.fontName;
+        }
         this.frames = lg.assetsManager.getFrameNames(this.plistFile, parseInt(this._fontDefine.start), parseInt(this._fontDefine.end));
         this.chars = this._fontDefine.chars;
         this.fontSize = parseInt(this._fontDefine.size);
