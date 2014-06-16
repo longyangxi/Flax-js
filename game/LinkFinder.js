@@ -27,7 +27,7 @@ LinkFinder.findLink = function(tx0, ty0, tx1, ty1)
  * Check if the map is dead, dead means there is no link anymore, then tried to fix it
  * Return a available linked pair, null result means there is no link anymore and can't be fixed
  * */
-LinkFinder.findAvailableLink = function()
+LinkFinder.findAvailableLink = function(useTween)
 {
     var tiles = this.map.getAllObjects();
     var count = tiles.length;
@@ -40,6 +40,7 @@ LinkFinder.findAvailableLink = function()
     {
         f0 = tiles[i];
         if(this.blocks && this.blocks.indexOf(f0) > -1) continue;
+        var checkSameType = (sameTypes.length == 0);
         for(var j = i + 1; j < count; j++)
         {
             f1 = tiles[j];
@@ -48,20 +49,21 @@ LinkFinder.findAvailableLink = function()
                 if(LinkFinder.findLink(f0.tx, f0.ty, f1.tx, f1.ty)){
                     return [f0, f1];
                 }
-                if(i == 0) sameTypes.push(f1);
-            }else if(i == 0 && link == null && LinkFinder.findLink(f0.tx, f0.ty, f1.tx, f1.ty)){
+                if(checkSameType) sameTypes.push(f1);
+            }else if(checkSameType && link == null && LinkFinder.findLink(f0.tx, f0.ty, f1.tx, f1.ty)){
                 link = f1;
             }
         }
     }
     var theLink = sameTypes[Math.floor(sameTypes.length*Math.random())];
-    if(theLink == null){
-        cc.log("error: no link!");
-        return null;
-    }
     var tempPos = theLink.getPosition();
-    theLink.runAction(cc.MoveTo.create(0.2, link.getPosition()));
-    link.runAction(cc.MoveTo.create(0.2, tempPos));
+    if(useTween !== false){
+        theLink.runAction(cc.MoveTo.create(0.2, link.getPosition()));
+        link.runAction(cc.MoveTo.create(0.2, tempPos));
+    }else{
+        theLink.setPosition(link.getPosition());
+        link.setPosition(tempPos);
+    }
     return [tiles[0], theLink];
 };
 LinkFinder._checkDirectLink = function(tx0, ty0, tx1, ty1)
