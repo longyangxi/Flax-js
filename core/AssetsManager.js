@@ -185,7 +185,7 @@ lg.AssetsManager = cc.Class.extend({
                     childDefine = childrenDefine[childName];
                     var ch = mc.children[childName] = {};
                     ch.frames = this._strToArray(childDefine.frames);
-                    ch.class = childDefine.class;
+                    ch["class"] = childDefine["class"];
                     ch.zIndex = parseInt(childDefine.zIndex);
                     if(childDefine.hasOwnProperty("text")) {
                         ch.text = childDefine.text;

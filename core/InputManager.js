@@ -163,7 +163,10 @@ lg.InputManager = cc.Node.extend({
         }
 
         this._inTouching = true;
-        if(lg.isButton(target)) this._setButtonState(target, ButtonState.DOWN);
+        if(lg.isButton(target)) {
+            if(lg.buttonSound) lg.playSound(lg.buttonSound);
+            this._setButtonState(target, ButtonState.DOWN);
+        }
         event.currentTarget = target;
         event.target = this._findRealTarget(target, pos) || target;
         //if currentTarget is cc.Layer or lg.MovieClip and hasn't touch any of it's child, then ignore!

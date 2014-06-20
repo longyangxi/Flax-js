@@ -23,6 +23,35 @@ LinkFinder.findLink = function(tx0, ty0, tx1, ty1)
     }
     return link;
 };
+LinkFinder.shuffle = function(useTween){
+    var all = this.map.getAllObjects();
+    var tiles = all.concat();
+    var i = -1;
+    if(this.blocks && this.blocks.length){
+        tiles = [];
+        while(++i < all.length){
+            var a = all[i];
+            if(this.blocks.indexOf(a) == -1){
+                tiles.push(a);
+            }
+        }
+    }
+    tiles.shuffle();
+    i = -1;
+    var halfCount = tiles.length/2;
+    while(++i < halfCount){
+        var a0 = tiles[i];
+        var a1 = tiles[i + halfCount];
+        var tempPos = cc.p(a0.getPosition());
+        if(useTween !== false){
+            a0.runAction(cc.MoveTo.create(0.2, a1.getPosition()));
+            a1.runAction(cc.MoveTo.create(0.2, tempPos));
+        }else{
+            a0.setPosition(a1.getPosition());
+            a1.setPosition(tempPos);
+        }
+    }
+};
 /**
  * Check if the map is dead, dead means there is no link anymore, then tried to fix it
  * Return a available linked pair, null result means there is no link anymore and can't be fixed
@@ -36,11 +65,13 @@ LinkFinder.findAvailableLink = function(useTween)
     var f1;
     var link = null;
     var sameTypes = [];
+    var first = null;
     for(var i = 0; i< count -1; i++)
     {
         f0 = tiles[i];
         if(this.blocks && this.blocks.indexOf(f0) > -1) continue;
         var checkSameType = (sameTypes.length == 0);
+        if(first == null) first = f0;
         for(var j = i + 1; j < count; j++)
         {
             f1 = tiles[j];
@@ -55,16 +86,38 @@ LinkFinder.findAvailableLink = function(useTween)
             }
         }
     }
+    if(sameTypes.length == 0) return null;
     var theLink = sameTypes[Math.floor(sameTypes.length*Math.random())];
-    var tempPos = theLink.getPosition();
-    if(useTween !== false){
-        theLink.runAction(cc.MoveTo.create(0.2, link.getPosition()));
-        link.runAction(cc.MoveTo.create(0.2, tempPos));
+    var tempPos = cc.p(theLink.getPosition());
+    if(link == null) {
+        var empty = this._findEmptyNeighbor(first.tx, first.ty);
+        if(empty == null) throw "Dead map!!!!"
+        tempPos = cc.p(this.map.getTiledPositionX(empty.x), this.map.getTiledPositionY(empty.y));
+        if(theLink.parent) tempPos = theLink.parent.convertToNodeSpace(tempPos);
+        if(useTween === true){
+            theLink.runAction(cc.MoveTo.create(0.2, tempPos));
+        }else{
+            theLink.setPosition(tempPos);
+        }
     }else{
-        theLink.setPosition(link.getPosition());
-        link.setPosition(tempPos);
+        if(useTween === true){
+            theLink.runAction(cc.MoveTo.create(0.2, link.getPosition()));
+            link.runAction(cc.MoveTo.create(0.2, tempPos));
+        }else{
+            theLink.setPosition(link.getPosition());
+            link.setPosition(tempPos);
+        }
     }
-    return [tiles[0], theLink];
+    return [first, theLink];
+};
+LinkFinder._findEmptyNeighbor = function(tx, ty){
+    var result = null;
+    for(var i = 0; i < 4; i++){
+        var ds = EIGHT_DIRECTIONS[i];
+        result = cc.p(tx + ds[0], ty + ds[1]);
+        if(this.map.isEmptyTile(result.x, result.y)) return result;
+    }
+    return result;
 };
 LinkFinder._checkDirectLink = function(tx0, ty0, tx1, ty1)
 {

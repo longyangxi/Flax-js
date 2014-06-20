@@ -22,7 +22,7 @@ lg.MovieClip = lg.TimeLine.extend({
         {
             child.setPlist(this.plistFile, assetID);
         }else{
-            childDefine.class = assetID;
+            childDefine["class"] = assetID;
         }
     },
     onNewSheet:function()
@@ -59,11 +59,11 @@ lg.MovieClip = lg.TimeLine.extend({
                 if(child == null){
                     //hadle the label text
                     if(childDefine.text != null){
-                        child = lg.Label.create(this.plistFile, childDefine.class);
+                        child = lg.Label.create(this.plistFile, childDefine["class"]);
                         child.params = childDefine;
                         child.setString(childDefine.text);
                     }else{
-                        child = lg.assetsManager.createDisplay(this.plistFile, childDefine.class, null, true);
+                        child = lg.assetsManager.createDisplay(this.plistFile, childDefine["class"], null, true);
                     }
                     child.name = childName;
                     this._namedChildren[childName] = child;

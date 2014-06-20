@@ -13,35 +13,12 @@ lg.assetsManager = null;
 lg.inputManager = null;
 lg.currentSceneName = "";
 lg.currentScene = null;
+lg.buttonSound = null;
 lg._scenesDict = {};
 lg._resourcesLoaded = [];
 lg._soundEnabled = true;
 lg._inited = false;
 lg._orientationTip = null;
-
-lg.startGame = function(scene, resources){
-
-    lg.init();
-
-    lg.preload(resources, function(){
-        var splashing = false;
-        if(a10Enabled) {
-            if(a10Remote) {
-                var splashScreenData = GameAPI.Branding.getSplashScreen();
-                if (splashScreenData.show) {
-                    showSplash(splashScreenData.action, scene);
-                    splashing = true;
-                }
-            }else {
-                showSplash(goMoreGame, scene);
-                splashing = true;
-            }
-        }
-        if(!splashing) {
-            lg.replaceScene(scene);
-        }
-    });
-}
 
 lg.init = function()
 {
