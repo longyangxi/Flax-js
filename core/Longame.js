@@ -8,6 +8,8 @@ DEGREE_TO_RADIAN = Math.PI/180.0;
 var lg = lg || {};
 
 lg.version = 1.32;
+lg.language = "en";
+lg.languageIndex = -1;
 //----------------------scene about----------------------------------------------------
 lg.assetsManager = null;
 lg.inputManager = null;

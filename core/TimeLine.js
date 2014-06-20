@@ -460,6 +460,8 @@ lg.TimeLine = cc.Sprite.extend({
             this._updateTileMap(true);
         }
         this._updateCollider();
+
+        if(lg.languageIndex > -1 && this.name && this.name.indexOf("label__") > -1) this.gotoAndStop(lg.languageIndex);
     },
     onExit:function()
     {
