@@ -12,7 +12,7 @@ lg._scrollPaneDefine = {
             cc.log("If you want me scrollable, please set collider__view for me!");
             return;
         }
-        lg.inputManager.addListener(this, this.startDrag, InputType.press);
+        lg.inputManager.addListener(null, this.startDrag, InputType.press, this);
         //todo, mask the content
 //        var stencil = cc.DrawNode.create();
 //        var rectangle = [cc.p(0, 0),cc.p(this._viewRect.width, 0),cc.p(this._viewRect.width, this._viewRect.height),cc.p(0, this._viewRect.height)];
@@ -24,12 +24,13 @@ lg._scrollPaneDefine = {
 //        mask.addChild(this);
     },
     startDrag:function(touch, event){
-        lg.inputManager.addListener(this, this.drag, InputType.move);
-        lg.inputManager.addListener(this, this.stopDrag, InputType.up);
+        this.scheduleOnce(function(){
+            lg.inputManager.addListener(null, this.drag, InputType.move,this);
+            lg.inputManager.addListener(null, this.stopDrag, InputType.up, this);
+        },0.1);
     },
     drag:function(touch, event){
         var delta = touch.getDelta();
-
         //if the viewRect is larger than the content itself, then do nothing
         if(this._viewRect.width >= this.width) delta.x = 0;
         if(this._viewRect.height >= this.height) delta.y = 0;
@@ -46,8 +47,8 @@ lg._scrollPaneDefine = {
         this.y = y;
     },
     stopDrag:function(touch, event){
-        lg.inputManager.removeListener(this, this.drag, InputType.move);
-        lg.inputManager.removeListener(this, this.stopDrag, InputType.up);
+        lg.inputManager.removeListener(null, this.drag, InputType.move);
+        lg.inputManager.removeListener(null, this.stopDrag, InputType.up);
     }
 };
 lg.ScrollPane = lg.MovieClip.extend(lg._scrollPaneDefine);

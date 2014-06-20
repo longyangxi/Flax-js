@@ -12,9 +12,10 @@ var InputType = {
 
 lg.InputManager = cc.Node.extend({
     enabled:true,
+    inTouching:false,
+    inDragging:false,
     _masks:[],
     _callbacks:{},
-    _inTouching:false,
     _globalListener:null,
     onEnter:function()
     {
@@ -25,16 +26,21 @@ lg.InputManager = cc.Node.extend({
             swallowTouches: false,
             onTouchBegan:function(touch, event)
             {
+                self.inDragging = false;
+                self.inTouching = true;
                 self._dispatchOne(self, touch, event, InputType.press);
                 return true;
             },
             onTouchEnded:function(touch, event)
             {
+                self.inDragging = false;
+                self.inTouching = false;
                 self._dispatchOne(self, touch, event, InputType.up);
                 self._dispatchOne(self, touch, event, InputType.click);
             },
             onTouchMoved:function(touch, event)
             {
+                self.inDragging = true;
                 self._dispatchOne(self, touch, event, InputType.move);
             }
         })
@@ -43,7 +49,7 @@ lg.InputManager = cc.Node.extend({
     onExit:function(){
         this._super();
         _masks = [];
-        this._inTouching = false;
+        this.inTouching = false;
         this._callbacks = {};
         cc.eventManager.removeAllListeners();
     },
@@ -162,7 +168,6 @@ lg.InputManager = cc.Node.extend({
             }
         }
 
-        this._inTouching = true;
         if(lg.isButton(target)) {
             if(lg.buttonSound) lg.playSound(lg.buttonSound);
             this._setButtonState(target, ButtonState.DOWN);
@@ -173,14 +178,12 @@ lg.InputManager = cc.Node.extend({
         if((target instanceof cc.Layer || target instanceof lg.MovieClip) && event.target == target) {
             return false;
         }
-
         this._dispatch(target, touch, event, InputType.press);
 //        cc.log("touch begin result: "+target.name+", "+target.assetID);
         return true;
     },
     handleTouchEnded:function(touch, event)
     {
-        this._inTouching = false;
         var target = event.getCurrentTarget();
 
         event.currentTarget = target;
