@@ -158,6 +158,9 @@ lg.TimeLine = cc.Sprite.extend({
         }else {
             cc.log("There is no display named: "+assetID+" in plist: "+plistFile);
         }
+        if(this.parent){
+            this._updateLaguage();
+        }
     },
     getLabels:function(label)
     {
@@ -460,8 +463,7 @@ lg.TimeLine = cc.Sprite.extend({
             this._updateTileMap(true);
         }
         this._updateCollider();
-
-        if(lg.languageIndex > -1 && this.name && this.name.indexOf("label__") > -1) this.gotoAndStop(lg.languageIndex);
+        this._updateLaguage();
     },
     onExit:function()
     {
@@ -469,6 +471,9 @@ lg.TimeLine = cc.Sprite.extend({
         if(this._tileMap) this._tileMap.removeObject(this);
         lg.inputManager.removeListener(this);
         this.onAnimationOver.removeAll();
+    },
+    _updateLaguage:function(){
+        if(lg.languageIndex > -1 && this.name && this.name.indexOf("label__") > -1) this.gotoAndStop(lg.languageIndex);
     },
     getTileMap:function()
     {

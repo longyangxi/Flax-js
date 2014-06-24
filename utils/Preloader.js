@@ -115,8 +115,8 @@ lg.preload = function(res, callBack)
     var i = -1;
     while(++i < res.length)
     {
-        if(lg._resourcesLoaded.indexOf(res[i].src) == -1){
-            lg._resourcesLoaded.push(res[i].src);
+        if(lg._resourcesLoaded.indexOf(res[i]) == -1){
+            lg._resourcesLoaded.push(res[i]);
             hasLoaded = false;
         }
     }
