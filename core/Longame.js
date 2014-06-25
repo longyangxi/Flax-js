@@ -50,6 +50,7 @@ lg.replaceScene = function(sceneName)
         lg.Gunner.enemies = [];
         lg.Gunner.players = [];
     }
+    cc.director.resume();
     lg.currentSceneName = sceneName;
     lg.inputManager.removeFromParent(false);
     lg.currentScene = new s.scene();

@@ -82,6 +82,21 @@ lg.TileMap = cc.Class.extend({
         this._mapHeight = h;
         return result;
     },
+    showDebugGrid:function(){
+        if(lg.currentScene == null) return;
+        if(lg.tileMapCanvas) lg.tileMapCanvas.clear();
+        else{
+            lg.tileMapCanvas = cc.DrawNode.create();
+            lg.currentScene.addChild(lg.tileMapCanvas, 100000);
+        }
+        lg.tileMapCanvas.setPosition(this.offsetX, this.offsetY);
+        for(var i = 0; i <= this._mapWidth; i++){
+            lg.tileMapCanvas.drawSegment(cc.p(i*this._tileWidth, 0), cc.p(i*this._tileWidth, this._tileHeight*this._mapHeight), 1, cc.color(255,0,0,255));
+        }
+        for(var j = 0; j <= this._mapHeight; j++){
+            lg.tileMapCanvas.drawSegment(cc.p(0, j*this._tileHeight), cc.p(this._tileWidth*this._mapWidth, j*this._tileHeight), 1, cc.color(255,0,0,255));
+        }
+    },
     clear:function(removeChildren)
     {
         if(this._objectsArr.length == 0) return;

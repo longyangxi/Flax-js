@@ -89,6 +89,7 @@ lg.Gun = cc.Node.extend({
     },
     _createBullet:function()
     {
+        if(this.parent == null) return;
         if(lg.bulletCanvas == null) {
             cc.log("Pls set batch canvas for me to show the bullet: lg.bulletCanvas!");
             return;

@@ -13,11 +13,13 @@ lg._gunnerDefine = {
     gunParam:null,//see lg.GunParam
     gunAnchors:null,//["weapon1","weapon2"]
     targets:null,//the targets array of the enemy
+    alwaysBind:true,//if the gun always bind to the anchor every frame
     maxHealth:100,
     health:100,
     dead:false,
     _guns:null,
     _shooting:false,
+    _waitingShoot:false,
 
     onEnter:function()
     {
@@ -61,22 +63,30 @@ lg._gunnerDefine = {
         {
             gunAnchor = this.gunAnchors[i];
             gun = lg.Gun.create(this.gunParam);
-            if(this.bindAnchor(gunAnchor, gun)) {
+            if(this.bindAnchor(gunAnchor, gun, this.alwaysBind)) {
                 gun.owner = this;
+                gun.name = gunAnchor;
                 this._guns.push(gun);
             }
         }
-        if(this._shooting) this.beginShoot();
+        if(this._waitingShoot){
+            this.scheduleOnce(this.beginShoot, 0.1);
+        }
     },
     beginShoot:function(delay)
     {
-        this._shooting = true;
-        if(this._guns == null || this._guns.length == 0) return;
+        if(this._shooting) return;
+        if(this.parent == null || this._guns == null || this._guns.length == 0) {
+            this._waitingShoot = true;
+            return;
+        }
         if(delay > 0){
             this.scheduleOnce(this._doBeginShoot, delay);
         }else{
             this._doBeginShoot();
         }
+        this._shooting = true;
+        this._waitingShoot = false;
     },
     _doBeginShoot:function()
     {
@@ -89,6 +99,7 @@ lg._gunnerDefine = {
     },
     stopShoot:function()
     {
+        if(!this._shooting) return;
         this._shooting = false;
         if(this._guns == null || this._guns.length == 0) return;
         var i = -1;
