@@ -4,6 +4,7 @@
 
 RADIAN_TO_DEGREE = 180.0/Math.PI;
 DEGREE_TO_RADIAN = Math.PI/180.0;
+IMAGE_TYPES = ["png", "jpg", "bmp","jpeg","gif"];
 
 var lg = lg || {};
 
@@ -45,6 +46,10 @@ lg.replaceScene = function(sceneName)
     }
     lg.ObjectPool.release();
     if(lg.bulletCanvas) lg.bulletCanvas = null;
+    if(lg.Gunner) {
+        lg.Gunner.enemies = [];
+        lg.Gunner.players = [];
+    }
     lg.currentSceneName = sceneName;
     lg.inputManager.removeFromParent(false);
     lg.currentScene = new s.scene();
@@ -149,11 +154,11 @@ lg.getAngle1 = function(dx, dy, forDegree)
     }
     return angle;
 };
-lg.getPointOnCircle = function(radius, angle)
+lg.getPointOnCircle = function(radius, angleDegree)
 {
-    angle = - angle;
-    angle *= DEGREE_TO_RADIAN;
-    return new cc.Point(radius*Math.cos(angle), radius*Math.sin(angle));
+    angleDegree = 90 - angleDegree;
+    angleDegree *= DEGREE_TO_RADIAN;
+    return new cc.Point(radius*Math.cos(angleDegree), radius*Math.sin(angleDegree));
 };
 lg.getPosition = function(sprite, global)
 {
@@ -345,8 +350,7 @@ lg.getFileExtension = function(path)
 lg.isImageFile = function(path)
 {
     var ext = lg.getFileExtension(path);
-    var types = cc.RESOURCE_TYPE["IMAGE"];
-    return types.indexOf(ext) > -1;
+    return IMAGE_TYPES.indexOf(ext) > -1;
 };
 /**
  * Copy all the properties of params to target if it own the property

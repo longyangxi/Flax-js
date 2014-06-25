@@ -134,9 +134,12 @@ lg._gunnerDefine = {
     },
     onHit:function(bullet)
     {
-        if(!this._canBeHurt()) return;
+        if(!this._canBeHurt()) return false;
+        if(this.dead) return true;
         this.health -= bullet.damage;
         if(this.health <= 0) {
+            this.dead = true;
+            this.health = 0;
             this.stopShoot();
             this._onDie();
             return true;

@@ -46,6 +46,7 @@ lg.Collider = cc.Class.extend({
         //todo, add more type check
         //todo, if rotation
     },
+    //todo, if rotation != 0 .....
     getRect:function(global){
         global = (global !== false);
         if(!global) return this._localRect;
@@ -61,10 +62,12 @@ lg.Anchor = cc.Class.extend({
     x:0,
     y:0,
     zIndex:0,
+    rotation:0,
     ctor:function(arr){
         this.x = arr[0];
         this.y = arr[1];
         if(arr.length > 2) this.zIndex = arr[2];
+        if(arr.length > 3) this.rotation = arr[3];
     }
 });
 
@@ -306,7 +309,7 @@ lg.TimeLine = cc.Sprite.extend({
     },
     gotoAndPlay:function(frameOrLabel)
     {
-        if(isNaN(frameOrLabel)) {
+        if(typeof frameOrLabel === "string") {
             var lbl = this.getLabels(frameOrLabel);
             if(lbl == null){
                 if(!this.setSubAnim(frameOrLabel, true)) {
@@ -454,6 +457,7 @@ lg.TimeLine = cc.Sprite.extend({
         node.x = anchor.x;
         node.y = anchor.y;
         node.zIndex = anchor.zIndex;
+        node.rotation = anchor.rotation;
     },
     onEnter:function()
     {

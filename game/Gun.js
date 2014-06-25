@@ -174,6 +174,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
             b.setPosition(cc.pAdd(b.getPosition(), lg.getPointOnCircle(dis, b.__moveRotation)));
 
             rect = lg.getRect(b, true);
+//            lg.drawRect(rect);
             over = false;
             targets = null;
             var outofScreen = !cc.rectIntersectsRect(this._stageRect, rect);
@@ -188,7 +189,6 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
                 var radius = b.param.damageRadius;
                 if(radius > 0){
                     rect = cc.rect(pos.x - radius/2, pos.y - radius/2, radius, radius);
-//                    lg.drawRect(rect);
                     targets = this._checkHittedTarget(b, rect, true);
                 }
                 var t;
