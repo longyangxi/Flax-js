@@ -126,7 +126,7 @@ lg._gunnerDefine = {
         var delta = {};
         var newValue = 0;
         for(var k in param){
-            newValue = this._guns[0][k] + param[k];
+            newValue = this._guns[0]["param"][k] + param[k];
             if(newValue <= 0) {
                 delete param[k];
                 continue;

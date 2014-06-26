@@ -37,14 +37,8 @@ lg.Gun = cc.Node.extend({
     _pool:null,
     _waveTime:0,
     _maxShootDistance:0,
-//    _bullets:null,
     _targetMap:null,
 
-    init:function()
-    {
-        this._super();
-//        this._bullets = [];
-    },
     start:function()
     {
         if(this._firing) return;
@@ -60,7 +54,6 @@ lg.Gun = cc.Node.extend({
         }else{
             this._waveFire();
         }
-//        this.scheduleUpdate();
     },
     end:function()
     {
@@ -68,7 +61,6 @@ lg.Gun = cc.Node.extend({
         this._firing = false;
         this.unschedule(this._createBullet);
         this.unschedule(this._createWave);
-//        this.unscheduleUpdate();
     },
     updateParam:function(param)
     {
@@ -241,7 +233,6 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
 });
 
 lg.BulletCanvas.create = function (fileImage) {
-//    return new lg.BulletCanvas();
     return new lg.BulletCanvas(fileImage, 100);
 };
 
