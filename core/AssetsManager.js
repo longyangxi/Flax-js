@@ -49,10 +49,15 @@ lg.AssetsManager = cc.Class.extend({
        if(clsName) clsPreDefined = true;
        else clsName = assetID;
 
+       var subAnims = this.getSubAnims(plistFile, assetID);
+       if(subAnims.length) {
+           assetID = assetID + "$" + subAnims[0];
+       }
+
         var mcCls = lg.nameToObject(clsName);
         if(mcCls == null && !clsPreDefined) {
-            var isMC = false;
             var define = this.getDisplayDefine(plistFile, assetID);
+            var isMC = false;
             if(define == null) {
                 define = this.getMc(plistFile, assetID);
                 isMC = true;
@@ -69,15 +74,7 @@ lg.AssetsManager = cc.Class.extend({
                     mcCls = isMC ? lg.MovieClip : lg.Animator;
                     clsName = isMC ? "lg.MovieClip" : "lg.Animator";
                 }
-            }else if(isMC) {
-                var subAnims = this.getSubAnims(plistFile, assetID);
-                if(subAnims.length) {
-                    assetID = assetID + "$" + subAnims[0];
-                    mcCls = lg.MovieClip;
-                    clsName = "lg.MovieClip";
-                }
-            }
-            if(mcCls == null) {
+            }else{
                 throw  "There is no display with assetID: "+assetID+" in plist: "+plistFile;
             }
         }

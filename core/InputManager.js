@@ -48,7 +48,7 @@ lg.InputManager = cc.Node.extend({
     },
     onExit:function(){
         this._super();
-        _masks = [];
+        this._masks = [];
         this.inTouching = false;
         this._callbacks = {};
         cc.eventManager.removeAllListeners();
