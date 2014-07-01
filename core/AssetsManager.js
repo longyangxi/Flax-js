@@ -78,12 +78,13 @@ lg.AssetsManager = cc.Class.extend({
                 throw  "There is no display with assetID: "+assetID+" in plist: "+plistFile;
             }
         }
-       this._checkCreateFunc(mcCls, clsName);
+//       this._checkCreateFunc(mcCls, clsName);
        var mc = null;
        if(fromPool === true) {
            mc = lg.ObjectPool.get(plistFile,clsName,assetID).fetch(assetID, parent, params);
        }else{
-           mc = mcCls.create(plistFile, assetID);
+           if(mcCls.create) mc = mcCls.create(plistFile, assetID);
+           else mc = new mcCls(plistFile, assetID);
            if(params) mc.attr(params);
            if(parent) parent.addChild(mc);
            mc.clsName = clsName;

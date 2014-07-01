@@ -39,7 +39,8 @@ lg.ObjectPool = cc.Class.extend({
             obj = this._pool.shift();
             obj.setPlist(this._plistFile, assetID);
         }else{
-            obj = this._cls.create(this._plistFile, assetID);
+            if(this._cls.create) obj = this._cls.create(this._plistFile, assetID);
+            else obj = new this._cls(this._plistFile, assetID);
         }
 
         obj.__pool__id__ = this._extraID;

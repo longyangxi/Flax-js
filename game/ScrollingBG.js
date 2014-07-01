@@ -5,6 +5,7 @@
 var lg = lg || {};
 
 lg.ScrollingBG = cc.Node.extend({
+    name:null,
     source:null,
     assetID:null,
     bg0:null,
@@ -16,7 +17,8 @@ lg.ScrollingBG = cc.Node.extend({
     _speedY:0,
     _d:1,
     _size:null,
-
+    _x0:0,
+    _y0:0,
 
     init:function()
     {
@@ -35,14 +37,26 @@ lg.ScrollingBG = cc.Node.extend({
                     this.bg1 = lg.TiledImage.create(this.source, this.assetID);
                 }
             }else if(this.source){
+                //if it's a TimeLine
+                if(this.source instanceof lg.TimeLine){
+                    if(this.source.parent) this.source.parent.addChild(this, this.source.zIndex);
+                    this.name = this.source.name;
+                    if(this.parent) this.parent[this.name] = this;
+                    this.setPosition(this.source.getPosition());
+                    this.bg0 = lg.assetsManager.cloneDisplay(this.source);
+                    this.bg1 = lg.assetsManager.cloneDisplay(this.source);
+                    this.source.destroy();
+                }
                 //If it's a image
-                if(lg.isImageFile(this.source)){
+                else if(lg.isImageFile(this.source)){
                     this.bg0 = cc.Sprite.create(this.source);
                     this.bg1 = cc.Sprite.create(this.source);
                 }else {
                     cc.log("Not support source type!");
                     return false;
                 }
+            }else{
+                throw "Arguments is not valid!"
             }
             this.bg0.setAnchorPoint(0, 0);
             this.bg1.setAnchorPoint(0, 0);
@@ -97,12 +111,12 @@ lg.ScrollingBG = cc.Node.extend({
     },
     _resetScroll:function()
     {
-        this.bg0.setPosition(0, 0);
+        this.bg0.setPosition(this._x0, this._y0);
         (this._speedX != 0) ? this.bg1.x = -this._d*(this._size.width - 1) : this.bg1.y = -this._d*(this._size.height - 1);
     },
     _doScroll:function(dist)
     {
-        if(dist == 0) return;
+        if(dist === 0) return;
         var xDirect = (this._speedX != 0);
         if(dist == null) dist = xDirect ? this._size.width : this._size.height;
         var t = dist/Math.abs(xDirect ? this._speedX : this._speedY);
