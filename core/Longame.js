@@ -11,6 +11,8 @@ var lg = lg || {};
 lg.version = 1.32;
 lg.language = "en";
 lg.languageIndex = -1;
+lg.landscape = false;
+lg.osVersion = "unknown";
 //----------------------scene about----------------------------------------------------
 lg.assetsManager = null;
 lg.inputManager = null;
@@ -27,9 +29,24 @@ lg.init = function()
 {
     if(lg._inited) return;
     lg._inited = true;
+    lg._checkOSVersion();
     lg.assetsManager = lg.AssetsManager.create();
     lg.inputManager = lg.InputManager.create();
     if(cc.game.config.timeScale)  cc.director.getScheduler().setTimeScale(cc.game.config.timeScale);
+}
+//todo, now only handle the mobile device
+lg._checkOSVersion = function(){
+    var ua = navigator.userAgent;
+    var i;
+    if(ua.match(/iPad/i) || ua.match(/iPhone/i)){
+        i = ua.indexOf( 'OS ' );
+        cc.sys.os = cc.sys.OS_IOS;
+        if(i > -1) lg.osVersion = ua.substr( i + 3, 3 ).replace( '_', '.' );
+    }else if(ua.match(/Android/i)){
+        i = ua.indexOf( 'Android ' );
+        cc.sys.os = cc.sys.OS_ANDROID;
+        if(i > -1) lg.osVersion = ua.substr( i + 8, 3 );
+    }
 }
 
 lg.registerScene = function(name, scene, resources)
@@ -125,9 +142,9 @@ lg._checkDeviceOrientation = function(){
 }
 lg._oldGamePauseState = false;
 lg._showOrientaionTip = function(){
-    var landscape = (Math.abs(window.orientation) == 90);
-    lg._orientationTip.visible = (cc.game.config.landscape != landscape);
-    lg._orientationTip.__icon.rotation = (landscape ? -90 : 0);
+    lg.landscape = (Math.abs(window.orientation) == 90);
+    lg._orientationTip.visible = (cc.game.config.landscape != lg.landscape);
+    lg._orientationTip.__icon.rotation = (lg.landscape ? -90 : 0);
     document.body.scrollTop = 0;
     if(lg._orientationTip.visible) {
         lg._oldGamePauseState = cc.director.isPaused();

@@ -1655,7 +1655,7 @@ cc.game = {
             if(js.indexOf("flax") > -1) js = (this.config.flaxDir || "") + js;
             var version = this.config.version;
             //local test should always update the version
-            if(location.href.indexOf("localhost") > -1) version = Math.random();
+            if(location.href.indexOf("localhost") > -1 || location.href.indexOf("192.168.") > -1) version = Math.random();
             js = js + "?v=" + version;
             jsList[i] = js;
         }

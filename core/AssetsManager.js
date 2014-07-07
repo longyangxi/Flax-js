@@ -9,7 +9,9 @@ F2C_ALIAS = {mc:"lg.MovieClip",
              button:"lg.Button",
              progress:"lg.ProgressBar",
              scrollPane:"lg.ScrollPane",
-             scrollPane1:"lg.ScrollPane1"
+             scrollPane1:"lg.ScrollPane1",
+             gun:"lg.Gunner",
+             gun1:"lg.MCGunner"
             };
 
 lg.AssetsManager = cc.Class.extend({

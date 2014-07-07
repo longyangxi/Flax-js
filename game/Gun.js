@@ -86,7 +86,7 @@ lg.Gun = cc.Node.extend({
             cc.log("Pls set batch canvas for me to show the bullet: lg.bulletCanvas!");
             return;
         }
-        var t = this._maxShootDistance/this.param.speed;
+//        var t = this._maxShootDistance/this.param.speed;
         var pos = this.parent.convertToWorldSpace(this.getPosition());
         pos = lg.bulletCanvas.convertToNodeSpace(pos);
         var rot = lg.getRotation(this, true);
