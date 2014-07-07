@@ -13,8 +13,11 @@ lg.GunParam = cc.Class.extend({
     interval:0.15,//the interval time between two launch
     count:1,//the bullet count in one launch
     angleGap:5,//if count > 1, angle gap between two bullets at one launch
+    angleOffset:0,//the bullet move angle offset according to the gun itself
     waveInterval:0,//the seconds interval between two wave launch, if <= 0 then no wave mode
     countInWave:6,//launch times in one wave
+    gravityX:0,//gravity on x
+    gravityY:0,//gravity on y
     fireSound:null,//the sound when fire
     fireEffectID:null,//the id of fire effect, it must be packed with the bullet plist together
     hitEffectID:null,//the id of hit effect, it must be packed with the bullet plist together
@@ -35,8 +38,6 @@ lg.Gun = cc.Node.extend({
     param:null,
     _firing:false,
     _pool:null,
-    _waveTime:0,
-    _maxShootDistance:0,
     _targetMap:null,
 
     start:function()
@@ -44,13 +45,9 @@ lg.Gun = cc.Node.extend({
         if(this._firing) return;
         this._firing = true;
 
-        this._pool = lg.ObjectPool.get(this.param.bulletPlist, "lg.Animator","___bullet");//this.param.bulletID);
-        this._waveTime = this.param.interval*this.param.countInWave + this.param.waveInterval;
-        this._maxShootDistance = Math.max(cc.visibleRect.width, cc.visibleRect.height)*1.5;
-
         if(this.param.waveInterval <= 0 || this.param.countInWave <= 1) {
-            this.schedule(this._createBullet, this.param.interval);
-            this._createBullet();
+            this.schedule(this.shootOnce, this.param.interval);
+            this.shootOnce();
         }else{
             this._waveFire();
         }
@@ -59,7 +56,7 @@ lg.Gun = cc.Node.extend({
     {
         if(!this._firing) return;
         this._firing = false;
-        this.unschedule(this._createBullet);
+        this.unschedule(this.shootOnce);
         this.unschedule(this._createWave);
     },
     updateParam:function(param)
@@ -77,28 +74,30 @@ lg.Gun = cc.Node.extend({
     {
         if(!this._firing) return;
         this._createWave();
-        this.schedule(this._createWave, this._waveTime, cc.REPEAT_FOREVER);
+        var t = this.param.interval*this.param.countInWave + this.param.waveInterval;
+        this.schedule(this._createWave, t, cc.REPEAT_FOREVER);
     },
-    _createBullet:function()
+    shootOnce:function()
     {
         if(this.parent == null) return;
         if(lg.bulletCanvas == null) {
             cc.log("Pls set batch canvas for me to show the bullet: lg.bulletCanvas!");
             return;
         }
-//        var t = this._maxShootDistance/this.param.speed;
         var pos = this.parent.convertToWorldSpace(this.getPosition());
         pos = lg.bulletCanvas.convertToNodeSpace(pos);
         var rot = lg.getRotation(this, true);
         var b = null;
         var i = -1;
         var r = 0;
+        var r1 = 0;
         var d = 0;
         var ints  = lg.createDInts(this.param.count);
         while(++i < this.param.count)
         {
             d = ints[i];
             r = rot + d*this.param.angleGap;
+            if(this._pool == null) this._pool = lg.ObjectPool.get(this.param.bulletPlist, "lg.Animator","___bullet");
             b = this._pool.fetch(this.param.bulletID, lg.bulletCanvas);
             b.owner = this.owner;
             b.param = this.param;
@@ -115,9 +114,10 @@ lg.Gun = cc.Node.extend({
             }
             b.damage = dmg;
 
-            b.__speed = this.param.speed;
-            b.__moveRotation = r;
-//            b.runAction(cc.MoveBy.create(t,lg.getPointOnCircle(this._maxShootDistance, r)));
+            r1 = DEGREE_TO_RADIAN*(90 - (r + this.param.angleOffset));
+            b.__vx = this.param.speed*Math.cos(r1);
+            b.__vy = this.param.speed*Math.sin(r1);
+
             lg.bulletCanvas._bullets.push(b);
         }
         this._showFireEffect(pos, r);
@@ -125,7 +125,7 @@ lg.Gun = cc.Node.extend({
     },
     _createWave:function()
     {
-        this.schedule(this._createBullet, this.param.interval, this.param.countInWave - 1);
+        this.schedule(this.shootOnce, this.param.interval, this.param.countInWave - 1);
     },
     _showFireEffect:function(pos, rot)
     {
@@ -139,12 +139,13 @@ lg.Gun = cc.Node.extend({
     }
 });
 lg.BulletCanvas = cc.SpriteBatchNode.extend({
+    //out of the rect, the bullet will auto destroyed
+    stageRect:null,
     _bullets:null,
-    _stageRect:null,
     onEnter:function(){
         this._super();
         this._bullets = [];
-        this._stageRect = cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height);
+        if(this.stageRect == null) this.stageRect = cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height);
         this.scheduleUpdate();
     },
     update:function(delta)
@@ -158,20 +159,22 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
         var over = false;
         var pos = null;
         var rot = null;
-        var collide = null;
         //Note: how to delete item of an Array in a loop, this is a template!
         while(i--) {
             b = this._bullets[i];
 
-            var dis = b.__speed*delta;
-            b.setPosition(cc.pAdd(b.getPosition(), lg.getPointOnCircle(dis, b.__moveRotation)));
+            b.__vx = b.__vx + b.param.gravityX*delta;
+            b.__vy = b.__vy + b.param.gravityY*delta;
+            b.x += b.__vx*delta;
+            b.y += b.__vy*delta;
+
+            b.rotation = lg.getAngle1(b.__vx, b.__vy, true) - b.param.angleOffset;
 
             rect = lg.getRect(b, true);
-//            lg.drawRect(rect);
             over = false;
             targets = null;
-            var outofScreen = !cc.rectIntersectsRect(this._stageRect, rect);
-            if(outofScreen){
+            var outOfBounds = !cc.rectIntersectsRect(this.stageRect, rect);
+            if(outOfBounds){
                 over = true;
             }else{
                 targets = this._checkHittedTarget(b, rect, false);

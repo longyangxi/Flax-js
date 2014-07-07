@@ -18,8 +18,9 @@ lg._gunnerDefine = {
     health:100,
     dead:false,
     _guns:null,
-    _shooting:false,
+    _autoShooting:false,
     _waitingShoot:false,
+    _auto:false,//if true, will auto shoot according to the gunParam
 
     onEnter:function()
     {
@@ -70,12 +71,16 @@ lg._gunnerDefine = {
             }
         }
         if(this._waitingShoot){
-            this.scheduleOnce(this.beginShoot, 0.1);
+            this.scheduleOnce(this.autoShoot, 0.1);
         }
     },
-    beginShoot:function(delay)
+    shoot:function(){
+        this._auto = false;
+        this._doBeginShoot();
+    },
+    autoShoot:function(delay)
     {
-        if(this._shooting) return;
+        this._auto = true;
         if(this.parent == null || this._guns == null || this._guns.length == 0) {
             this._waitingShoot = true;
             return;
@@ -85,7 +90,7 @@ lg._gunnerDefine = {
         }else{
             this._doBeginShoot();
         }
-        this._shooting = true;
+        this._autoShooting = true;
         this._waitingShoot = false;
     },
     _doBeginShoot:function()
@@ -94,13 +99,13 @@ lg._gunnerDefine = {
         var n = this._guns.length;
         while(++i < n)
         {
-            this._guns[i].start();
+            if(this._auto) this._guns[i].start();
+            else this._guns[i].shootOnce();
         }
     },
     stopShoot:function()
     {
-        if(!this._shooting) return;
-        this._shooting = false;
+        this._autoShooting = false;
         if(this._guns == null || this._guns.length == 0) return;
         var i = -1;
         var n = this._guns.length;
