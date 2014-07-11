@@ -472,13 +472,7 @@ lg.TimeLine = cc.Sprite.extend({
         this._updateCollider();
         this._updateLaguage();
         //call the module onEnter
-        if(this.__onEnterNum !== undefined){
-            var i = this.__onEnterNum;
-            while(i >= 0){
-                this["__onEnter"+i]();
-                i--;
-            }
-        }
+        lg.callModuleOnEnter(this);
     },
     onExit:function()
     {
@@ -487,13 +481,7 @@ lg.TimeLine = cc.Sprite.extend({
         lg.inputManager.removeListener(this);
         this.onAnimationOver.removeAll();
         //call the module onExit
-        if(this.__onExitNum !== undefined){
-            var i = this.__onExitNum;
-            while(i >= 0){
-                this["__onExit"+i]();
-                i--;
-            }
-        }
+        lg.callModuleOnExit(this);
     },
     _updateLaguage:function(){
         if(lg.languageIndex > -1 && this.name && this.name.indexOf("label__") > -1) this.gotoAndStop(lg.languageIndex);

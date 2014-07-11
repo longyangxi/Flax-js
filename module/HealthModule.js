@@ -11,10 +11,8 @@ lg.HealthModule = {
     onEnter:function(){
         this.health = this.maxHealth;
         this.dead = false;
-        cc.log("module enter");
     },
     onExit:function(){
-        cc.log("module exit");
     },
     onHit:function(bullet)
     {

@@ -38,6 +38,8 @@ lg.init = function()
  * Add a function module to some class
  * The function in the class will override the same name function in the module
  * But if override === true, the function in the module will override the same name function in the class,
+ * Note: if the owner is not a lg.TimeLine and its successor,
+ * pls call lg.callModuleOnEnter(this) within onEnter and call lg.callModuleOnExit(this) within onExit
  * */
 lg.addModule = function(cls, module, override){
     for(var k in module){
@@ -51,6 +53,24 @@ lg.addModule = function(cls, module, override){
             cls.prototype["__onExit"+cls.prototype.__onExitNum] = module.onExit;
         }else if(override === true || !cls.prototype[k]){
             cls.prototype[k] = module[k];
+        }
+    }
+}
+lg.callModuleOnEnter = function(owner){
+    if(owner.__onEnterNum !== undefined){
+        var i = owner.__onEnterNum;
+        while(i >= 0){
+            owner["__onEnter"+i]();
+            i--;
+        }
+    }
+}
+lg.callModuleOnExit = function(owner){
+    if(owner.__onExitNum !== undefined){
+        var i = owner.__onExitNum;
+        while(i >= 0){
+            owner["__onExit"+i]();
+            i--;
         }
     }
 }

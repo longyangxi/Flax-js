@@ -174,7 +174,6 @@ lg._gunnerDefine = {
     },
     _onDie:function()
     {
-        cc.log("fuck");
         this.stopShoot();
         if(this.body) this.body.destroy();
         else this.destroy();
