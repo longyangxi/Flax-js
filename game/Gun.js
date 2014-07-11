@@ -101,7 +101,7 @@ lg.Gun = cc.Node.extend({
             b = this._pool.fetch(this.param.bulletID, lg.bulletCanvas);
             b.owner = this.owner;
             b.param = this.param;
-            b.targetMap = lg.getTileMap(this.param.targetMap);
+            if(this.param.targetMap) b.targetMap = lg.getTileMap(this.param.targetMap);
             b.gotoAndPlay(0);
             b.autoStopWhenOver = this.param.bulletPlayOnce;
             b.setPosition(pos);
@@ -195,7 +195,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
                         t.dead = t.onHit(b);
                     }
                 }
-                this._showHitEffect(b, pos, rot);
+                this._showHitEffect(b, rot);
                 over = true;
             }
             if(over && !b.param.alwaysLive) {
@@ -207,14 +207,14 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
     _checkHittedTarget:function(b, rect, multiple){
         var hittedTargets = [];
         var targets = null;
-        if(b.targetMap) targets = b.targetMap.getCoveredTiles1(rect, true);
-        else targets = b.owner.targets;
+        if(b.owner.targets) targets = b.owner.targets;
+        else targets = b.targetMap.getCoveredTiles1(rect, true);
         if(!targets || !targets.length) return hittedTargets;
 
         var i = -1;
         while(++i < targets.length) {
             target = targets[i];
-            if(target == b.owner || target.dead === true || b.owner && target.camp == b.owner.camp) continue;
+            if(target == b.owner || lg.isChildOf(b.owner, target) || target.dead === true || (b.owner && b.owner.camp != null && target.camp == b.owner.camp)) continue;
             //hit the target
             if(b.mainCollider.checkCollision(target.mainCollider)) {
                 if(!multiple) return [target];
@@ -223,13 +223,13 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
         }
         return hittedTargets;
     },
-    _showHitEffect:function(bullet, pos, rot)
+    _showHitEffect:function(bullet, rot)
     {
         if(bullet.param.hitEffectID == null || bullet.param.hitEffectID == "") return;
         var hitEffect = lg.assetsManager.createDisplay(bullet.param.bulletPlist, bullet.param.hitEffectID, null, true, this);
         hitEffect.zIndex = 999;
         hitEffect.autoDestroyWhenOver = true;
-        hitEffect.setPosition(pos);
+        hitEffect.setPosition(bullet.getPosition());
         hitEffect.setRotation(rot);
         hitEffect.gotoAndPlay(0);
     }

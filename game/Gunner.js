@@ -7,16 +7,12 @@ var GunnerCamp = {
     player:"Player",
     enemy:"Enemy"
 };
-
 lg._gunnerDefine = {
-    camp:"Player",
-    gunParam:null,//see lg.GunParam
-    gunAnchors:null,//["weapon1","weapon2"]
+    camp:null,//Player or Enemy?
+    _gunParam:null,//see lg.GunParam, remember the anchors, ["weapon1","weapon2"]
     targets:null,//the targets array of the enemy
+    aimTarget:null,//the target the guns will aimed to
     alwaysBind:true,//if the gun always bind to the anchor every frame
-    maxHealth:100,
-    health:100,
-    dead:false,
     _guns:null,
     _autoShooting:false,
     _waitingShoot:false,
@@ -28,10 +24,7 @@ lg._gunnerDefine = {
         this._guns = [];
         if(this.camp == GunnerCamp.player) lg.Gunner.players.push(this);
         else lg.Gunner.enemies.push(this);
-        this.health = this.maxHealth;
-        this.dead = false;
-
-        if(this.gunParam) this.setGunParam(this.gunParam);
+        if(this._gunParam) this.setGunParam(this._gunParam);
     },
     onRecycle:function()
     {
@@ -43,30 +36,35 @@ lg._gunnerDefine = {
             arr.splice(i, 1);
         }
     },
+    getGunParam:function(){
+        return this._gunParam;
+    },
     setGunParam:function(param)
     {
-        this.gunParam = param;
+        this._gunParam = param;
         if(this.parent == null) return;
         if(lg.bulletCanvas == null) {
-            var texturePath = cc.path.changeBasename(this.gunParam.bulletPlist, ".png");
+            var texturePath = cc.path.changeBasename(param.bulletPlist, ".png");
             lg.bulletCanvas = lg.BulletCanvas.create(texturePath);
+            //todo, the parent maybe is not very good
             this.parent.addChild(lg.bulletCanvas, 9999);
         }
-        if(this.gunAnchors == null){
+        if(param.gunAnchors == null){
             cc.log("Pleas set the gunAnchors param!");
             return;
         }
         var i = -1;
-        var n = this.gunAnchors.length;
+        var n = param.gunAnchors.length;
         var gunAnchor = null;
         var gun = null;
         while(++i < n)
         {
-            gunAnchor = this.gunAnchors[i];
-            gun = lg.Gun.create(this.gunParam);
+            gunAnchor = param.gunAnchors[i];
+            gun = lg.Gun.create(this._gunParam);
             if(this.bindAnchor(gunAnchor, gun, this.alwaysBind)) {
                 gun.owner = this;
                 gun.name = gunAnchor;
+                this[gunAnchor] = gun;
                 this._guns.push(gun);
             }
         }
@@ -76,6 +74,11 @@ lg._gunnerDefine = {
     },
     shoot:function(){
         this._auto = false;
+        if(this.aimTarget) {
+            if(this.targets == null) this.targets = [this.aimTarget];
+            else if(this.targets.indexOf(this.aimTarget) == -1) this.targets.push(this.aimTarget);
+            this._aimToTarget();
+        }
         this._doBeginShoot();
     },
     autoShoot:function(delay)
@@ -85,6 +88,13 @@ lg._gunnerDefine = {
             this._waitingShoot = true;
             return;
         }
+        if(this.aimTarget){
+            this.schedule(this._aimToTarget, 0.1, cc.REPEAT_FOREVER);
+            if(this.targets == null) this.targets = [this.aimTarget];
+            else if(this.targets.indexOf(this.aimTarget) == -1) this.targets.push(this.aimTarget);
+            this._aimToTarget();
+        }
+
         if(delay > 0){
             this.scheduleOnce(this._doBeginShoot, delay);
         }else{
@@ -92,6 +102,19 @@ lg._gunnerDefine = {
         }
         this._autoShooting = true;
         this._waitingShoot = false;
+    },
+    _aimToTarget:function(){
+        if(!this.aimTarget) return;
+        var i = -1;
+        var n = this._guns.length;
+        var gun = null;
+        var angle = null;
+        while(++i < n)
+        {
+            gun = this._guns[i];
+            angle = lg.getAngle(lg.getPosition(gun, true), lg.getPosition(this.aimTarget, true));
+            gun.rotation = angle - this._gunParam.angleOffset;
+        }
     },
     _doBeginShoot:function()
     {
@@ -113,6 +136,7 @@ lg._gunnerDefine = {
         {
             this._guns[i].end();
         }
+        this.unschedule(this._aimToTarget);
     },
     upgradeGun:function(deltaParam, time)
     {
@@ -148,32 +172,32 @@ lg._gunnerDefine = {
         }
         return delta;
     },
-    onHit:function(bullet)
-    {
-        if(!this._canBeHurt()) return false;
-        if(this.dead) return true;
-        this.health -= bullet.damage;
-        if(this.health <= 0) {
-            this.dead = true;
-            this.health = 0;
-            this.stopShoot();
-            this._onDie();
-            return true;
-        }
-        return false;
-    },
     _onDie:function()
     {
-        this.destroy();
-    },
-    _canBeHurt:function()
-    {
-        return true;
+        cc.log("fuck");
+        this.stopShoot();
+        if(this.body) this.body.destroy();
+        else this.destroy();
     }
 };
 
 lg.Gunner = lg.Animator.extend(lg._gunnerDefine);
 lg.MCGunner = lg.MovieClip.extend(lg._gunnerDefine);
+
+lg.addModule(lg.Gunner, lg.HealthModule, false);
+lg.addModule(lg.MCGunner, lg.HealthModule, false);
+
+window._p = lg.Gunner.prototype;
+
+_p.gunParam;
+cc.defineGetterSetter(_p, "gunParam", _p.getGunParam, _p.setGunParam);
+
+window._p = lg.MCGunner.prototype;
+
+_p.gunParam;
+cc.defineGetterSetter(_p, "gunParam", _p.getGunParam, _p.setGunParam);
+
+delete window._p;
 
 lg.Gunner.players = [];
 lg.Gunner.enemies = [];

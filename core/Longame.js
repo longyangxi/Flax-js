@@ -34,6 +34,27 @@ lg.init = function()
     lg.inputManager = lg.InputManager.create();
     if(cc.game.config.timeScale)  cc.director.getScheduler().setTimeScale(cc.game.config.timeScale);
 }
+/**
+ * Add a function module to some class
+ * The function in the class will override the same name function in the module
+ * But if override === true, the function in the module will override the same name function in the class,
+ * */
+lg.addModule = function(cls, module, override){
+    for(var k in module){
+        if(k === "onEnter"){
+            if(cls.prototype.__onEnterNum === undefined) cls.prototype.__onEnterNum = 0;
+            else cls.prototype.__onEnterNum++;
+            cls.prototype["__onEnter"+cls.prototype.__onEnterNum] = module.onEnter;
+        }else if(k === "onExit"){
+            if(cls.prototype.__onExitNum === undefined) cls.prototype.__onExitNum = 0;
+            else cls.prototype.__onExitNum++;
+            cls.prototype["__onExit"+cls.prototype.__onExitNum] = module.onExit;
+        }else if(override === true || !cls.prototype[k]){
+            cls.prototype[k] = module[k];
+        }
+    }
+}
+
 //todo, now only handle the mobile device
 lg._checkOSVersion = function(){
     var ua = navigator.userAgent;

@@ -89,7 +89,7 @@ lg.TimeLine = cc.Sprite.extend({
     name:null,
     assetID:null,
     clsName:"lg.TimeLine",
-    fps:30,
+    _fps:30,
     playing:false,
     inRecycle:false,
     _colliders:null,
@@ -115,7 +115,6 @@ lg.TimeLine = cc.Sprite.extend({
         if(!plistFile || !assetID) throw "Please set plistFile and assetID to me!"
         this._anchorBindings = [];
         this._animSequence = [];
-//        this.collidCenter = cc.p();
         this.onAnimationOver = new signals.Signal();
         this.setPlist(plistFile, assetID);
     },
@@ -164,6 +163,7 @@ lg.TimeLine = cc.Sprite.extend({
         if(this.parent){
             this._updateLaguage();
         }
+        if(this.__pool__id__ == null) this.__pool__id__ = this.assetID;
     },
     getLabels:function(label)
     {
@@ -371,9 +371,12 @@ lg.TimeLine = cc.Sprite.extend({
     },
     setFPS:function(f)
     {
-        if(this.fps == f)  return;
-        this.fps = f;
+        if(this._fps == f)  return;
+        this._fps = f;
         this.updateSchedule();
+    },
+    getFPS:function(){
+        return this._fps;
     },
     updatePlaying:function(state)
     {
@@ -385,7 +388,7 @@ lg.TimeLine = cc.Sprite.extend({
     {
         if(this.playing)
         {
-            if(this.totalFrames > 1) this.schedule(this.onFrame, 1.0/this.fps, cc.REPEAT_FOREVER, 0.0);
+            if(this.totalFrames > 1) this.schedule(this.onFrame, 1.0/this._fps, cc.REPEAT_FOREVER, 0.0);
         }else{
             this.unschedule(this.onFrame);
         }
@@ -468,6 +471,14 @@ lg.TimeLine = cc.Sprite.extend({
         }
         this._updateCollider();
         this._updateLaguage();
+        //call the module onEnter
+        if(this.__onEnterNum !== undefined){
+            var i = this.__onEnterNum;
+            while(i >= 0){
+                this["__onEnter"+i]();
+                i--;
+            }
+        }
     },
     onExit:function()
     {
@@ -475,6 +486,14 @@ lg.TimeLine = cc.Sprite.extend({
         if(this._tileMap) this._tileMap.removeObject(this);
         lg.inputManager.removeListener(this);
         this.onAnimationOver.removeAll();
+        //call the module onExit
+        if(this.__onExitNum !== undefined){
+            var i = this.__onExitNum;
+            while(i >= 0){
+                this["__onExit"+i]();
+                i--;
+            }
+        }
     },
     _updateLaguage:function(){
         if(lg.languageIndex > -1 && this.name && this.name.indexOf("label__") > -1) this.gotoAndStop(lg.languageIndex);
@@ -527,6 +546,12 @@ lg.TimeLine = cc.Sprite.extend({
             this._updateTileMap();
         }
         this._updateCollider();
+    },
+    setPositionX:function (x) {
+        this.setPosition(x, this._position.y);
+    },
+    setPositionY:function (y) {
+        this.setPosition(this._position.x, y);
     },
     setTile:function(tx, ty, forceUpdate)
     {
@@ -629,5 +654,8 @@ cc.defineGetterSetter(_p, "mainCollider", _p.getMainCollider);
 /** @expose */
 _p.center;
 cc.defineGetterSetter(_p, "center", _p.getCenter);
+
+_p.fps;
+cc.defineGetterSetter(_p, "fps", _p.getFPS, _p.setFPS);
 
 delete window._p;
