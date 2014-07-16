@@ -36,6 +36,7 @@ lg.GunParam.create = function(param)
 lg.Gun = cc.Node.extend({
     owner:null,
     param:null,
+    aimTarget:null,
     _firing:false,
     _pool:null,
     _targetMap:null,
@@ -85,6 +86,10 @@ lg.Gun = cc.Node.extend({
             return;
         }
         var pos = this.parent.convertToWorldSpace(this.getPosition());
+        if(this.aimTarget){
+            var angle = lg.getAngle(lg.getPosition(this, true), this.aimTarget.center);
+            this.rotation = angle - this.param.angleOffset;
+        }
         pos = lg.bulletCanvas.convertToNodeSpace(pos);
         var rot = lg.getRotation(this, true);
         var b = null;

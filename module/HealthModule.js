@@ -7,7 +7,7 @@ lg.HealthModule = {
     maxHealth:100,
     health:100,
     dead:false,
-    body:null,//the body to be hurted, when health == 0, the body will disappear, default body is the gunner itself
+    ownerBody:null,//the body to be hurted, when health == 0, the body will disappear, default body is the gunner itself
     onEnter:function(){
         this.health = this.maxHealth;
         this.dead = false;
@@ -30,7 +30,7 @@ lg.HealthModule = {
     _onDie:function()
     {
         cc.log("die in module")
-        if(this.body) this.body.destroy();
+        if(this.ownerBody) this.ownerBody.destroy();
         else this.destroy();
     },
     _canBeHurt:function()

@@ -191,6 +191,13 @@ lg.MovieClip = lg.TimeLine.extend({
     {
         this._super();
         this.autoPlayChildren = false;
+        for(var key in this._namedChildren) {
+            var child = this._namedChildren[key];
+            if(child instanceof lg.TimeLine) {
+                child.gotoAndStop(0);
+            }
+        }
+
     }
 });
 lg.MovieClip.create = function(plistFile, assetID)

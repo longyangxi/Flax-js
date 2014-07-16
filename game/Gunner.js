@@ -75,8 +75,6 @@ lg._gunnerDefine = {
     shoot:function(){
         this._auto = false;
         if(this.aimTarget) {
-            if(this.targets == null) this.targets = [this.aimTarget];
-            else if(this.targets.indexOf(this.aimTarget) == -1) this.targets.push(this.aimTarget);
             this._aimToTarget();
         }
         this._doBeginShoot();
@@ -89,9 +87,6 @@ lg._gunnerDefine = {
             return;
         }
         if(this.aimTarget){
-            this.schedule(this._aimToTarget, 0.1, cc.REPEAT_FOREVER);
-            if(this.targets == null) this.targets = [this.aimTarget];
-            else if(this.targets.indexOf(this.aimTarget) == -1) this.targets.push(this.aimTarget);
             this._aimToTarget();
         }
 
@@ -105,15 +100,15 @@ lg._gunnerDefine = {
     },
     _aimToTarget:function(){
         if(!this.aimTarget) return;
+        if(this.targets == null) this.targets = [this.aimTarget];
+        else if(this.targets.indexOf(this.aimTarget) == -1) this.targets.push(this.aimTarget);
         var i = -1;
         var n = this._guns.length;
         var gun = null;
-        var angle = null;
         while(++i < n)
         {
             gun = this._guns[i];
-            angle = lg.getAngle(lg.getPosition(gun, true), lg.getPosition(this.aimTarget, true));
-            gun.rotation = angle - this._gunParam.angleOffset;
+            gun.aimTarget = this.aimTarget;
         }
     },
     _doBeginShoot:function()
@@ -136,7 +131,6 @@ lg._gunnerDefine = {
         {
             this._guns[i].end();
         }
-        this.unschedule(this._aimToTarget);
     },
     upgradeGun:function(deltaParam, time)
     {
@@ -175,7 +169,7 @@ lg._gunnerDefine = {
     _onDie:function()
     {
         this.stopShoot();
-        if(this.body) this.body.destroy();
+        if(this.ownerBody) this.ownerBody.destroy();
         else this.destroy();
     }
 };
