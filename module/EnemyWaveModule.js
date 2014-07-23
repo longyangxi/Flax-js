@@ -22,6 +22,7 @@ lg.EnemyWaveModule = {
     waveOver:false,
     _waveDefine:null,
     _enemyCount:0,
+    _firstRun:true,
     onEnter:function()
     {
         this.totalWaves = this.waves.length;
@@ -41,7 +42,9 @@ lg.EnemyWaveModule = {
     {
         if(!this.wavePaused) return;
         this.wavePaused = false;
-        this.nextWave();
+        if(this._firstRun) this.nextWave();
+        else this._createWaveEnemy();
+        this._firstRun = false;
     },
     stopWave:function()
     {
@@ -50,7 +53,7 @@ lg.EnemyWaveModule = {
     },
     nextWave:function()
     {
-        if(this.wavePaused || this.waveOver) return;
+        if(this.waveOver || this.wavePaused) return;
         this._enemyCount = 0;
         this.currentWave++;
         this._waveDefine = this.waves[this.currentWave];
@@ -59,7 +62,7 @@ lg.EnemyWaveModule = {
     },
     _createWaveEnemy:function()
     {
-        if(this.wavePaused || this.waveOver) return;
+        if(this.waveOver || this.wavePaused) return;
         var assetID = lg.getRandomInArray(this._waveDefine.types);
         var enemy = this._doCreateEnemy(assetID);
         this.onEnemyIn.dispatch(enemy);

@@ -103,11 +103,7 @@ lg.replaceScene = function(sceneName)
         return;
     }
     lg.ObjectPool.release();
-    if(lg.bulletCanvas) lg.bulletCanvas = null;
-    if(lg.Gunner) {
-        lg.Gunner.enemies = [];
-        lg.Gunner.players = [];
-    }
+    if(lg.BulletCanvas) lg.BulletCanvas.reset();
     cc.director.resume();
     lg.currentSceneName = sceneName;
     lg.inputManager.removeFromParent(false);
@@ -292,9 +288,7 @@ lg.ifTouched = function(target, pos)
     if(!(target instanceof cc.Node)) return false;
 
     var local = target.convertToNodeSpace(pos);
-    var r = lg.getRect(target);
-    r.x = r.y = 0;
-//    cc.log(child.name+": "+cc.rectContainsPoint(r, local));
+    var r = lg.getRect(target,false);
     return cc.rectContainsPoint(r, local);
 };
 lg.ifCollide = function(sprite1, sprite2)

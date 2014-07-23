@@ -3,7 +3,7 @@
  */
 var lg = lg || {};
 
-var GunnerCamp = {
+lg.GunnerCamp = {
     player:"Player",
     enemy:"Enemy"
 };
@@ -22,19 +22,12 @@ lg._gunnerDefine = {
     {
         this._super();
         this._guns = [];
-        if(this.camp == GunnerCamp.player) lg.Gunner.players.push(this);
-        else lg.Gunner.enemies.push(this);
         if(this._gunParam) this.setGunParam(this._gunParam);
     },
     onRecycle:function()
     {
         this._super();
         this.stopShoot();
-        var arr = (this.camp == GunnerCamp.player) ? lg.Gunner.players : lg.Gunner.enemies;
-        var i = arr.indexOf(this);
-        if(i > -1) {
-            arr.splice(i, 1);
-        }
     },
     getGunParam:function(){
         return this._gunParam;
@@ -43,12 +36,6 @@ lg._gunnerDefine = {
     {
         this._gunParam = param;
         if(this.parent == null) return;
-        if(lg.bulletCanvas == null) {
-            var texturePath = cc.path.changeBasename(param.bulletPlist, ".png");
-            lg.bulletCanvas = lg.BulletCanvas.create(texturePath);
-            //todo, the parent maybe is not very good
-            this.parent.addChild(lg.bulletCanvas, 9999);
-        }
         if(param.gunAnchors == null){
             cc.log("Pleas set the gunAnchors param!");
             return;
@@ -191,9 +178,6 @@ _p.gunParam;
 cc.defineGetterSetter(_p, "gunParam", _p.getGunParam, _p.setGunParam);
 
 delete window._p;
-
-lg.Gunner.players = [];
-lg.Gunner.enemies = [];
 
 lg.Gunner.create = function(plistFile, assetID)
 {
