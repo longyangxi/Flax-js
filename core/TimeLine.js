@@ -109,6 +109,8 @@ lg.TimeLine = cc.Sprite.extend({
     _currentSubAnim:null,
     _subAnims:null,
     _animSequence:null,
+    _loopSequence:false,
+    _sequenceIndex:0,
 
     ctor:function(plistFile, assetID){
         cc.Sprite.prototype.ctor.call(this);
@@ -279,18 +281,35 @@ lg.TimeLine = cc.Sprite.extend({
         this.loopStart = 0;
         this.loopEnd = this.totalFrames - 1;
         this.updatePlaying(true);
-        this._animSequence.length = 0;
     },
+    /**
+     * Play a sequence animations, for example:
+     * hero.playSequence("anim1","anim2");//play anim1 firstly, and then play anim2 for loop
+     * hero.playSequence("anim1",3,"anim2")//play anim firstly, then stop for 3 seconds and play "anim2" for loop
+     * */
     playSequence:function(anims){
         if(anims == null) return false;
         if(!(anims instanceof  Array)) {
             anims = Array.prototype.slice.call(arguments);
         }
         if(anims.length == 0) return false;
-
-        var ok = this.gotoAndPlay(anims.shift());
+        this._loopSequence = false;
+        this._sequenceIndex = 0;
+        var ok = this.gotoAndPlay(anims[0]);
         this._animSequence = anims;
         return ok;
+    },
+    /**
+     * Play a sequence animations for loop, for example:
+     * hero.playSequenceLoop("anim1","anim2");//play anim1 firstly, and then play anim2, loop this behavior again and again
+     * hero.playSequenceLoop("anim1",3,"anim2",2)//play anim1 firstly, then stop for 3 seconds and play "anim2", stop for 2 second,loop this behavior again and again
+     * */
+    playSequenceLoop:function(anims){
+        if(!(anims instanceof  Array)) {
+            anims = Array.prototype.slice.call(arguments);
+        }
+        this.playSequence(anims);
+        this._loopSequence = true;
     },
     setSubAnim:function(anim, autoPlay)
     {
@@ -304,7 +323,7 @@ lg.TimeLine = cc.Sprite.extend({
         this.setPlist(this.plistFile, this._baseAssetID+"$"+anim);
         if(autoPlay === false) this.gotoAndStop(0);
         else this.gotoAndPlay(0);
-        this._animSequence.length = 0;
+        this._animTime = 0;
         return true;
     },
     gotoAndPlay:function(frameOrLabel)
@@ -336,7 +355,7 @@ lg.TimeLine = cc.Sprite.extend({
         }
         this.renderFrame(this.currentFrame);
         this.updatePlaying(true);
-        this._animSequence.length = 0;
+        this._animTime = 0;
         return true;
     },
     stop:function()
@@ -366,7 +385,6 @@ lg.TimeLine = cc.Sprite.extend({
         this.updatePlaying(false);
         this.currentFrame = frameOrLabel;
         this.renderFrame(frameOrLabel);
-        this._animSequence.length = 0;
         return true;
     },
     setFPS:function(f)
@@ -393,11 +411,13 @@ lg.TimeLine = cc.Sprite.extend({
             this.unschedule(this.onFrame);
         }
     },
+    _animTime:0,
     onFrame:function(delta)
     {
         if(!this._visible || this.inRecycle) return;
         this.renderFrame(this.currentFrame);
         this.currentFrame++;
+        this._animTime += delta;
         if(this.currentFrame > this.loopEnd)
         {
             if(this.onAnimationOver.getNumListeners())
@@ -416,12 +436,43 @@ lg.TimeLine = cc.Sprite.extend({
                 this.updatePlaying(false);
                 this.visible = false;
             }else if(this._animSequence.length) {
-                var anims = this._animSequence.concat();
-                this.gotoAndPlay(anims.shift());
-                this._animSequence = anims;
+                this._playNext();
             }else{
                 this.currentFrame = this.loopStart;
             }
+            this._animTime = 0;
+        }
+    },
+    _playNext:function(){
+        this._sequenceIndex++;
+        if(this._sequenceIndex >= this._animSequence.length){
+            if(!this._loopSequence) {
+                this._animSequence = [];
+                return;
+            }
+            this._sequenceIndex = 0;
+        }
+        var anims = this._animSequence;
+        var anim = anims[this._sequenceIndex];
+        if(typeof anim === "number"){
+            if(this._loopSequence && this._sequenceIndex == anims.length - 1){
+                this._sequenceIndex = 0;
+            }else{
+                this._sequenceIndex++;
+            }
+            if(anims.length > this._sequenceIndex && typeof anims[this._sequenceIndex] === "string"){
+                var delay = anim;
+                anim = anims[this._sequenceIndex];
+                this.scheduleOnce(function(){
+                    this.gotoAndPlay(anim);
+                }, delay - this._animTime);
+                this.updatePlaying(false);
+            }else{
+                this._animSequence = [];
+                this.currentFrame = this.loopStart;
+            }
+        }else{
+            this.gotoAndPlay(anim);
         }
     },
     isValideFrame:function(frame)
@@ -588,13 +639,13 @@ lg.TimeLine = cc.Sprite.extend({
         this.autoStopWhenOver = false;
         this.autoHideWhenOver = false;
         this.gotoAndStop(0);
-//        this.stopAllActions();
-//        this.unscheduleAllCallbacks();
         if(this._tileMap) this._tileMap.removeObject(this);
         lg.inputManager.removeListener(this);
         this._tileInited = false;
         this.setPosition(0, 0);
         this._animSequence.length = 0;
+        this._loopSequence = false;
+        this._sequenceIndex = 0;
 
         //remove all anchor nodes
         var node = null;

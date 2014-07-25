@@ -14,7 +14,7 @@ var ButtonState = {
 };
 
 lg._buttonDefine = {
-    name:null,
+    isRadioButton:false,
     _state:null,
 
     onEnter:function(){

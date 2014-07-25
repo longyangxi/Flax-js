@@ -56,7 +56,10 @@ lg.AssetsManager = cc.Class.extend({
            assetID = assetID + "$" + subAnims[0];
        }
 
-        var mcCls = lg.nameToObject(clsName);
+       var mcCls = lg.nameToObject(clsName);
+       if(mcCls == null && clsPreDefined){
+           throw "The class: "+clsName+" doesn't exist!"
+       }
         if(mcCls == null && !clsPreDefined) {
             var define = this.getDisplayDefine(plistFile, assetID);
             var isMC = false;

@@ -195,7 +195,7 @@ lg.InputManager = cc.Node.extend({
         if(onTarget && (lg.isButton(target))){
             if(target.isSelectable())
             {
-                if (!target.isSelected()) target.setState(ButtonState.SELECTED);
+                if (!target.isSelected() || target.isRadioButton) target.setState(ButtonState.SELECTED);
                 else target.setState(ButtonState.UP);
             }else{
                 target.setState(ButtonState.UP);
