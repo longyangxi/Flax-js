@@ -188,6 +188,12 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
         this._bullets.push(b);
         return b;
     },
+    destroyBullet:function(b, i){
+        if(i === undefined) i = this._bullets.indexOf(b);
+        if(i < 0) return;
+        b.destroy();
+        this._bullets.splice(i, 1);
+    },
     update:function(delta)
     {
         var i = this._bullets.length;
@@ -196,7 +202,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
         var targets = null;
         var j = -1;
         var rect = null;
-        var over = false;
+        var hitted = false;
         var pos = null;
         var rot = null;
         //Note: how to delete item of an Array in a loop, this is a template!
@@ -210,26 +216,23 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
             b.rotation = lg.getAngle1(b.__vx, b.__vy, true) - b.param.angleOffset;
 
             rect = lg.getRect(b, true);
-            over = false;
+            hitted = false;
             targets = null;
             var outOfBounds = !cc.rectIntersectsRect(this.stageRect, rect);
-            if(outOfBounds){
-                over = true;
-            }else{
+            if(!outOfBounds){
                 targets = this._checkHittedTarget(b, rect, false);
-            }
-            if(targets && targets.length){
-                pos = lg.getPosition(b, true);
-                var radius = b.param.damageRadius;
-                if(radius > 0){
-                    rect = cc.rect(pos.x - radius/2, pos.y - radius/2, radius, radius);
-                    targets = this._checkHittedTarget(b, rect, true);
+                if(targets && targets.length){
+                    pos = lg.getPosition(b, true);
+                    var radius = b.param.damageRadius;
+                    if(radius > 0){
+                        rect = cc.rect(pos.x - radius/2, pos.y - radius/2, radius, radius);
+                        targets = this._checkHittedTarget(b, rect, true);
+                    }
+                    hitted = true;
                 }
-                over = true;
             }
-            if(over && !b.param.alwaysLive) {
-                b.destroy();
-                this._bullets.splice(i, 1);
+            if(outOfBounds || (hitted && !b.param.alwaysLive)) {
+                this.destroyBullet(b, i);
             }
         }
     },
