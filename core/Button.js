@@ -14,7 +14,7 @@ var ButtonState = {
 };
 
 lg._buttonDefine = {
-    isRadioButton:false,
+    radioGroup:"",//All the button with the same radioGroup will only have only one button selected!
     _state:null,
 
     onEnter:function(){

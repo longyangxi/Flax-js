@@ -16,7 +16,7 @@ lg.InputManager = cc.Node.extend({
     inDragging:false,
     _masks:[],
     _callbacks:{},
-    _globalListener:null,
+    _radioButtons:{},
     onEnter:function()
     {
         this._super();
@@ -51,6 +51,7 @@ lg.InputManager = cc.Node.extend({
         this._masks = [];
         this.inTouching = false;
         this._callbacks = {};
+        this._radioButtons = {};
         cc.eventManager.removeAllListeners();
     },
     /**
@@ -108,7 +109,10 @@ lg.InputManager = cc.Node.extend({
         if(func == null) {
             throw "Event callback can not be null!"
         }
-        if(target == null) target = this;
+        if(target == null) {
+            cc.log("target is null, make sure you want to listen to the full screen input!")
+            target = this;
+        }
 
         type = (type == null) ? InputType.click : type;
 
@@ -116,7 +120,13 @@ lg.InputManager = cc.Node.extend({
         if(arr == null){
             arr = [];
             this._callbacks[target.__instanceId] = arr;
-            if(target != this) this._createListener(target, true);
+            if(target != this) {
+                this._createListener(target, true);
+                if(lg.isButton(target) && target.radioGroup){
+                    if(this._radioButtons[target.radioGroup] == null) this._radioButtons[target.radioGroup] = [];
+                    this._radioButtons[target.radioGroup].push(target);
+                }
+            }
         }
 
         var i = arr.length;
@@ -195,8 +205,21 @@ lg.InputManager = cc.Node.extend({
         if(onTarget && (lg.isButton(target))){
             if(target.isSelectable())
             {
-                if (!target.isSelected() || target.isRadioButton) target.setState(ButtonState.SELECTED);
-                else target.setState(ButtonState.UP);
+                if (!target.isSelected() || target.radioGroup){
+                    if(!target.isSelected() && target.radioGroup){
+                        var arr = this._radioButtons[target.radioGroup];
+                        if(arr && arr.length > 1){
+                            for(var i = 0; i < arr.length; i++){
+                                if(arr[i] != target){
+                                    arr[i].setState(ButtonState.UP);
+                                }
+                            }
+                        }
+                    }
+                    target.setState(ButtonState.SELECTED);
+                }else {
+                    target.setState(ButtonState.UP);
+                }
             }else{
                 target.setState(ButtonState.UP);
             }
@@ -206,10 +229,6 @@ lg.InputManager = cc.Node.extend({
     handleTouchMoved:function(touch, event)
     {
         var target = event.getCurrentTarget();
-//        if(this._itemTouched && this._itemTouched instanceof lg.Button) {
-//            var state = (this._itemTouched.isSelectable() && this._itemTouched.isSelected()) ? ButtonState.SELECTED : ButtonState.UP;
-//            this._itemTouched.setState(state);
-//        }
         if(lg.isButton(target)){
             if(lg.ifTouched(target, touch.getLocation())){
                 this._setButtonState(target, ButtonState.DOWN);
