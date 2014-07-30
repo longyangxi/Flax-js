@@ -15,7 +15,6 @@ lg.Collider = cc.Class.extend({
     width:0,
     height:0,
     rotation:0,
-    _bottomLeft:null,
     _localRect:null,
     ctor:function(arr, centerAnchor){
         this.type = arr[0];
@@ -25,13 +24,10 @@ lg.Collider = cc.Class.extend({
         this.height = arr[4];
         this.rotation = arr[5];
         if(centerAnchor === false) {
-            this._bottomLeft = cc.p(this.x, this.y);
             this.x += this.width/2;
             this.y += this.height/2;
-        }else{
-            this._bottomLeft = cc.p(this.x - this.width/2, this.y - this.height/2);
         }
-        this._localRect = cc.rect(this._bottomLeft.x, this._bottomLeft.y, this.width, this.height);
+        this._localRect = cc.rect(this.x - this.width/2, this.y - this.height/2, this.width, this.height);
     },
     clone:function(){
         var c = new lg.Collider([this.type,this.x, this.y, this.width, this.height, this.rotation]);
@@ -46,14 +42,16 @@ lg.Collider = cc.Class.extend({
         //todo, add more type check
         //todo, if rotation
     },
-    //todo, if rotation != 0 .....
     getRect:function(global){
         global = (global !== false);
         if(!global) return this._localRect;
-        var pos = this.owner.convertToWorldSpace(this._bottomLeft);
-//        if(this.owner.parent && !global) pos = this.owner.parent.convertToNodeSpace(pos);
+
+        var pos = this.owner.convertToWorldSpace(cc.p(this.x, this.y));
         var s = lg.getScale(this.owner, true);
-        var rect = cc.rect(pos.x, pos.y, this.width*Math.abs(s.x), this.height*Math.abs(s.y));
+        var w = this.width*Math.abs(s.x);
+        var h = this.height*Math.abs(s.y);
+        var rect = cc.rect(pos.x - w/2, pos.y - h/2, w, h);
+
         return rect;
     }
 });
@@ -95,7 +93,6 @@ lg.TimeLine = cc.Sprite.extend({
     _colliders:null,
     _mainCollider:null,
     _definedMainCollider:false,
-//    collidCenter:null,
     _anchorBindings:null,
     _inited:false,
     tx:0,
@@ -381,7 +378,6 @@ lg.TimeLine = cc.Sprite.extend({
             cc.log("The frame: "+frameOrLabel +" is out of range!");
             return false;
         }
-//        if(!this.playing && this.currentFrame == frame) return true;
         this.updatePlaying(false);
         this.currentFrame = frameOrLabel;
         this.renderFrame(frameOrLabel);
@@ -556,9 +552,8 @@ lg.TimeLine = cc.Sprite.extend({
     _updateTileMap:function(forceUpdate){
         var pos = this._position;
         if(this.parent) pos = this.parent.convertToWorldSpace(pos);
-        var newTx = this._tileMap.getTileIndexX(pos.x);
-        var newTy = this._tileMap.getTileIndexY(pos.y);
-        this.setTile(newTx, newTy, forceUpdate);
+        var t = this._tileMap.getTileIndex(pos);
+        this.setTile(t.x, t.y, forceUpdate);
     },
     _updateCollider:function(){
 //        if(this._mainCollider == null) {

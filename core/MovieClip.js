@@ -159,19 +159,6 @@ lg.MovieClip = lg.TimeLine.extend({
         }
         return null;
     },
-    getRect:function(global)
-    {
-        global = (global !== false);
-        if(!global) return this._mainCollider.getRect(false);
-        var w = this._mainCollider.width;
-        var h = this._mainCollider.height;
-        var origin = cc.p(this._mainCollider._bottomLeft.x, this._mainCollider._bottomLeft.y);
-        var s = lg.getScale(this, global);
-        if(s.x < 0) origin.x = origin.x + w;
-        if(s.y < 0) origin.y = origin.y + h;
-        origin = this.convertToWorldSpace(origin);
-        return cc.rect(origin.x, origin.y, w*Math.abs(s.x), h*Math.abs(s.y));
-    },
     getLabelText:function(labelName, ifNest)
     {
         var label = this.getChildByName(labelName, ifNest === undefined ? true : ifNest);

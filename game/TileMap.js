@@ -19,6 +19,7 @@ lg.TileMap = cc.Class.extend({
     id:"default",
     offsetX:0,
     offsetY:0,
+    isHexagon:false,//if true, the tiles will layout like the bubble safari
     autoLayout:false,
     _tileWidth:0,
     _tileHeight:0,
@@ -27,13 +28,11 @@ lg.TileMap = cc.Class.extend({
     _objectsMap:null,
     _objectsArr:null,
 
-
     setTileSize:function(tw, th)
     {
         if(this._tileWidth == tw && this._tileHeight == th) return;
         this._tileWidth = tw;
         this._tileHeight = th;
-//        this.snapAll();
     },
     setMapSizePixel:function(w, h)
     {
@@ -113,7 +112,6 @@ lg.TileMap = cc.Class.extend({
                         var child = children[k];
                         if(child instanceof cc.Node){
                             child.destroy();
-//                            child.removeFromParent(true);
                         }
                     }
                 }
@@ -124,23 +122,21 @@ lg.TileMap = cc.Class.extend({
     },
     getPixelSize:function()
     {
-        return cc.size(this._tileWidth*this._mapWidth, this._tileHeight*this._mapHeight);
+        var s = cc.size(this._tileWidth*this._mapWidth, this._tileHeight*this._mapHeight);
+        if(this.isHexagon) s.width += this._tileWidth*0.5;
+        return s;
     },
-    getTileIndexX:function(x)
-    {
-        return Math.floor((x - this.offsetX)/this._tileWidth);
+    getTileIndex:function(pos){
+        var tx = Math.floor((pos.x - this.offsetX)/this._tileWidth);
+        var ty = Math.floor((pos.y - this.offsetY)/this._tileHeight);
+        if(this.isHexagon && ty%2 != 0) tx = Math.floor((pos.x - this.offsetX - this._tileWidth*0.5)/this._tileWidth);
+        return cc.p(tx, ty);
     },
-    getTileIndexY:function(y)
-    {
-        return Math.floor((y - this.offsetY)/this._tileHeight);
-    },
-    getTiledPositionX:function(tx)
-    {
-        return (tx + 0.5)*this._tileWidth + this.offsetX;
-    },
-    getTiledPositionY:function(ty)
-    {
-        return (ty + 0.5)*this._tileHeight + this.offsetY;
+    getTiledPosition:function(tx, ty){
+        var x = (tx + 0.5)*this._tileWidth + this.offsetX;
+        var y = (ty + 0.5)*this._tileHeight + this.offsetY;
+        if(this.isHexagon && ty%2 != 0) x += 0.5*this._tileWidth;
+        return cc.p(x, y);
     },
     /**
      * All the tiles/objects occupied by the sprite bounds, if returnObjects == true, then return all the objects in these tiles
@@ -156,10 +152,12 @@ lg.TileMap = cc.Class.extend({
     getCoveredTiles1:function(rect, returnObjects)
     {
         returnObjects = (returnObjects === true);
-        var leftX = this.getTileIndexX(rect.x);
-        var leftY = this.getTileIndexY(rect.y);
-        var rightX = this.getTileIndexX(rect.x + rect.width);
-        var rightY = this.getTileIndexY(rect.y + rect.height);
+        var t = this.getTileIndex(cc.p(rect.x, rect.y));
+        var leftX = t.x;
+        var leftY = t.y;
+        t = this.getTileIndex(cc.p(rect.x + rect.width, rect.y + rect.height));
+        var rightX = t.x;
+        var rightY = t.y;
         var tiles = [];
         var i = leftX - 1;
         var j = 0;
@@ -186,10 +184,11 @@ lg.TileMap = cc.Class.extend({
         if(tx === undefined || ty === undefined) {
             pos = sprite.getPosition();
             if(sprite.parent) pos = sprite.parent.convertToWorldSpace(pos);
-            tx = this.getTileIndexX(pos.x);
-            ty = this.getTileIndexY(pos.y);
+            var t = this.getTileIndex(pos);
+            tx = t.x;
+            ty = t.y;
         }
-        pos = cc.p(this.getTiledPositionX(tx), this.getTiledPositionY(ty));
+        pos = this.getTiledPosition(tx, ty);
         if(sprite.parent) pos = sprite.parent.convertToNodeSpace(pos);
         sprite.setPosition(pos);
         if(autoAdd === true) {
@@ -233,7 +232,6 @@ lg.TileMap = cc.Class.extend({
                 if(!inserted && child.y <= object.y)
                 {
                     objs.splice(i, 0, object);
-//                    cc.log("add tile obj: "+object.id+", "+tx+": "+ty);
                     object.zIndex = Math.min(childCount, MAX_IN_TILE) + zIndex0;
                     inserted = true;
                     childCount++;
@@ -246,7 +244,6 @@ lg.TileMap = cc.Class.extend({
         if(!inserted)
         {
             objs.push(object);
-//            cc.log("add tile obj: "+object.id+", "+tx+": "+ty);
             object.zOrder = Math.min(childCount, MAX_IN_TILE) + zIndex0;
         }
     },
@@ -280,7 +277,6 @@ lg.TileMap = cc.Class.extend({
             if(i > -1)
             {
                 objs.splice(i, 1);
-//                object.tx = object.ty = -1;
             }
             i = this._objectsArr.indexOf(object);
             if(i > -1){
@@ -319,9 +315,8 @@ lg.TileMap = cc.Class.extend({
      * */
     getObjects1:function(x, y)
     {
-        var tx = this.getTileIndexX(x);
-        var ty = this.getTileIndexY(y);
-        return this.getObjects(tx, ty);
+        var t = this.getTileIndex(cc.p(x, y));
+        return this.getObjects(t.x, t.y);
     },
     getAllObjects:function()
     {
