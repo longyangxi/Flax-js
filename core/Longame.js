@@ -136,21 +136,27 @@ lg.setSoundEnabled = function(value)
     if(value)
     {
         audioEngine.resumeMusic();
+        if(lg._lastMusic) {
+            lg.playMusic(lg._lastMusic, true);
+            lg._lastMusic = null;
+        }
     }else{
         audioEngine.pauseMusic();
         audioEngine.stopAllEffects();
     }
 }
-lg.getSoundEnabled = function()
-{
+lg.getSoundEnabled = function() {
     return lg._soundEnabled;
 }
+lg._lastMusic = null;
 lg.playMusic = function(path, loop)
 {
+    var audioEngine = cc.audioEngine;
+    audioEngine.stopMusic(true);
     if(lg._soundEnabled){
-        var audioEngine = cc.audioEngine;
-        audioEngine.stopMusic(true);
         audioEngine.playMusic(path, loop);
+    }else{
+        lg._lastMusic = path;
     }
 }
 lg.playSound = function(path)
@@ -286,16 +292,17 @@ lg.ifTouched = function(target, pos)
 {
     if(target == null) return false;
     if(!(target instanceof cc.Node)) return false;
-
+    //if its lg.TimeLine
+    if(target.mainCollider){
+        return target.mainCollider.containPoint(pos);
+    }
     var local = target.convertToNodeSpace(pos);
     var r = lg.getRect(target,false);
     return cc.rectContainsPoint(r, local);
 };
 lg.ifCollide = function(sprite1, sprite2)
 {
-    var rect1 = lg.getRect(sprite1, true);
-    var rect2 = lg.getRect(sprite2, true);
-    return cc.rectIntersectsRect(rect1, rect2);
+    return sprite1.mainCollider.checkCollision(sprite2.mainCollider);
 };
 lg.isChildOf = function(child, parent)
 {
