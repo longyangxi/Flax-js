@@ -90,11 +90,13 @@ lg.ProgressBar = lg.Animator.extend({
     {
         if(this.pBar == null) return;
         if(this._type == lg.ProgressBarType.RADIAL) {
-            this.pBar.type = cc.PROGRESS_TIMER_TYPE_RADIAL;
+            //In version 3.0 alpha called cc.PROGRESS_TIMER_TYPE_RADIAL,  3.0 rc1 called cc.ProgressTimer.TYPE_RADIAL
+            this.pBar.type = 0;
             this.pBar.setReverseDirection(this._reversed);
             this.pBar.midPoint = cc.p(0.5, 0.5);
         }else{
-            this.pBar.type = cc.PROGRESS_TIMER_TYPE_BAR;
+            //In version 3.0 alpha called cc.PROGRESS_TIMER_TYPE_BAR,  3.0 rc1 called cc.ProgressTimer.TYPE_BAR
+            this.pBar.type = 1;
             var isHorizontal = this._type == lg.ProgressBarType.HORIZONTAL;
             var mid = cc.p(0, 0);
             var cRate = cc.p(isHorizontal ? 1: 0, isHorizontal ? 0 : 1);
@@ -127,4 +129,3 @@ _p.reversed;
 cc.defineGetterSetter(_p, "reversed", _p.getReversed, _p.setReversed);
 
 delete window._p;
-

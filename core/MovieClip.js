@@ -174,6 +174,13 @@ lg.MovieClip = lg.TimeLine.extend({
         }
         return null;
     },
+    setChildrenPhysics:function(type, density, friction,restitution, isSensor, fixedRotation, bullet){
+        var child = null;
+        for(var key in this._namedChildren) {
+            child = this._namedChildren[key];
+            child._mainCollider.setPhysics(type, density, friction, restitution, isSensor, fixedRotation, bullet);
+        }
+    },
     onRecycle:function()
     {
         this._super();

@@ -1,7 +1,7 @@
 /**
  * Created by long on 14-2-2.
  */
-
+PTM_RATIO = 32;
 RADIAN_TO_DEGREE = 180.0/Math.PI;
 DEGREE_TO_RADIAN = Math.PI/180.0;
 IMAGE_TYPES = ["png", "jpg", "bmp","jpeg","gif"];
@@ -107,6 +107,7 @@ lg.replaceScene = function(sceneName)
     cc.director.resume();
     lg.currentSceneName = sceneName;
     lg.inputManager.removeFromParent(false);
+    if(lg.stopPhysicsWorld) lg.stopPhysicsWorld();
     lg.currentScene = new s.scene();
     lg.preload(s.res,function(){
         lg.currentScene.addChild(lg.inputManager, 999999);
@@ -166,7 +167,6 @@ lg.playSound = function(path)
     }
 }
 //----------------------sound about-------------------------------------------------------
-
 lg._checkDeviceOrientation = function(){
     if(!lg._orientationTip && cc.sys.isMobile && cc.game.config.rotateImg){
         lg._orientationTip = cc.LayerColor.create(cc.color(0,0,0), cc.visibleRect.width + 10, cc.visibleRect.height +10);

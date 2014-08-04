@@ -2,112 +2,6 @@
  * Created by long on 14-2-14.
  */
 var lg = lg || {};
-lg.ColliderType = {
-    rect: "Rect",
-    circle: "Circle"
-}
-lg.Collider = cc.Class.extend({
-    name:null,
-    owner:null,
-    type:lg.ColliderType.rect,
-    _center:null,//center point
-    _width:0,
-    _height:0,
-    _rotation:0,
-    _localRect:null,
-    ctor:function(arr, centerAnchor){
-        this.type = arr[0];
-        this._center = cc.p(arr[1], arr[2]);
-        this._width = arr[3];
-        this._height = arr[4];
-        this._rotation = arr[5];
-        if(centerAnchor === false) {
-            this._center.x += this._width/2;
-            this._center.y += this._height/2;
-        }
-        this._localRect = cc.rect(this._center.x - this._width/2, this._center.y - this._height/2, this._width, this._height);
-    },
-    clone:function(){
-        var c = new lg.Collider([this.type,this._center.x, this._center.y, this._width, this._height, this._rotation]);
-        c.name = this.name;
-        c.owner = this.owner;
-        return c;
-    },
-    checkCollision:function(collider){
-        if(collider.type == this.type && this.type == lg.ColliderType.rect){
-            return cc.rectIntersectsRect(this.getRect(true), collider.getRect(true));
-        }else if(collider.type == this.type && this.type == lg.ColliderType.circle){
-            var pos = this.getCenter(true);
-            var pos1 = collider.getCenter(true);
-            return cc.pDistance(pos, pos1) <= (this.getRealSize().width + collider.getRealSize().width)/2;
-        }else if(this.type == lg.ColliderType.rect){
-            return this._ifRectCollidCircle(this.getRect(true),collider.getRect(true));
-        }else if(this.type == lg.ColliderType.circle){
-            return this._ifRectCollidCircle(collider.getRect(true), this.getRect(true));
-        }
-    },
-    containPoint:function(pos){
-        pos = this.owner.convertToNodeSpace(pos);
-        if(this.type == lg.ColliderType.rect){
-            return cc.rectContainsPoint(this._localRect, pos);
-        }
-        var dis = cc.pDistance(pos, this._center);
-        return dis <= this._width/2;
-    },
-    /**
-     * Check if the rectangle collide with the circle
-     * toto: to be verified!
-     * */
-    _ifRectCollidCircle:function(rect, circle){
-        //Find the vertical & horizontal (distX/distY) distances between the circle’s center and the rectangle’s center
-        var distX = Math.abs((circle.x + circle.width/2) - (rect.x + rect.width/2));
-        var distY = Math.abs((circle.y + circle.height/2) - (rect.y + rect.height/2));
-        //If the distance is greater than halfCircle + halfRect, then they are too far apart to be colliding
-        if (distX > (rect.width/2 + circle.width/2)) return false;
-        if (distY > (rect.height/2 + circle.width/2)) return false;
-        //If the distance is less than halfRect then they are definitely colliding
-        if (distX <= (rect.width/2)) return true;
-        if (distY <= (rect.height/2)) return true;
-        //Test for collision at rect corner.
-        var dx=distX-rect.width/2;
-        var dy=distY-rect.height/2;
-        return (dx*dx+dy*dy<=(circle.width/2*circle.width/2));
-    },
-    getRect:function(global){
-        global = (global !== false);
-        if(!global) return this._localRect;
-
-        var center = this.getCenter(true);
-        var size = this.getRealSize();
-        var rect = cc.rect(center.x - size.width/2, center.y - size.height/2, size.width, size.height);
-        return rect;
-    },
-    getCenter:function(global){
-        if(global === false) return this._center;
-        return this.owner.convertToWorldSpace(this._center);
-    },
-    /**
-     * If the owner or its parent has been scaled, the calculate the real size of the collider
-     * */
-    getRealSize:function(){
-        var s = lg.getScale(this.owner, true);
-        var w = this._width*Math.abs(s.x);
-        var h = this._height*Math.abs(s.y);
-        return {width:w, height:h};
-    },
-    debugDraw:function(){
-        var rect = this.getRect(true);
-        if(this.type == lg.ColliderType.rect){
-            lg.drawRect(rect)
-        }else{
-            var drawNode = cc.DrawNode.create();
-            if(lg.currentScene) lg.currentScene.addChild(drawNode, 99999);
-            var lineWidth = 1;
-            var lineColor = cc.color(255, 0, 0, 255);
-            drawNode.drawCircle(this.getCenter(true), rect.width/2, 0, 360, false,lineWidth, lineColor);
-        }
-    }
-});
 
 lg.Anchor = cc.Class.extend({
     x:0,
@@ -241,6 +135,19 @@ lg.TimeLine = cc.Sprite.extend({
         }
         return null;
     },
+    _physicsParam:null,
+    _physicsBuilded:false,
+    /**
+     * Enable the physics with the params
+     * @param {int} type Box2D.Dynamics.b2Body.b2_dynamicBody,b2_staticBody,b2_kinematicBody
+     * */
+    setPhysics:function(type, density, friction,restitution, isSensor, fixedRotation, bullet){
+        this._physicsParam = {type:type, density:density,friction:friction,restitution:restitution,isSensor:isSensor,fixedRotation:fixedRotation,bullet:bullet};
+        if(this.parent) {
+            this._mainCollider.setPhysics(type, density, friction, restitution, isSensor, fixedRotation, bullet);
+            this._physicsBuilded = true;
+        }
+    },
     _initColliders:function(){
         this._mainCollider = null;
         this._colliders = {};
@@ -259,7 +166,9 @@ lg.TimeLine = cc.Sprite.extend({
                     cd = this._colliders[k][frame] = cArr[frame].clone();
                     cd.name = k;
                     cd.owner = this;
-                    if(k == "main") this._mainCollider = cd;
+                    if(k == "main" || "base") {
+                        this._mainCollider = cd;
+                    }
                 }
             }
         }
@@ -569,6 +478,9 @@ lg.TimeLine = cc.Sprite.extend({
             this._updateTileMap(true);
         }
         this._updateCollider();
+        if(this._physicsParam && !this._physicsBuilded){
+            this._mainCollider.setPhysics(this._physicsParam.type, this._physicsParam.density, this._physicsParam.friction, this._physicsParam.restitution, this._physicsParam.isSensor, this._physicsParam.fixedRotation, this._physicsParam.bullet);
+        }
         this._updateLaguage();
         //call the module onEnter
         lg.callModuleOnEnter(this);
