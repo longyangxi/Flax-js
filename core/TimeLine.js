@@ -34,6 +34,7 @@ lg.TimeLine = cc.Sprite.extend({
     name:null,
     assetID:null,
     clsName:"lg.TimeLine",
+    __isTimeLine:true,
     _fps:30,
     playing:false,
     inRecycle:false,

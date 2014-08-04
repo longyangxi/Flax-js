@@ -9,6 +9,7 @@ lg.MovieClip = lg.TimeLine.extend({
     noOpacity:true,
     _namedChildren:null,
     _theRect:null,
+    __isMovieClip:true,
 
     replaceChild:function(childName, assetID)
     {

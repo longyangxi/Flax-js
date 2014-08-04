@@ -46,10 +46,9 @@ lg.Collider = cc.Class.extend({
         bodyDef.fixedRotation = fixedRotation;
         bodyDef.bullet = bullet;
         bodyDef.position.Set(pos.x / PTM_RATIO, pos.y / PTM_RATIO);
-
         bodyDef.userData = this.owner;
         var body = lg.getPhysicsWorld().CreateBody(bodyDef);
-
+        body.__rotationOffset = this.owner.rotation;
         // Define another box shape for our dynamic body.
         size.width /= PTM_RATIO;
         size.height /= PTM_RATIO;
@@ -127,6 +126,11 @@ lg.Collider = cc.Class.extend({
     getCenter:function(global){
         if(global === false) return this._center;
         return this.owner.convertToWorldSpace(this._center);
+    },
+    getOffsetToAnchor:function(){
+        var center = this.getCenter(true);
+        var anchorPos = lg.getPosition(this.owner, true);
+        return cc.p(center.x - anchorPos.x, center.y - anchorPos.y);
     },
     /**
      * If the owner or its parent has been scaled, the calculate the real size of the collider
@@ -222,29 +226,35 @@ lg.createPhysicalWalls = function(friction, restitution, walls){
         world.CreateBody(bodyDef).CreateFixture(fixDef);
     }
 }
-
+//It is recommended that a fixed time step is used with Box2D for stability
+//of the simulation, however, we are using a variable time step here.
+//You need to make an informed choice, the following URL is useful
+//http://gafferongames.com/game-physics/fix-your-timestep/
+var velocityIterations = 8;
+var positionIterations = 1;
 lg._updatePhysicsWorld = function(dt){
-    //It is recommended that a fixed time step is used with Box2D for stability
-    //of the simulation, however, we are using a variable time step here.
-    //You need to make an informed choice, the following URL is useful
-    //http://gafferongames.com/game-physics/fix-your-timestep/
-    var velocityIterations = 8;
-    var positionIterations = 1;
     // Instruct the world to perform a single step of simulation. It is
     // generally best to keep the time step and iterations fixed.
     lg._physicsWorld.Step(dt, velocityIterations, positionIterations);
     //Iterate over the bodies in the physics world
     for (var b = lg._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
-        var myActor = b.GetUserData();
-        if (myActor != null) {
-            var pos = b.GetPosition();
+        var sprite = b.GetUserData();
+        if (sprite != null && sprite.parent) {
+            var pos = cc.p(b.GetPosition());
             pos.x *= PTM_RATIO;
             pos.y *= PTM_RATIO;
-            //todo,bug
-            pos = myActor.parent.convertToNodeSpace(pos);
-            myActor.x = pos.x;
-            myActor.y = pos.y;
-            myActor.rotation = -1 * RADIAN_TO_DEGREE*b.GetAngle();
+            pos = sprite.parent.convertToNodeSpace(pos);
+            //fix the anchor offset
+            if(sprite.__isTimeLine === true){
+                var offset = sprite.mainCollider.getOffsetToAnchor();
+                pos.x -= offset.x;
+                pos.y -= offset.y;
+            }
+            sprite.x = pos.x;
+            sprite.y = pos.y;
+            sprite.rotation = -1 * RADIAN_TO_DEGREE*b.GetAngle();
+            //fix the rotation offset
+            sprite.rotation += b.__rotationOffset;
         }
     }
 }
