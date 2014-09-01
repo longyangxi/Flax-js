@@ -32,7 +32,7 @@ lg.GunParam.create = function(param)
 {
     var gp = new lg.GunParam();
     //fixed the speed == 0 bug
-    if(param.speed == 0) param.speed = 0.1;
+    if(param.speed == 0) param.speed = 0.001;
     lg.copyProperties(param, gp);
     return gp;
 }
@@ -128,12 +128,21 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
     //out of the rect, the bullet will auto destroyed
     stageRect:null,
     plistFile:null,
+    onBulletHit:null,
+    onBulletOut:null,
     _bullets:null,
     onEnter:function(){
         this._super();
         this._bullets = [];
         if(this.stageRect == null) this.stageRect = cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height);
+        this.onBulletHit = new signals.Signal();
+        this.onBulletOut = new signals.Signal();
         this.scheduleUpdate();
+    },
+    onExit:function(){
+        this._super();
+        this.onBulletHit.removeAll();
+        this.onBulletOut.removeAll();
     },
     addBullet:function(rotation, position, param, owner){
         if(this.parent == null) {
@@ -147,6 +156,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
         if(owner && owner.targets) b.targets = owner.targets;
         if(param.targetMap) b.targetMap = lg.getTileMap(param.targetMap);
         b.fps = param.fps;
+        b.__physicalShooted = false;
         //if it's MovieClip
         if(b instanceof lg.MovieClip){
             b.__isMovieClip = true;
@@ -188,10 +198,10 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
         this._bullets.push(b);
         return b;
     },
-    destroyBullet:function(b, i){
+    destroyBullet:function(b, i, doDestroy){
         if(i === undefined) i = this._bullets.indexOf(b);
         if(i < 0) return;
-        b.destroy();
+        if(doDestroy !== false) b.destroy();
         this._bullets.splice(i, 1);
     },
     update:function(delta)
@@ -208,13 +218,20 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
         //Note: how to delete item of an Array in a loop, this is a template!
         while(i--) {
             b = this._bullets[i];
-            b.__vx = b.__vx + b.param.gravityX*delta;
-            b.__vy = b.__vy + b.param.gravityY*delta;
-            b.x += b.__vx*delta;
-            b.y += b.__vy*delta;
-
-            b.rotation = lg.getAngle1(b.__vx, b.__vy, true) - b.param.angleOffset;
-
+            //if the bullet controlled by physics, then don't move it here
+            if(b.mainCollider.physicsBody){
+                if(!b.__physicalShooted){
+                    b.mainCollider.physicsBody.SetLinearVelocity({x:b.__vx/PTM_RATIO, y:b.__vy/PTM_RATIO});
+                    b.__physicalShooted = true;
+                }
+//                continue;
+            }else{
+                b.__vx = b.__vx + b.param.gravityX*delta;
+                b.__vy = b.__vy + b.param.gravityY*delta;
+                b.x += b.__vx*delta;
+                b.y += b.__vy*delta;
+                b.rotation = lg.getAngle1(b.__vx, b.__vy, true) - b.param.angleOffset;
+            }
             rect = lg.getRect(b, true);
             hitted = false;
             targets = null;
@@ -231,8 +248,12 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
                     hitted = true;
                 }
             }
-            if(outOfBounds || (hitted && !b.param.alwaysLive)) {
+            if(outOfBounds) {
+                this.onBulletOut.dispatch(b);
                 this.destroyBullet(b, i);
+            }else if(hitted){
+                this.onBulletHit.dispatch(b);
+                if(!b.param.alwaysLive) this.destroyBullet(b, i);
             }
         }
     },

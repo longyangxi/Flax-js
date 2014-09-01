@@ -113,7 +113,7 @@ LinkFinder.findAvailableLink = function(useTween)
 LinkFinder._findEmptyNeighbor = function(tx, ty){
     var result = null;
     for(var i = 0; i < 4; i++){
-        var ds = EIGHT_DIRECTIONS[i];
+        var ds = EIGHT_DIRECT_VALUE[i];
         result = cc.p(tx + ds[0], ty + ds[1]);
         if(this.map.isEmptyTile(result.x, result.y)) return result;
     }

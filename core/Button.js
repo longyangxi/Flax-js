@@ -16,9 +16,11 @@ var ButtonState = {
 lg._buttonDefine = {
     radioGroup:"",//All the button with the same radioGroup will only have only one button selected!
     _state:null,
+    _initScale:null,
 
     onEnter:function(){
         this._super();
+        this._initScale = {x: this.scaleX, y : this.scaleY};
     },
     onExit:function(){
         this._super();
@@ -31,6 +33,16 @@ lg._buttonDefine = {
         {
             var optionState = this.isSelected() ? ButtonState.SELECTED : ButtonState.UP;
             if(!this.gotoAndStop(optionState)){
+                //if there is only one frame, we auto implement the button down effect
+                if(this.totalFrames == 1 && this._initScale){
+                    if(this._state.indexOf("down") > -1) {
+                        this.scaleX = this._initScale.x*0.95;
+                        this.scaleY = this._initScale.y*0.95;
+                    } else {
+                        this.scaleX = this._initScale.x;
+                        this.scaleY = this._initScale.y;
+                    }
+                }
                 this.gotoAndStop(0);
             }
         }

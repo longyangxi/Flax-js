@@ -56,6 +56,8 @@ lg.TimeLine = cc.Sprite.extend({
     _animSequence:null,
     _loopSequence:false,
     _sequenceIndex:0,
+    _physicsToBeSet:null,
+    _physicsColliders:null,
 
     ctor:function(plistFile, assetID){
         cc.Sprite.prototype.ctor.call(this);
@@ -136,17 +138,39 @@ lg.TimeLine = cc.Sprite.extend({
         }
         return null;
     },
-    _physicsParam:null,
-    _physicsBuilded:false,
     /**
      * Enable the physics with the params
      * @param {int} type Box2D.Dynamics.b2Body.b2_dynamicBody,b2_staticBody,b2_kinematicBody
      * */
-    setPhysics:function(type, density, friction,restitution, isSensor, fixedRotation, bullet){
-        this._physicsParam = {type:type, density:density,friction:friction,restitution:restitution,isSensor:isSensor,fixedRotation:fixedRotation,bullet:bullet};
+    addPhysics:function(name,type, density, friction,restitution, isSensor, fixedRotation, catBits, maskBits, bullet){
+        var collider = this.getCollider(name);
+        if(collider == null) {
+            cc.log("There is no collider named: "+name);
+            return null;
+        }else if(collider.physicsBody){
+            return collider.physicsBody;
+        }
+        var param = {type:type, density:density,friction:friction,restitution:restitution,isSensor:isSensor,fixedRotation:fixedRotation,catBits:catBits,maskBits:maskBits,bullet:bullet};
         if(this.parent) {
-            this._mainCollider.setPhysics(type, density, friction, restitution, isSensor, fixedRotation, bullet);
-            this._physicsBuilded = true;
+            var pBody = collider.addPhysics(type, density, friction, restitution, isSensor, fixedRotation, catBits, maskBits, bullet);
+            if(this._physicsColliders.indexOf(collider) == -1) this._physicsColliders.push(collider);
+            return pBody;
+        }
+        if(this._physicsToBeSet == null) this._physicsToBeSet = {};
+        if(this._physicsToBeSet[name] == null) this._physicsToBeSet[name] = param;
+        return null;
+    },
+    /**
+     * Remove the physics of name, if not set name, remove all
+     * */
+    removePhysics:function(name){
+        var i = this._physicsColliders.length;
+        while(i--){
+            var c = this._physicsColliders[i];
+            if(name == null || c.name == name){
+                c.removePhysics();
+                this._physicsColliders.splice(i, 1);
+            }
         }
     },
     _initColliders:function(){
@@ -179,6 +203,7 @@ lg.TimeLine = cc.Sprite.extend({
             this._mainCollider.name = "main";
             this._mainCollider.owner = this;
         }
+        this._physicsColliders = [];
     },
     getRect:function(global)
     {
@@ -208,6 +233,7 @@ lg.TimeLine = cc.Sprite.extend({
             cc.log(this.assetID+": there is no anchor named "+anchorName);
             return false;
         }
+        if(node == null) throw "Node can't be null!"
         if(this._anchorBindings.indexOf(node) > -1) {
             cc.log(this.assetID+": anchor has been bound, "+anchorName);
             return false;
@@ -479,8 +505,14 @@ lg.TimeLine = cc.Sprite.extend({
             this._updateTileMap(true);
         }
         this._updateCollider();
-        if(this._physicsParam && !this._physicsBuilded){
-            this._mainCollider.setPhysics(this._physicsParam.type, this._physicsParam.density, this._physicsParam.friction, this._physicsParam.restitution, this._physicsParam.isSensor, this._physicsParam.fixedRotation, this._physicsParam.bullet);
+        if(this._physicsToBeSet){
+            for(var name in this._physicsToBeSet){
+                var collider = this.getCollider(name);
+                var param = this._physicsToBeSet[name];
+                collider.addPhysics(param.type, param.density, param.friction, param.restitution, param.isSensor, param.fixedRotation, param.catBits, param.maskBits, param.bullet);
+                delete this._physicsToBeSet[name];
+                if(this._physicsColliders.indexOf(collider) == -1) this._physicsColliders.push(collider);
+            }
         }
         this._updateLaguage();
         //call the module onEnter
@@ -489,9 +521,31 @@ lg.TimeLine = cc.Sprite.extend({
     onExit:function()
     {
         this._super();
-        if(this._tileMap) this._tileMap.removeObject(this);
-        lg.inputManager.removeListener(this);
+
         this.onAnimationOver.removeAll();
+        lg.inputManager.removeListener(this);
+
+        //remove tilemap
+        if(this._tileMap) this._tileMap.removeObject(this);
+        this._tileMap = null;
+
+        //remove anchors
+        var node = null;
+        var i = -1;
+        var n = this._anchorBindings.length;
+        while(++i < n) {
+            node = this._anchorBindings[i];
+            if(node.destroy) node.destroy();
+            else node.removeFromParent(true);
+            delete  node.__anchor__;
+        }
+        this._anchorBindings.length = 0;
+
+        //remove physics
+        for(var i = 0; i < this._physicsColliders.length; i++){
+            this._physicsColliders[i].removePhysics();
+        }
+        this._physicsColliders = [];
         //call the module onExit
         lg.callModuleOnExit(this);
     },
@@ -599,8 +653,9 @@ lg.TimeLine = cc.Sprite.extend({
         this.autoStopWhenOver = false;
         this.autoHideWhenOver = false;
         this.gotoAndStop(0);
-        if(this._tileMap) this._tileMap.removeObject(this);
-        lg.inputManager.removeListener(this);
+//        if(this._tileMap) this._tileMap.removeObject(this);
+//        this._tileMap = null;
+//        lg.inputManager.removeListener(this);
         this._tileInited = false;
         this.setPosition(0, 0);
         this._animSequence.length = 0;
@@ -608,16 +663,16 @@ lg.TimeLine = cc.Sprite.extend({
         this._sequenceIndex = 0;
 
         //remove all anchor nodes
-        var node = null;
-        var i = -1;
-        var n = this._anchorBindings.length;
-        while(++i < n) {
-            node = this._anchorBindings[i];
-            if(node.destroy) node.destroy();
-            else node.removeFromParent(true);
-            delete  node.__anchor__;
-        }
-        this._anchorBindings.length = 0;
+//        var node = null;
+//        var i = -1;
+//        var n = this._anchorBindings.length;
+//        while(++i < n) {
+//            node = this._anchorBindings[i];
+//            if(node.destroy) node.destroy();
+//            else node.removeFromParent(true);
+//            delete  node.__anchor__;
+//        }
+//        this._anchorBindings.length = 0;
     },
     isMouseEnabled:function()
     {
@@ -656,5 +711,8 @@ cc.defineGetterSetter(_p, "center", _p.getCenter);
 
 _p.fps;
 cc.defineGetterSetter(_p, "fps", _p.getFPS, _p.setFPS);
+
+_p.tileMap;
+cc.defineGetterSetter(_p, "tileMap", _p.getTileMap, _p.setTileMap);
 
 delete window._p;

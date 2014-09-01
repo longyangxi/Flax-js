@@ -315,8 +315,9 @@ lg.AssetsManager = cc.Class.extend({
         var fs = str.split(",");
         for(var fi = 0; fi < fs.length; fi++)
         {
-            //if it's a number string
-            if(!isNaN(parseInt(fs[fi], 10))){
+            if(fs[fi].indexOf("'") > -1){
+                fs[fi] = fs[fi].split("'");
+            }else if(!isNaN(parseInt(fs[fi], 10))){
                 if(fs[fi].indexOf(".") > -1) fs[fi] = parseFloat(fs[fi]);
                 else fs[fi] = parseInt(fs[fi]);
             }

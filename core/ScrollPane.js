@@ -7,12 +7,13 @@ lg._scrollPaneDefine = {
     _viewRect:null,
     onEnter:function(){
         this._super();
-        this._viewRect = this.getCollider("view").getRect(false);
+        //todo, maybe true
+        this._viewRect = this.getCollider("view").getRect(true);
         if(!this._viewRect) {
             cc.log("If you want me scrollable, please set collider__view for me!");
             return;
         }
-        lg.inputManager.addListener(null, this.startDrag, InputType.press, this);
+        lg.inputManager.addListener(null, this._startDrag, InputType.press, this);
         //todo, mask the content
 //        var stencil = cc.DrawNode.create();
 //        var rectangle = [cc.p(0, 0),cc.p(this._viewRect.width, 0),cc.p(this._viewRect.width, this._viewRect.height),cc.p(0, this._viewRect.height)];
@@ -23,32 +24,56 @@ lg._scrollPaneDefine = {
 //        var mask = cc.ClippingNode.create(stencil);
 //        mask.addChild(this);
     },
-    startDrag:function(touch, event){
-        this.scheduleOnce(function(){
-            lg.inputManager.addListener(null, this.drag, InputType.move,this);
-            lg.inputManager.addListener(null, this.stopDrag, InputType.up, this);
-        },0.1);
+    /**
+     * Scroll the pane to make the target in the screen center
+     * @param {sprite || point} target the sprite or the position in this pane
+     * @param {number} time the duration to scroll to
+     * */
+    scrollToCenter:function(target, time){
+        var pos0 = cc.visibleRect.center;
+        pos0 = this.parent.convertToNodeSpace(pos0);
+        var pos = this.convertToWorldSpace( target.getPosition ? target.getPosition() : target);
+        pos = this.parent.convertToNodeSpace(pos);
+        var delta = cc.pSub(pos0, pos);
+        var x = this.x + delta.x;
+        var y = this.y + delta.y;
+        var newPos = this._validatePos(x, y);
+        if(time > 0){
+            this.runAction(cc.MoveTo.create(time, newPos));
+        }else{
+            this.setPosition(newPos);
+        }
     },
-    drag:function(touch, event){
+    _startDrag:function(touch, event){
+        this.scheduleOnce(function(){
+            lg.inputManager.addListener(null, this._drag, InputType.move,this);
+            lg.inputManager.addListener(null, this._stopDrag, InputType.up, this);
+        },0.01);
+    },
+    _drag:function(touch, event){
         var delta = touch.getDelta();
         //if the viewRect is larger than the content itself, then do nothing
         if(this._viewRect.width >= this.width) delta.x = 0;
         if(this._viewRect.height >= this.height) delta.y = 0;
 
         var x = this.x + delta.x;
+        var y = this.y + delta.y;
+        var newPos = this._validatePos(x, y);
+        this.x = newPos.x;
+        this.y = newPos.y;
+    },
+    _stopDrag:function(touch, event){
+        lg.inputManager.removeListener(null, this._drag, InputType.move);
+        lg.inputManager.removeListener(null, this._stopDrag, InputType.up);
+    },
+    _validatePos:function(x, y){
         x = Math.max(this._viewRect.x + this._viewRect.width - this.width, x);
         x = Math.min(this._viewRect.x, x);
 
-        var y = this.y + delta.y;
         y = Math.max(this._viewRect.y + this._viewRect.height - this.height, y);
         y = Math.min(this._viewRect.y, y);
 
-        this.x = x;
-        this.y = y;
-    },
-    stopDrag:function(touch, event){
-        lg.inputManager.removeListener(null, this.drag, InputType.move);
-        lg.inputManager.removeListener(null, this.stopDrag, InputType.up);
+        return cc.p(x, y);
     }
 };
 lg.ScrollPane = lg.MovieClip.extend(lg._scrollPaneDefine);

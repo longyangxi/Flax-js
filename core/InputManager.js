@@ -14,6 +14,8 @@ lg.InputManager = cc.Node.extend({
     enabled:true,
     inTouching:false,
     inDragging:false,
+    justDragged:false,
+    justDragDist:0,
     _masks:[],
     _callbacks:{},
     _radioButtons:{},
@@ -26,7 +28,10 @@ lg.InputManager = cc.Node.extend({
             swallowTouches: false,
             onTouchBegan:function(touch, event)
             {
+                if (!self.enabled) return false;
                 self.inDragging = false;
+                self.justDragged = false;
+                self.justDragDist = 0;
                 self.inTouching = true;
                 self._dispatchOne(self, touch, event, InputType.press);
                 return true;
@@ -41,6 +46,8 @@ lg.InputManager = cc.Node.extend({
             onTouchMoved:function(touch, event)
             {
                 self.inDragging = true;
+                self.justDragged = true;
+                self.justDragDist += cc.pDistance(cc.p(), touch.getDelta());
                 self._dispatchOne(self, touch, event, InputType.move);
             }
         })

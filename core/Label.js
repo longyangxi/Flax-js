@@ -31,6 +31,24 @@ lg.Label = cc.Sprite.extend({
         this.str = ""+str;
         this._updateStr();
     },
+    tweenInt:function(from, to, time){
+        this.setString(from);
+        var sign = lg.numberSign(to - from);
+        if(sign == 0) return;
+
+        var num = Math.abs(to - from);
+        var frameTime = 1/cc.game.config.frameRate;
+        var interval = Math.max(time/num, frameTime);
+        num = Math.round(time/interval);
+        sign *= Math.round(Math.abs(to - from)/num);
+
+        this.schedule(function(delta){
+            var ci = parseInt(this.str) + sign;
+            if(sign > 0 && ci > to) ci = to;
+            else if(sign < 0 && ci < to) ci = to;
+            this.setString(ci);
+        },interval, num + 2);
+    },
     getGapScale:function()
     {
         return this.gapScale;
@@ -96,6 +114,7 @@ lg.Label = cc.Sprite.extend({
             }
 
             //create a char sprite
+            //todo, improve performance
             var sprite = cc.Sprite.create(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
             sprite.anchorX = this._fontDefine.anchorX;
             sprite.anchorY = this._fontDefine.anchorY;

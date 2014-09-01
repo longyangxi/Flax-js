@@ -2,8 +2,10 @@
  * Created by long on 14-2-2.
  */
 var lg = lg || {};
-
-EIGHT_DIRECTIONS = [[0,1],[0,-1],[-1,0],[1,0],[-1,1],[1,1],[1,-1],[-1,-1]];
+ALL_DIRECTONS  = ["UP","DOWN","LEFT","RIGHT","LEFT_UP","RIGHT_UP","RIGHT_DOWN","LEFT_DOWN"];
+ALL_DIRECTONS0 = ["UP","DOWN","LEFT","RIGHT","LEFT_UP","LEFT_DOWN"];
+ALL_DIRECTONS1 = ["UP","DOWN","LEFT","RIGHT","RIGHT_UP","RIGHT_DOWN"];
+EIGHT_DIRECTIONS_VALUE  = {UP:[0,1],DOWN:[0,-1],LEFT:[-1,0],RIGHT:[1,0],LEFT_UP:[-1,1],RIGHT_UP:[1,1],RIGHT_DOWN:[1,-1],LEFT_DOWN:[-1,-1]};
 MAX_IN_TILE = 10;
 
 var TileValue = TileValue || {
@@ -33,6 +35,9 @@ lg.TileMap = cc.Class.extend({
         if(this._tileWidth == tw && this._tileHeight == th) return;
         this._tileWidth = tw;
         this._tileHeight = th;
+    },
+    getTileSize:function(){
+        return {width: this._tileWidth, height: this._tileHeight};
     },
     setMapSizePixel:function(w, h)
     {
@@ -81,6 +86,9 @@ lg.TileMap = cc.Class.extend({
         this._mapHeight = h;
         return result;
     },
+    getMapSize:function(){
+        return {width:this._mapWidth, height:this._mapHeight};
+    },
     showDebugGrid:function(){
         if(lg.currentScene == null) return;
         if(lg.tileMapCanvas) lg.tileMapCanvas.clear();
@@ -95,6 +103,11 @@ lg.TileMap = cc.Class.extend({
         for(var j = 0; j <= this._mapHeight; j++){
             lg.tileMapCanvas.drawSegment(cc.p(0, j*this._tileHeight), cc.p(this._tileWidth*this._mapWidth, j*this._tileHeight), 1, cc.color(255,0,0,255));
         }
+    },
+    showDebugTile:function(tx, ty, color){
+        var pos = this.getTiledPosition(tx, ty);
+        if(color == null) color = cc.color(0, 255, 0, 128);
+        lg.drawRect(cc.rect(pos.x - this._tileWidth/2, pos.y - this._tileHeight/2, this._tileWidth, this._tileHeight),1, color, color);
     },
     clear:function(removeChildren)
     {
@@ -126,6 +139,9 @@ lg.TileMap = cc.Class.extend({
         if(this.isHexagon) s.width += this._tileWidth*0.5;
         return s;
     },
+    /**
+     * Note: Must be the global position
+     * */
     getTileIndex:function(pos){
         var tx = Math.floor((pos.x - this.offsetX)/this._tileWidth);
         var ty = Math.floor((pos.y - this.offsetY)/this._tileHeight);
@@ -181,7 +197,7 @@ lg.TileMap = cc.Class.extend({
     {
         if(!(sprite instanceof cc.Node)) return;
         var pos = null;
-        if(tx === undefined || ty === undefined) {
+        if(tx == null || ty == null) {
             pos = sprite.getPosition();
             if(sprite.parent) pos = sprite.parent.convertToWorldSpace(pos);
             var t = this.getTileIndex(pos);
@@ -312,6 +328,7 @@ lg.TileMap = cc.Class.extend({
     },
     /**
      * Get all the objects in the tile of the position
+     * Note: Must be the global x and y
      * */
     getObjects1:function(x, y)
     {
@@ -363,6 +380,149 @@ lg.TileMap = cc.Class.extend({
         }
         return result;
     },
+    __tilesSearched:null,
+    __nonRecursive:false,
+    /**
+     * Find all the objects connected with each other in the tileMap with same property if set
+     * @param {sprite|{tx,ty}} sprite sprite or {tx,ty} pair to search
+     * @param {string} property if set property, only find the targets with the same property
+     * @param {bool} diagonally only valid for none-hexagon tileMap
+     * */
+     findConnectedObjects:function(sprite, property, diagonally){
+        this.__tilesSearched = {};
+        var arr = this.findNeighbors(sprite, property, diagonally, null, false);
+        var i = arr.indexOf(sprite);
+        if(i > -1) arr.splice(i, 1);
+        this.__tilesSearched = null;
+        return arr;
+    },
+    /**
+     * Find the neighbors around the sprite
+     * @param {sprite|{tx,ty}} sprite sprite or {tx,ty} pair to search
+     * @param {string} property if set property, only find the targets with the same property
+     * @param {bool} diagonally only valid for none-hexagon tileMap
+     * @param {string} direction "UP","DOWN","LEFT","RIGHT", if null, return all directions
+     * @returnTile {bool} if return tiles instead of objects
+     * */
+    findNeighbors:function(sprite, property, diagonally, direction, returnTile){
+        var directions = this._getAllDirections(sprite, diagonally, direction);
+        var recursive = !this.__nonRecursive && (this.__tilesSearched != null);
+        var result = [];
+        var i = directions.length;
+        while(i--){
+            var d = EIGHT_DIRECTIONS_VALUE[directions[i]];
+            var tx = sprite.tx + d[0];
+            var ty = sprite.ty + d[1];
+            if(this.__tilesSearched){
+                var k = tx+"-"+ty;
+                if(this.__tilesSearched[k] === true) continue;
+                this.__tilesSearched[k] = true;
+            }
+            if(!returnTile){
+                var arr = this.getObjects(tx, ty);
+                var obj = null;
+                var searched = false;
+                for(var j = 0; j < arr.length; j++){
+                    obj = arr[j];
+                    if(property == null || property.length == 0 || obj[property] === sprite[property]){
+                        result.push(obj);
+                        if(!searched && recursive) {
+                            result = result.concat(this.findNeighbors(obj, property, diagonally, direction, returnTile));
+                            searched = true;
+                        }
+                    }
+                }
+            }else{
+                //if returnTile = true, recursive have no sense
+                result.push({x: tx, y: ty});
+            }
+        }
+        return result;
+    },
+    /**
+     * Find all the separated object groups in the map, some blank tiles will cause such separated groups
+     * */
+    findSeparatedGroups:function(){
+        var groups = [];
+        var arr = null;
+        this.__tilesSearched = {};
+        var hintObjs = this.getAllObjects();
+        var all = [];
+        var n = hintObjs.length;
+        for(i = 0; i < n; i++){
+            nb = hintObjs[i];
+            if(all.indexOf(nb) > -1) continue;
+            arr = this.findNeighbors(nb);
+            if(!arr.length && this.__tilesSearched[nb.tx+"-"+nb.ty] !== true) {
+                arr= [nb];
+                this.__tilesSearched[nb.tx+"-"+nb.ty] = true;
+            }
+            groups.push(arr);
+            all = all.concat(arr);
+        }
+        this.__tilesSearched = null;
+        return groups;
+    },
+    /**
+     * Find the neighbors around the sprite, num meant to how many layers to search
+     * @param {sprite|{tx,ty}} sprite  sprite or {tx,ty} pair to start search
+     * @param {int} num the layer count to search
+     * @param {bool} returnObjects default return tiles, if true, return objects
+     * @param {bool} onlyConnected if returnObjects is true, ignore these objects don't connected togethor
+     * return an Array contains all layers
+     * */
+    findSurroundings:function(sprite, num, returnObjects, onlyConnected){
+        if(num == null || num < 1) num = 1;
+        var circle = [sprite];
+        var result = [];
+        this.__tilesSearched = {};
+        this.__nonRecursive = true;
+        while(num--){
+            var arr = [];
+            for(var i = 0; i < circle.length; i++){
+                var t = circle[i];
+                if(t.tx === undefined) t = {tx: t.x, ty: t.y};
+                arr = arr.concat(this.findNeighbors(t, null, true, null, returnObjects&&onlyConnected ? !returnObjects : true));
+            }
+            circle = arr;
+            if(returnObjects && !onlyConnected){
+                var objs = [];
+                for(i = 0; i < arr.length; i++){
+                    var t = arr[i];
+                    objs = objs.concat(this.getObjects(t.x, t.y));
+                }
+                result.push(objs);
+            }else{
+                result.push(arr);
+            }
+        }
+        this.__tilesSearched = null;
+        this.__nonRecursive = false;
+        return result;
+    },
+    _getAllDirections:function(sprite, diagonally, direction){
+        var directions = ALL_DIRECTONS;
+        if(this.isHexagon) {
+            if(sprite.ty%2 == 0) directions = ALL_DIRECTONS0;
+            else directions = ALL_DIRECTONS1;
+        }else if(!diagonally){
+            directions = directions.slice(0, 4);
+        }
+        var i = ALL_DIRECTONS.indexOf(direction);
+        if(i == -1 || i > 3) return directions;
+
+        var arr = [];
+        var d = null;
+        for(i = 0; i < directions.length; i++){
+            d = directions[i];
+           if(d.indexOf(direction) > -1){
+                arr.push(d);
+           }
+        }
+        //handle the left and right for hexgon type
+        if(this.isHexagon && arr.length == 1) arr.push("UP","DOWN");
+        return arr;
+    },
     isEmptyTile:function(tx, ty)
     {
         if(!this.isValideTile(tx, ty)) return false;
@@ -388,3 +548,10 @@ lg.TileMap.create = function(id)
     map.id = id;
     return map;
 };
+
+window._p = lg.TileMap.prototype;
+_p.tileSize;
+cc.defineGetterSetter(_p, "tileSize", _p.getTileSize);
+_p.mapSize;
+cc.defineGetterSetter(_p, "mapSize", _p.getMapSize);
+delete window._p;

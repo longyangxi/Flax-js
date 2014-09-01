@@ -8,7 +8,7 @@ IMAGE_TYPES = ["png", "jpg", "bmp","jpeg","gif"];
 
 var lg = lg || {};
 
-lg.version = 1.32;
+lg.version = 1.40;
 lg.language = "en";
 lg.languageIndex = -1;
 lg.landscape = false;
@@ -215,11 +215,12 @@ lg.getAngle1 = function(dx, dy, forDegree)
     }
     return angle;
 };
-lg.getPointOnCircle = function(radius, angleDegree)
+lg.getPointOnCircle = function(center, radius, angleDegree)
 {
     angleDegree = 90 - angleDegree;
     angleDegree *= DEGREE_TO_RADIAN;
-    return new cc.Point(radius*Math.cos(angleDegree), radius*Math.sin(angleDegree));
+    if(center == null) center = cc.p();
+    return cc.pAdd(center, cc.p(radius*Math.cos(angleDegree), radius*Math.sin(angleDegree)));
 };
 lg.getPosition = function(sprite, global)
 {
@@ -277,17 +278,7 @@ lg.getRect = function(sprite, global)
     rect = cc.rect(pos.x - size.width * anchor.x,pos.y - size.height * anchor.y,size.width, size.height);
     return rect;
 };
-lg.drawRect = function(rect, drawNode, lineWidth, lineColor, fillColor)
-{
-    if(drawNode == null) {
-        drawNode = cc.DrawNode.create();
-        if(lg.currentScene) lg.currentScene.addChild(drawNode, 99999);
-    }
-    if(lineWidth == null) lineWidth = 1;
-    if(lineColor == null) lineColor = cc.color(255, 0, 0, 255);
-    var dp = cc.pAdd(cc.p(rect.x, rect.y), cc.p(rect.width, rect.height));
-    drawNode.drawRect(cc.p(rect.x, rect.y), dp, fillColor, lineWidth, lineColor);
-};
+
 lg.ifTouched = function(target, pos)
 {
     if(target == null) return false;
@@ -388,6 +379,10 @@ lg.restrictValue = function(value, min, max)
     value = Math.max(min, value);
     value = Math.min(max, value);
     return value;
+}
+lg.numberSign = function(number){
+    if(number == 0) return 0;
+    return number > 0 ? 1 : -1;
 }
 lg.randInt = function (start, end)
 {
