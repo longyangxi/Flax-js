@@ -8,7 +8,7 @@ IMAGE_TYPES = ["png", "jpg", "bmp","jpeg","gif"];
 
 var lg = lg || {};
 
-lg.version = 1.40;
+lg.version = 1.41;
 lg.language = "en";
 lg.languageIndex = -1;
 lg.landscape = false;
