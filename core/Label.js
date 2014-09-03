@@ -37,8 +37,7 @@ lg.Label = cc.Sprite.extend({
         if(sign == 0) return;
 
         var num = Math.abs(to - from);
-        var frameTime = 1/cc.game.config.frameRate;
-        var interval = Math.max(time/num, frameTime);
+        var interval = Math.max(time/num, lg.frameInterval);
         num = Math.round(time/interval);
         sign *= Math.round(Math.abs(to - from)/num);
 
@@ -82,10 +81,25 @@ lg.Label = cc.Sprite.extend({
             this._charCanvas = new cc.SpriteBatchNode(imgFile, this.str.length);
             this.addChild(this._charCanvas);
         }
-        this._charCanvas.removeAllChildren();
+        var pool = lg.Label.pool;
+
+        //recycle the old chars
+        var i = this._charCanvas.childrenCount;
+        var charChild = null;
+        while(i--){
+            charChild = this._charCanvas.children[i];
+            var arr = pool[charChild.__key];
+            if(arr == null) {
+                arr = [];
+                pool[charChild.__key] = arr;
+            }
+            arr.push(charChild);
+            charChild.removeFromParent();
+        }
+
         this.mlWidth = 0;
         this.mlHeight = 0;
-        for(var i = 0; i < this.str.length ; i++)
+        for(i = 0; i < this.str.length ; i++)
         {
             var ch = this.str[i];
             //if it's a break char or other special char, ignore it for now!
@@ -114,8 +128,14 @@ lg.Label = cc.Sprite.extend({
             }
 
             //create a char sprite
-            //todo, improve performance
-            var sprite = cc.Sprite.create(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
+            var key = this.plistFile+"_"+this.fontName+"_"+charIndex;
+            var sprite = pool[key];
+            if(sprite == null || sprite.length == 0){
+                sprite = cc.Sprite.create(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
+                sprite.__key = key;
+            }else{
+                sprite = sprite.shift();
+            }
             sprite.anchorX = this._fontDefine.anchorX;
             sprite.anchorY = this._fontDefine.anchorY;
             // calculate the position of the sprite;
@@ -142,8 +162,7 @@ lg.Label = cc.Sprite.extend({
             }
             //enable the center align
             var deltaX = (this.params.width - this.mlWidth)/2;
-            var i = this._charCanvas.childrenCount;
-            var charChild = null;
+            i = this._charCanvas.childrenCount;
             while(i--){
                 charChild = this._charCanvas.children[i];
                 if(this.params.align == "center") charChild.x += deltaX;
@@ -172,6 +191,8 @@ lg.Label = cc.Sprite.extend({
         this.removeFromParent();
     }
 });
+
+lg.Label.pool = {};
 
 lg.Label.create = function(plistFile, fontName)
 {

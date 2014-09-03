@@ -19,6 +19,7 @@ lg.inputManager = null;
 lg.currentSceneName = "";
 lg.currentScene = null;
 lg.buttonSound = null;
+lg.frameInterval = 1/60;
 lg._scenesDict = {};
 lg._resourcesLoaded = [];
 lg._soundEnabled = true;
@@ -30,6 +31,7 @@ lg.init = function()
     if(lg._inited) return;
     lg._inited = true;
     lg._checkOSVersion();
+    lg.frameInterval = 1/cc.game.config.frameRate;
     lg.assetsManager = lg.AssetsManager.create();
     lg.inputManager = lg.InputManager.create();
     if(cc.game.config.timeScale)  cc.director.getScheduler().setTimeScale(cc.game.config.timeScale);
@@ -104,6 +106,7 @@ lg.replaceScene = function(sceneName)
     }
     lg.ObjectPool.release();
     if(lg.BulletCanvas) lg.BulletCanvas.reset();
+    if(lg.Label) lg.Label.pool = {};
     cc.director.resume();
     lg.currentSceneName = sceneName;
     lg.inputManager.removeFromParent(false);
