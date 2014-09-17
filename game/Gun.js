@@ -219,9 +219,9 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
         while(i--) {
             b = this._bullets[i];
             //if the bullet controlled by physics, then don't move it here
-            if(b.mainCollider.physicsBody){
+            if(b.physicsBody){
                 if(!b.__physicalShooted){
-                    b.mainCollider.physicsBody.SetLinearVelocity({x:b.__vx/PTM_RATIO, y:b.__vy/PTM_RATIO});
+                    b.physicsBody.SetLinearVelocity({x:b.__vx/PTM_RATIO, y:b.__vy/PTM_RATIO});
                     b.__physicalShooted = true;
                 }
 //                continue;

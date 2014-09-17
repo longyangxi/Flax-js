@@ -12,14 +12,15 @@ lg.Collider = cc.Class.extend({
     name:null,
     owner:null,
     type:lg.ColliderType.rect,
+    physicsBody:null,//the physics body if exist
+    physicsFixture:null,//the physics fixture
+    contact:null,//the contact info if collision happens
     _center:null,//center point
     _width:0,
     _height:0,
     _rotation:0,
     _localRect:null,
     _polygons:null,
-    physicsBody:null,//the physics body if exist
-    contact:null,//the contact info if collision happens
     ctor:function(arr, centerAnchor){
         this.type = arr[0];
         this._center = cc.p(arr[1], arr[2]);
@@ -52,44 +53,45 @@ lg.Collider = cc.Class.extend({
      * Enable the physics with the params
      * @param {int} type Box2D.Dynamics.b2Body.b2_dynamicBody,b2_staticBody,b2_kinematicBody
      * */
-    addPhysics:function(type, density, friction,restitution, isSensor, fixedRotation, catBits, maskBits, bullet){
-        if(this.physicsBody) return this.physicsBody;
-        var pos = this.getCenter();
+    createPhysics:function(density, friction,restitution, isSensor, catBits, maskBits){
+        if(this.physicsFixture) return this.physicsFixture;
+        var body = this.physicsBody = this.owner.physicsBody;
+        if(body == null) throw "Please CreatePhysics in its owner firstly!"
+
         var size = this.getSize();
-        var bodyDef = new Box2D.Dynamics.b2BodyDef();
-        if(type === null) type = Box2D.Dynamics.b2Body.b2_dynamicBody;
-        bodyDef.type = type;
-        bodyDef.fixedRotation = fixedRotation;
-        bodyDef.bullet = bullet;
-        bodyDef.position.Set(pos.x / PTM_RATIO, pos.y / PTM_RATIO);
-        bodyDef.userData = this;
-        var body = lg.getPhysicsWorld().CreateBody(bodyDef);
-        body.__rotationOffset = this.owner.rotation;
-        body.__isMain = (this.name === "main" || this.name === "base");
-        this.physicsBody = body;
-        // Define another box shape for our dynamic body.
-        size.width /= PTM_RATIO;
-        size.height /= PTM_RATIO;
+        var centerPos = this.getCenter();
+        var bodyPos = lg.getPosition(this.owner, true);
+
         var shape =null;
-        if(this.type == lg.ColliderType.rect){
-            shape = new Box2D.Collision.Shapes.b2PolygonShape();
-            shape.SetAsBox(size.width/2, size.height/2);
-        }else if(this.type == lg.ColliderType.circle){
+        if(this.type == lg.ColliderType.circle){
             shape = new Box2D.Collision.Shapes.b2CircleShape();
-            shape.SetRadius(size.width/2);
-        }else if(this.type == lg.ColliderType.polygon){
+            shape.SetRadius(0.5*size.width*lg.getScale(this.owner, true).x/PTM_RATIO);
+            var offsetToAnchor = cc.pSub(centerPos, bodyPos);
+            shape.SetLocalPosition(cc.pMult(offsetToAnchor, 1/PTM_RATIO));
+        }else if(this.type == lg.ColliderType.rect || this.type == lg.ColliderType.polygon){
+            //convert the rect to polygon
+            if(this.type == lg.ColliderType.rect){
+                this._polygons = [cc.p(-0.5*size.width, -0.5*size.height), cc.p(0.5*size.width, - 0.5*size.height), cc.p(0.5*size.width, 0.5*size.height),cc.p(-0.5*size.width, 0.5*size.height)];
+                for(var i = 0; i < this._polygons.length; i++){
+                    var p = this._polygons[i];
+                    p.x += this._center.x;
+                    p.y += this._center.y;
+                }
+            }
             shape = new Box2D.Collision.Shapes.b2PolygonShape();
             var arr = [];
             for(var i = 0; i < this._polygons.length; i++){
                 var p = cc.p(this._polygons[i]);
                 p = this.owner.convertToWorldSpace(p);
-                p.x -= pos.x;
-                p.y -= pos.y;
+                p.x -= bodyPos.x;
+                p.y -= bodyPos.y;
                 p.x /= PTM_RATIO;
                 p.y /= PTM_RATIO;
                 arr.push(p);
             }
             shape.SetAsArray(arr);
+        }else{
+            throw "The physics type: "+this.type+" is not supported!";
         }
 
         // Define the dynamic body fixture.
@@ -106,12 +108,14 @@ lg.Collider = cc.Class.extend({
         if(maskBits == null) maskBits = 0xFFFF;
         fixtureDef.filter.categoryBits = catBits;
         fixtureDef.filter.maskBits = maskBits;
-        body.CreateFixture(fixtureDef);
-        return this.physicsBody;
+        this.physicsFixture = body.CreateFixture(fixtureDef);
+        this.physicsFixture.SetUserData(this);
+        return this.physicsFixture;
     },
-    removePhysics:function(){
-        if(this.physicsBody && lg._physicsWorld){
-            lg.removePhysicsBody(this.physicsBody);
+    destroyPhysics:function(){
+        if(this.physicsFixture){
+            lg.removePhysicsFixture(this.physicsFixture);
+            this.physicsFixture = null;
             this.physicsBody = null;
         }
     },
@@ -170,11 +174,6 @@ lg.Collider = cc.Class.extend({
         if(global === false) return this._center;
         return this.owner.convertToWorldSpace(this._center);
     },
-    getOffsetToAnchor:function(){
-        var center = this.getCenter(true);
-        var anchorPos = lg.getPosition(this.owner, true);
-        return cc.p(center.x - anchorPos.x, center.y - anchorPos.y);
-    },
     /**
      * If the owner or its parent has been scaled, the calculate the real size of the collider
      * */
@@ -223,6 +222,7 @@ lg._physicsWorld = null;
 lg._physicsListener = null;
 lg._physicsRunning = false;
 lg._physicsBodyToRemove = null;
+lg._physicsFixtureToRemove = null;
 lg.physicsTypeStatic = 0;
 lg.physicsTypeKinematic = 1;
 lg.physicsTypeDynamic = 2;
@@ -233,6 +233,7 @@ lg.createPhysicsWorld = function(gravity, doSleep){
     world.SetContinuousPhysics(true);
     lg._physicsWorld = world;
     lg._physicsBodyToRemove = [];
+    lg._physicsFixtureToRemove = [];
     return world;
 }
 lg.getPhysicsWorld = function(){
@@ -257,8 +258,9 @@ lg.destroyPhysicsWorld = function(){
     if(!lg._physicsWorld) return;
     lg.stopPhysicsWorld();
     for (var b = lg._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
-        var c = b.GetUserData();
-        if(c ) c.physicsBody = null;
+        //todo
+        var sprite = b.GetUserData();
+        if(sprite) sprite._physicsBody = null;
         lg._physicsWorld.DestroyBody(b);
     }
     lg.onCollideStart.removeAll();
@@ -270,9 +272,14 @@ lg.destroyPhysicsWorld = function(){
     lg._physicsListener = null;
     lg._physicsBodyToRemove = null;
 }
+
 lg.removePhysicsBody = function(body){
     var i = lg._physicsBodyToRemove.indexOf(body);
     if(i == -1) lg._physicsBodyToRemove.push(body);
+}
+lg.removePhysicsFixture = function(fixture){
+    var i = lg._physicsFixtureToRemove.indexOf(fixture);
+    if(i == -1) lg._physicsFixtureToRemove.push(fixture);
 }
 /**
  * Cast a ray from point0 to point1, callBack when there is a collid happen
@@ -283,7 +290,7 @@ lg.removePhysicsBody = function(body){
  * */
 lg.physicsRaycast = function(callBack, point0, point1, radius){
     lg.getPhysicsWorld().RayCast(function(fixture, point, normal, fraction){
-        var collider = fixture.GetBody().GetUserData();
+        var collider = fixture.GetUserData();
         point = cc.pMult(point, PTM_RATIO);
 
         var l0 = cc.pSub(point1, point);
@@ -315,8 +322,8 @@ lg._createPhysicsListener = function(){
     if(lg._physicsListener) return;
     lg._physicsListener = new Box2D.Dynamics.b2ContactListener();
     lg._physicsListener.BeginContact = function (contact) {
-        var ca = contact.GetFixtureA().GetBody().GetUserData();
-        var cb = contact.GetFixtureB().GetBody().GetUserData();
+        var ca = contact.GetFixtureA().GetUserData();
+        var cb = contact.GetFixtureB().GetUserData();
         if(ca.owner && ca.owner.parent == null) return;
         if(cb.owner && cb.owner.parent == null) return;
 
@@ -333,8 +340,8 @@ lg._createPhysicsListener = function(){
         ca.contact = cb.contact = null;
     }
     lg._physicsListener.EndContact = function (contact) {
-        var ca = contact.GetFixtureA().GetBody().GetUserData();
-        var cb = contact.GetFixtureB().GetBody().GetUserData();
+        var ca = contact.GetFixtureA().GetUserData();
+        var cb = contact.GetFixtureB().GetUserData();
         if(ca.owner && ca.owner.parent == null) return;
         if(cb.owner && cb.owner.parent == null) return;
         ca.contact = cb.contact = contact;
@@ -342,8 +349,8 @@ lg._createPhysicsListener = function(){
         ca.contact = cb.contact = null;
     }
     lg._physicsListener.PreSolve = function (contact, oldManifold) {
-        var ca = contact.GetFixtureA().GetBody().GetUserData();
-        var cb = contact.GetFixtureB().GetBody().GetUserData();
+        var ca = contact.GetFixtureA().GetUserData();
+        var cb = contact.GetFixtureB().GetUserData();
         if(ca.owner && ca.owner.parent == null) return;
         if(cb.owner && cb.owner.parent == null) return;
         ca.contact = cb.contact = contact;
@@ -351,8 +358,8 @@ lg._createPhysicsListener = function(){
         ca.contact = cb.contact = null;
     }
     lg._physicsListener.PostSolve = function (contact, impulse) {
-        var ca = contact.GetFixtureA().GetBody().GetUserData();
-        var cb = contact.GetFixtureB().GetBody().GetUserData();
+        var ca = contact.GetFixtureA().GetUserData();
+        var cb = contact.GetFixtureB().GetUserData();
         if(ca.owner && ca.owner.parent == null) return;
         if(cb.owner && cb.owner.parent == null) return;
         ca.contact = cb.contact = contact;
@@ -413,7 +420,15 @@ lg.createPhysicalWalls = function(friction, restitution, walls){
 var velocityIterations = 8;
 var positionIterations = 1;
 lg._updatePhysicsWorld = function(dt){
-    var i = lg._physicsBodyToRemove.length;
+    var i = lg._physicsFixtureToRemove.length;
+    while(i--){
+        var fixture = lg._physicsFixtureToRemove[i];
+        var body = fixture.GetBody();
+        if(body) body.DestroyFixture(fixture);
+        lg._physicsFixtureToRemove.splice(i, 1);
+    }
+
+    i = lg._physicsBodyToRemove.length;
     while(i--){
         lg._physicsWorld.DestroyBody(lg._physicsBodyToRemove[i]);
         lg._physicsBodyToRemove.splice(i, 1);
@@ -423,22 +438,22 @@ lg._updatePhysicsWorld = function(dt){
     lg._physicsWorld.Step(dt, velocityIterations, positionIterations);
     //Iterate over the bodies in the physics world
     for (var b = lg._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
-        var collider = b.GetUserData();
-        if(collider == null) continue;
-        var sprite = collider.owner || collider;
+        var sprite = b.GetUserData();
+        if(sprite == null) continue;
+//        var sprite = collider.owner || collider;
         //todo, if bind the mainCollider only?
-        if (b.__isMain && sprite != null && sprite.parent) {
-//        if (sprite != null && sprite.parent) {
+//        if (b.__isMain && sprite != null && sprite.parent) {
+        if (sprite != null && sprite.parent) {
             var pos = cc.p(b.GetPosition());
             pos.x *= PTM_RATIO;
             pos.y *= PTM_RATIO;
             pos = sprite.parent.convertToNodeSpace(pos);
             //fix the anchor offset
-            if(collider.getOffsetToAnchor){
-                var offset = collider.getOffsetToAnchor();
-                pos.x -= offset.x;
-                pos.y -= offset.y;
-            }
+//            if(sprite.getOffsetToAnchor){
+//                var offset = sprite.getOffsetToAnchor();
+//                pos.x -= offset.x;
+//                pos.y -= offset.y;
+//            }
             sprite.x = pos.x;
             sprite.y = pos.y;
             sprite.rotation = -1 * RADIAN_TO_DEGREE*b.GetAngle();

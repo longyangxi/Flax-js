@@ -40,6 +40,7 @@ lg.TimeLine = cc.Sprite.extend({
     inRecycle:false,
     _colliders:null,
     _mainCollider:null,
+    _physicsBody:null,
     _definedMainCollider:false,
     _anchorBindings:null,
     _inited:false,
@@ -57,6 +58,7 @@ lg.TimeLine = cc.Sprite.extend({
     _loopSequence:false,
     _sequenceIndex:0,
     _physicsToBeSet:null,
+    _physicsBodyParam:null,
     _physicsColliders:null,
 
     ctor:function(plistFile, assetID){
@@ -128,6 +130,9 @@ lg.TimeLine = cc.Sprite.extend({
     getMainCollider:function(){
         return this._mainCollider;
     },
+    getPhysicsBody:function(){
+        return this._physicsBody;
+    },
     getCollider:function(name){
         if(this._colliders){
             var an = this._colliders[name];
@@ -138,23 +143,40 @@ lg.TimeLine = cc.Sprite.extend({
         }
         return null;
     },
-    /**
-     * Enable the physics with the params
-     * @param {int} type Box2D.Dynamics.b2Body.b2_dynamicBody,b2_staticBody,b2_kinematicBody
-     * */
-    addPhysics:function(name,type, density, friction,restitution, isSensor, fixedRotation, catBits, maskBits, bullet){
+    createPhysics:function(type, fixedRotation, bullet){
+        if(type == null) type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+        this._physicsBodyParam = {type:type, fixedRotation:fixedRotation, bullet:bullet};
+        if(!this.parent) return null;
+        if(this._physicsBody == null) {
+            var def = new Box2D.Dynamics.b2BodyDef();
+            def.type = type;
+            def.fixedRotation = fixedRotation;
+            def.bullet = bullet;
+            def.userData = this;
+            var pos = lg.getPosition(this, true);
+            def.position.Set(pos.x / PTM_RATIO, pos.y / PTM_RATIO);
+            this._physicsBody = lg.getPhysicsWorld().CreateBody(def);
+            this._physicsBody.__rotationOffset = this.rotation;
+        }
+        return this._physicsBody;
+    },
+    destroyPhysics:function(){
+        this.removePhysicsShape();
+    },
+    addPhysicsShape:function(name, density, friction,restitution, isSensor, catBits, maskBits){
+        if(this._physicsBody == null) throw "Please createPhysics firstly!"
         var collider = this.getCollider(name);
         if(collider == null) {
             cc.log("There is no collider named: "+name);
             return null;
-        }else if(collider.physicsBody){
-            return collider.physicsBody;
+        }else if(collider.physicsFixture){
+            return collider.physicsFixture;
         }
-        var param = {type:type, density:density,friction:friction,restitution:restitution,isSensor:isSensor,fixedRotation:fixedRotation,catBits:catBits,maskBits:maskBits,bullet:bullet};
+        var param = {density:density,friction:friction,restitution:restitution,isSensor:isSensor,catBits:catBits,maskBits:maskBits};
         if(this.parent) {
-            var pBody = collider.addPhysics(type, density, friction, restitution, isSensor, fixedRotation, catBits, maskBits, bullet);
+            var fixture = collider.createPhysics(density, friction, restitution, isSensor, catBits, maskBits);
             if(this._physicsColliders.indexOf(collider) == -1) this._physicsColliders.push(collider);
-            return pBody;
+            return fixture;
         }
         if(this._physicsToBeSet == null) this._physicsToBeSet = {};
         if(this._physicsToBeSet[name] == null) this._physicsToBeSet[name] = param;
@@ -163,14 +185,18 @@ lg.TimeLine = cc.Sprite.extend({
     /**
      * Remove the physics of name, if not set name, remove all
      * */
-    removePhysics:function(name){
+    removePhysicsShape:function(name){
         var i = this._physicsColliders.length;
         while(i--){
             var c = this._physicsColliders[i];
             if(name == null || c.name == name){
-                c.removePhysics();
+                c.destroyPhysics();
                 this._physicsColliders.splice(i, 1);
             }
+        }
+        if(this._physicsColliders.length == 0){
+            lg.removePhysicsBody(this._physicsBody);
+            this._physicsBody = null;
         }
     },
     _initColliders:function(){
@@ -505,11 +531,14 @@ lg.TimeLine = cc.Sprite.extend({
             this._updateTileMap(true);
         }
         this._updateCollider();
+        if(this._physicsBodyParam) {
+            this.createPhysics(this._physicsBodyParam.type, this._physicsBodyParam.fixedRotation, this._physicsBodyParam.bullet);
+        }
         if(this._physicsToBeSet){
             for(var name in this._physicsToBeSet){
                 var collider = this.getCollider(name);
                 var param = this._physicsToBeSet[name];
-                collider.addPhysics(param.type, param.density, param.friction, param.restitution, param.isSensor, param.fixedRotation, param.catBits, param.maskBits, param.bullet);
+                collider.createPhysics(param.density, param.friction, param.restitution, param.isSensor, param.catBits, param.maskBits);
                 delete this._physicsToBeSet[name];
                 if(this._physicsColliders.indexOf(collider) == -1) this._physicsColliders.push(collider);
             }
@@ -543,9 +572,15 @@ lg.TimeLine = cc.Sprite.extend({
 
         //remove physics
         for(var i = 0; i < this._physicsColliders.length; i++){
-            this._physicsColliders[i].removePhysics();
+            this._physicsColliders[i].destroyPhysics();
         }
         this._physicsColliders = [];
+
+        if(this._physicsBody){
+            lg.removePhysicsBody(this._physicsBody);
+            this._physicsBody = null;
+        }
+        this._physicsBodyParam = null;
         //call the module onExit
         lg.callModuleOnExit(this);
     },
@@ -704,6 +739,9 @@ window._p = lg.TimeLine.prototype;
 /** @expose */
 _p.mainCollider;
 cc.defineGetterSetter(_p, "mainCollider", _p.getMainCollider);
+
+_p.physicsBody;
+cc.defineGetterSetter(_p, "physicsBody", _p.getPhysicsBody);
 
 /** @expose */
 _p.center;
