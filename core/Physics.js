@@ -14,7 +14,7 @@ lg.Collider = cc.Class.extend({
     type:lg.ColliderType.rect,
     physicsBody:null,//the physics body if exist
     physicsFixture:null,//the physics fixture
-    contact:null,//the contact info if collision happens
+    physicsContact:null,//the contact info if collision happens
     _center:null,//center point
     _width:0,
     _height:0,
@@ -133,6 +133,7 @@ lg.Collider = cc.Class.extend({
             return this._ifRectCollidCircle(collider.getRect(true), this.getRect(true));
         }
     },
+    //todo, with polygon
     containPoint:function(pos){
         pos = this.owner.convertToNodeSpace(pos);
         if(this.type == lg.ColliderType.rect){
@@ -322,12 +323,14 @@ lg._createPhysicsListener = function(){
     if(lg._physicsListener) return;
     lg._physicsListener = new Box2D.Dynamics.b2ContactListener();
     lg._physicsListener.BeginContact = function (contact) {
-        var ca = contact.GetFixtureA().GetUserData();
-        var cb = contact.GetFixtureB().GetUserData();
+        var fa = contact.GetFixtureA();
+        var fb = contact.GetFixtureB();
+        var ca = fa.GetUserData() || fa;
+        var cb = fb.GetUserData() || fb;
         if(ca.owner && ca.owner.parent == null) return;
         if(cb.owner && cb.owner.parent == null) return;
 
-        ca.contact = cb.contact = contact;
+        ca.physicsContact = cb.physicsContact = contact;
 
         //tell you how to fetch the collision point
 //        var mainfold = new Box2D.Collision.b2WorldManifold();
@@ -337,34 +340,40 @@ lg._createPhysicsListener = function(){
 //        cc.log(mainfold.m_points.length);
 
         lg.onCollideStart.dispatch(ca, cb);
-        ca.contact = cb.contact = null;
+        ca.physicsContact = cb.physicsContact = null;
     }
     lg._physicsListener.EndContact = function (contact) {
-        var ca = contact.GetFixtureA().GetUserData();
-        var cb = contact.GetFixtureB().GetUserData();
+        var fa = contact.GetFixtureA();
+        var fb = contact.GetFixtureB();
+        var ca = fa.GetUserData() || fa;
+        var cb = fb.GetUserData() || fb;
         if(ca.owner && ca.owner.parent == null) return;
         if(cb.owner && cb.owner.parent == null) return;
-        ca.contact = cb.contact = contact;
+        ca.physicsContact = cb.physicsContact = contact;
         lg.onCollideEnd.dispatch(ca, cb);
-        ca.contact = cb.contact = null;
+        ca.physicsContact = cb.physicsContact = null;
     }
     lg._physicsListener.PreSolve = function (contact, oldManifold) {
-        var ca = contact.GetFixtureA().GetUserData();
-        var cb = contact.GetFixtureB().GetUserData();
+        var fa = contact.GetFixtureA();
+        var fb = contact.GetFixtureB();
+        var ca = fa.GetUserData() || fa;
+        var cb = fb.GetUserData() || fb;
         if(ca.owner && ca.owner.parent == null) return;
         if(cb.owner && cb.owner.parent == null) return;
-        ca.contact = cb.contact = contact;
+        ca.physicsContact = cb.physicsContact = contact;
         lg.onCollidePre.dispatch(ca, cb);
-        ca.contact = cb.contact = null;
+        ca.physicsContact = cb.physicsContact = null;
     }
     lg._physicsListener.PostSolve = function (contact, impulse) {
-        var ca = contact.GetFixtureA().GetUserData();
-        var cb = contact.GetFixtureB().GetUserData();
+        var fa = contact.GetFixtureA();
+        var fb = contact.GetFixtureB();
+        var ca = fa.GetUserData() || fa;
+        var cb = fb.GetUserData() || fb;
         if(ca.owner && ca.owner.parent == null) return;
         if(cb.owner && cb.owner.parent == null) return;
-        ca.contact = cb.contact = contact;
+        ca.physicsContact = cb.physicsContact = contact;
         lg.onCollidePost.dispatch(ca, cb);
-        ca.contact = cb.contact = null;
+        ca.physicsContact = cb.physicsContact = null;
     }
     lg._physicsWorld.SetContactListener(lg._physicsListener);
 }
@@ -373,15 +382,13 @@ lg._createPhysicsListener = function(){
  * Create physical walls, up/down/left/right
  * lg.createPhysicalWalls(0, 0.8, [1,1,1,1]);
  * */
-lg.createPhysicalWalls = function(friction, restitution, walls){
+lg.createPhysicalWalls = function(walls, friction){
     if(walls == null || walls.length == 0) walls = [1,1,1,1];
     var world = lg.getPhysicsWorld();
     var fixDef = new Box2D.Dynamics.b2FixtureDef();
     fixDef.density = 1.0;
-    if(friction == null)  friction = 0;
+    if(friction == null)  friction = 3;
     fixDef.friction = friction;
-    if(restitution == null) restitution = 0.3;
-    fixDef.restitution = restitution;
 
     var bodyDef = new Box2D.Dynamics.b2BodyDef();
 
@@ -440,20 +447,11 @@ lg._updatePhysicsWorld = function(dt){
     for (var b = lg._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
         var sprite = b.GetUserData();
         if(sprite == null) continue;
-//        var sprite = collider.owner || collider;
-        //todo, if bind the mainCollider only?
-//        if (b.__isMain && sprite != null && sprite.parent) {
         if (sprite != null && sprite.parent) {
             var pos = cc.p(b.GetPosition());
             pos.x *= PTM_RATIO;
             pos.y *= PTM_RATIO;
             pos = sprite.parent.convertToNodeSpace(pos);
-            //fix the anchor offset
-//            if(sprite.getOffsetToAnchor){
-//                var offset = sprite.getOffsetToAnchor();
-//                pos.x -= offset.x;
-//                pos.y -= offset.y;
-//            }
             sprite.x = pos.x;
             sprite.y = pos.y;
             sprite.rotation = -1 * RADIAN_TO_DEGREE*b.GetAngle();
@@ -493,7 +491,7 @@ lg.DebugBox2DNode = cc.Node.extend({
         if(this._refWorld) {
             ctx.scale(1, -1);
             //todo, bug, if you want to show the debugdraw, denote this line
-            ctx.translate(0, ctx.canvas.height);
+//            ctx.translate(0, ctx.canvas.height);
             this._refWorld.DrawDebugData();
             ctx.scale(1, 1);
             ctx.translate(0, 0);
