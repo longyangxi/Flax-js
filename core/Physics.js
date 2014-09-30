@@ -319,6 +319,40 @@ lg.physicsRaycast = function(callBack, point0, point1, radius){
         callBack(collider, point, reflectedPoint, fraction);
     }, cc.pMult(point0, 1/PTM_RATIO), cc.pMult(point1, 1/PTM_RATIO));
 }
+
+lg.physicsSimulate = function(body, time, step){
+    if(!step) step = lg.frameInterval;
+    var steps = Math.round(time/step);
+
+    var oldTrans = {pos: body.GetPosition(), rot: body.GetAngle()};
+    var dTypes = {};
+    var i = 0;
+    for (var b = lg._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
+        if(b == body) continue;
+        var type = b.GetType();
+        if(type != lg.physicsTypeStatic){
+            b.m_type = lg.physicsTypeStatic;
+            b.__tempKey = ++i;
+            dTypes[b.__tempKey] = type;
+        }
+    }
+
+    var path = [];
+    for(i = 0; i < steps; i++){
+        lg._physicsWorld.Step(step, velocityIterations, positionIterations);
+        var pos = body.GetPosition();
+        path.push(cc.p(pos.x*PTM_RATIO, pos.y*PTM_RATIO));
+    }
+
+    for (var b = lg._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
+        if(b.__tempKey){
+            b.SetType(dTypes[b.__tempKey]);
+            delete b.__tempKey;
+        }
+    }
+    body.SetPositionAndAngle(oldTrans.pos, oldTrans.rot);
+    return path;
+}
 lg._createPhysicsListener = function(){
     if(lg._physicsListener) return;
     lg._physicsListener = new Box2D.Dynamics.b2ContactListener();
