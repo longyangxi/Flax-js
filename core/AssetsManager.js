@@ -192,6 +192,9 @@ lg.AssetsManager = cc.Class.extend({
                     ch.zIndex = parseInt(childDefine.zIndex);
                     if(childDefine.hasOwnProperty("text")) {
                         ch.text = childDefine.text;
+                        if(childDefine.font) ch.font = childDefine.font;
+                        if(childDefine.size) ch.size = childDefine.size;
+                        if(childDefine.color) ch.color = cc.hexToColor(childDefine.color);
                         ch.align = childDefine.align;
                         ch.width = childDefine.width;
                         ch.height = childDefine.height;

@@ -194,12 +194,52 @@ lg.Label = cc.Sprite.extend({
 
 lg.Label.pool = {};
 
-lg.Label.create = function(plistFile, fontName)
+lg.LabelTTF = cc.LabelTTF.extend({
+    __isTTF:true,
+    tweenInt:function(from, to, time){
+        this.setString(from);
+        var sign = lg.numberSign(to - from);
+        if(sign == 0) return;
+
+        var num = Math.abs(to - from);
+        var interval = Math.max(time/num, lg.frameInterval);
+        num = Math.round(time/interval);
+        sign *= Math.round(Math.abs(to - from)/num);
+
+        this.schedule(function(delta){
+            var ci = parseInt(this.getString()) + sign;
+            if(sign > 0 && ci > to) ci = to;
+            else if(sign < 0 && ci < to) ci = to;
+            this.setString(ci);
+        },interval, num + 2);
+    }
+})
+
+lg.Label.create = function(plistFile, define)
 {
-    var lbl = new lg.Label();
-    lbl.plistFile = plistFile;
-    lg.assetsManager.addPlist(plistFile);
-    lbl.setFontName(fontName);
-    lbl.setAnchorPoint(0, 0);
+    var lbl = null;
+    var txtCls = define["class"];
+    var bmpFontName = lg.assetsManager.getFont(plistFile, txtCls);
+    //If it is ttf label(has font and the bitmap font is null, other wise use bitmap label
+    if(define.font && bmpFontName == null){
+        var labelDef = new cc.FontDefinition();
+        labelDef.fontName = define.font;
+        labelDef.fontSize = define.size;
+        labelDef.textAlign = H_ALIGHS.indexOf(define.align);
+        labelDef.verticalAlign = cc.VERTICAL_TEXT_ALIGNMENT_CENTER;
+        labelDef.fillStyle = define.color;
+        labelDef.boundingWidth = define.width;
+        labelDef.boundingHeight = define.height;
+        //todo, outline and shadow effect
+        lbl = new lg.LabelTTF(lg.getLanguageStr(txtCls) || define.text, labelDef);
+    }else{
+        lbl = new lg.Label();
+        lg.assetsManager.addPlist(plistFile);
+        lbl.plistFile = plistFile;
+        lbl.params = define;
+        lbl.setFontName(txtCls);
+        lbl.setAnchorPoint(0, 0);
+        lbl.setString(define.text);
+    }
     return lbl;
 };

@@ -57,12 +57,16 @@ lg.MovieClip = lg.TimeLine.extend({
             if(frameDefine == null) {
                 if(child) child.visible = false;
             }else {
+                var offsetX = 0;
+                var offsetY = 0;
                 if(child == null){
                     //hadle the label text
                     if(childDefine.text != null){
-                        child = lg.Label.create(this.plistFile, childDefine["class"]);
-                        child.params = childDefine;
-                        child.setString(childDefine.text);
+                        child = lg.Label.create(this.plistFile, childDefine);
+                        if(child.__isTTF){
+                            offsetX = childDefine.width/2;
+                            offsetY = -childDefine.height/2;
+                        }
                     }else{
                         child = lg.assetsManager.createDisplay(this.plistFile, childDefine["class"], null, true);
                     }
@@ -74,8 +78,8 @@ lg.MovieClip = lg.TimeLine.extend({
                     this[childName] = child;
                     this.onNewChild(child);
                 }
-                var x = frameDefine[0];
-                var y = frameDefine[1];
+                var x = frameDefine[0] + offsetX;
+                var y = frameDefine[1] + offsetY;
                 var rotation = frameDefine[2];
                 var scaleX = frameDefine[3];
                 var scaleY = frameDefine[4]

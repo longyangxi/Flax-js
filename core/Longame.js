@@ -5,15 +5,16 @@ PTM_RATIO = 32;
 RADIAN_TO_DEGREE = 180.0/Math.PI;
 DEGREE_TO_RADIAN = Math.PI/180.0;
 IMAGE_TYPES = ["png", "jpg", "bmp","jpeg","gif"];
+H_ALIGHS = ["left","center","right"];
+LANGUAGES = ['en','de','fr','it','es','tr','pt','ru','cn'];
 
 var lg = lg || {};
 
 lg.version = 1.41;
-lg.language = "en";
+lg.language = null;
 lg.languageIndex = -1;
 lg.landscape = false;
 lg.osVersion = "unknown";
-//----------------------scene about----------------------------------------------------
 lg.assetsManager = null;
 lg.inputManager = null;
 lg.currentSceneName = "";
@@ -25,16 +26,42 @@ lg._resourcesLoaded = [];
 lg._soundEnabled = true;
 lg._inited = false;
 lg._orientationTip = null;
+lg._languageDict = null;
+lg._languageToLoad = null;
 
 lg.init = function()
 {
     if(lg._inited) return;
     lg._inited = true;
     lg._checkOSVersion();
+
     lg.frameInterval = 1/cc.game.config.frameRate;
     lg.assetsManager = lg.AssetsManager.create();
     lg.inputManager = lg.InputManager.create();
     if(cc.game.config.timeScale)  cc.director.getScheduler().setTimeScale(cc.game.config.timeScale);
+
+    var lan = cc.game.config.language;
+    if(lan == null || lan == "") lan = cc.sys.language;
+    lg.updateLanguage(lan);
+}
+lg.getLanguageStr = function(key){
+    if(lg._languageDict == null) {
+        cc.log("Error: there is no language defined: "+lg.language);
+        return null;
+    }
+    var str = lg._languageDict[key];
+    //todo, more param replace
+    return str;
+}
+lg.updateLanguage = function(lan){
+    if(lan == null || lan == "" || lan == lg.language) return;
+    lg.language = lan;
+    lg.languageIndex = LANGUAGES.indexOf(lan);
+    if(lg.languageIndex == -1) cc.log("Invalid language: " + lan);
+    else lg._languageToLoad = lg._getLanguagePath(lan);
+}
+lg._getLanguagePath = function(lan){
+    return  "res/locale/"+(lan || lg.language)+".json";
 }
 /**
  * Add a function module to some class
@@ -104,6 +131,9 @@ lg.replaceScene = function(sceneName)
         throw "Please register the scene: "+sceneName+" firstly!";
         return;
     }
+    if(lg._languageToLoad && s.res.indexOf(lg._languageToLoad) == -1){
+        s.res.push(lg._languageToLoad);
+    }
     lg.ObjectPool.release();
     if(lg.BulletCanvas) lg.BulletCanvas.reset();
     if(lg.Label) lg.Label.pool = {};
@@ -113,6 +143,11 @@ lg.replaceScene = function(sceneName)
     if(lg.stopPhysicsWorld) lg.stopPhysicsWorld();
     lg.currentScene = new s.scene();
     lg.preload(s.res,function(){
+        //init language
+        if(lg._languageToLoad){
+            lg._languageDict = cc.loader.getRes(lg._getLanguagePath());
+            lg._languageToLoad = null;
+        }
         lg.currentScene.addChild(lg.inputManager, 999999);
         cc.director.runScene(lg.currentScene);
         lg._checkDeviceOrientation();
