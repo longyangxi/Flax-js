@@ -50,6 +50,7 @@ lg.getLanguageStr = function(key){
         return null;
     }
     var str = lg._languageDict[key];
+    if(str == null) cc.log("Warning: there is no language string for key: "+key);
     //todo, more param replace
     return str;
 }
