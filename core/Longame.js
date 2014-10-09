@@ -28,6 +28,8 @@ lg._inited = false;
 lg._orientationTip = null;
 lg._languageDict = null;
 lg._languageToLoad = null;
+/**Fixed the grey banner on the botton when landscape*/
+document.body.scrollTop = 0;
 
 lg.init = function()
 {
