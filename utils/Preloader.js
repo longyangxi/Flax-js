@@ -41,21 +41,16 @@ lg.Preloader = cc.Scene.extend({
         var logoHeight = logoH;
         var centerPos = cc.p(winSize.width / 2, winSize.height / 2);
 
-        // bg
-        var bgLayer = self._bgLayer = cc.LayerColor.create(cc.color(backgroundColor[0], backgroundColor[1], backgroundColor[2], 255));
-        bgLayer.setPosition(0, 0);
-        self.addChild(bgLayer, 0);
-
         //logo
         this._logo = cc.Sprite.create(logoSrc);
         this._logo.setPosition(centerPos);
-        this._bgLayer.addChild(this._logo, 10);
+        this.addChild(this._logo, 10);
 
         //loading percent
         var label = self._label = cc.LabelTTF.create("Loading... 0%", "Arial", 14);
         label.setColor(cc.color(38, 192, 216));
         label.setPosition(cc.pAdd(centerPos, cc.p(0,  logoOnCenter ? 0 : (-logoHeight / 2 - 10))));
-        bgLayer.addChild(this._label, 10);
+        this.addChild(this._label, 10);
 
         return true;
     },

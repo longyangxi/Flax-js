@@ -31,6 +31,19 @@ lg._languageToLoad = null;
 /**Fixed the grey banner on the botton when landscape*/
 document.body.scrollTop = 0;
 
+//set the game canvas color as html body color
+/************************************************/
+var bgColor = document.body.style.backgroundColor;
+
+var canvasNode = document.getElementById(cc.game.config["id"]);
+canvasNode.style.backgroundColor = bgColor;
+
+bgColor = bgColor.replace("rgb(","");
+bgColor = bgColor.replace(")", "");
+bgColor = bgColor.split(",");
+lg.bgColor = cc.color(parseInt(bgColor[0]), parseInt(bgColor[1]), parseInt(bgColor[2]));
+/************************************************/
+
 lg.init = function()
 {
     if(lg._inited) return;
