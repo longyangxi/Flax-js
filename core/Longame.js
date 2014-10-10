@@ -6,7 +6,7 @@ RADIAN_TO_DEGREE = 180.0/Math.PI;
 DEGREE_TO_RADIAN = Math.PI/180.0;
 IMAGE_TYPES = ["png", "jpg", "bmp","jpeg","gif"];
 H_ALIGHS = ["left","center","right"];
-LANGUAGES = ['en','de','fr','it','es','tr','pt','ru','cn'];
+LANGUAGES = ['en','zh','de','fr','it','es','tr','pt','ru'];
 
 var lg = lg || {};
 
@@ -28,21 +28,24 @@ lg._inited = false;
 lg._orientationTip = null;
 lg._languageDict = null;
 lg._languageToLoad = null;
-/**Fixed the grey banner on the botton when landscape*/
-document.body.scrollTop = 0;
+
+if(typeof document !== "undefined"){
+    /**Fixed the grey banner on the botton when landscape*/
+    document.body.scrollTop = 0;
 
 //set the game canvas color as html body color
-/************************************************/
-var bgColor = document.body.style.backgroundColor;
+    /************************************************/
+    var bgColor = document.body.style.backgroundColor;
 
-var canvasNode = document.getElementById(cc.game.config["id"]);
-canvasNode.style.backgroundColor = bgColor;
+    var canvasNode = document.getElementById(cc.game.config["id"]);
+    canvasNode.style.backgroundColor = bgColor;
 
-bgColor = bgColor.replace("rgb(","");
-bgColor = bgColor.replace(")", "");
-bgColor = bgColor.split(",");
-lg.bgColor = cc.color(parseInt(bgColor[0]), parseInt(bgColor[1]), parseInt(bgColor[2]));
-/************************************************/
+    bgColor = bgColor.replace("rgb(","");
+    bgColor = bgColor.replace(")", "");
+    bgColor = bgColor.split(",");
+    lg.bgColor = cc.color(parseInt(bgColor[0]), parseInt(bgColor[1]), parseInt(bgColor[2]));
+    /************************************************/
+}
 
 lg.init = function()
 {
@@ -56,8 +59,14 @@ lg.init = function()
     if(cc.game.config.timeScale)  cc.director.getScheduler().setTimeScale(cc.game.config.timeScale);
 
     var lan = cc.game.config.language;
-    if(lan == null || lan == "") lan = cc.sys.language;
-    lg.updateLanguage(lan);
+    if(lan == null || lan == "") {
+        if(lg.language == null) {
+            lan = cc.sys.language;
+            lg.updateLanguage(lan);
+        }
+    }else{
+        lg.updateLanguage(lan);
+    }
 }
 lg.getLanguageStr = function(key){
     if(lg._languageDict == null) {
@@ -242,7 +251,7 @@ lg._showOrientaionTip = function(){
     lg.landscape = (Math.abs(window.orientation) == 90);
     lg._orientationTip.visible = (cc.game.config.landscape != lg.landscape);
     lg._orientationTip.__icon.rotation = (lg.landscape ? -90 : 0);
-    document.body.scrollTop = 0;
+    if(typeof document !== "undefined") document.body.scrollTop = 0;
     if(lg._orientationTip.visible) {
         lg._oldGamePauseState = cc.director.isPaused();
         cc.director.pause();

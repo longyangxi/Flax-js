@@ -585,7 +585,11 @@ lg.TimeLine = cc.Sprite.extend({
         lg.callModuleOnExit(this);
     },
     _updateLaguage:function(){
-        if(lg.languageIndex > -1 && this.name && this.name.indexOf("label__") > -1) this.gotoAndStop(lg.languageIndex);
+        if(lg.languageIndex > -1 && this.name && this.name.indexOf("label__") > -1){
+            if(!this.gotoAndStop(lg.languageIndex)){
+                this.gotoAndStop(0);
+            }
+        }
     },
     getTileMap:function()
     {
