@@ -228,6 +228,7 @@ lg.Label.create = function(plistFile, define)
         labelDef.textAlign = H_ALIGHS.indexOf(define.align);
         labelDef.verticalAlign = cc.VERTICAL_TEXT_ALIGNMENT_CENTER;
         labelDef.fillStyle = define.color;
+        labelDef.fontDimensions = true;
         labelDef.boundingWidth = define.width;
         labelDef.boundingHeight = define.height;
         //todo, outline and shadow effect
