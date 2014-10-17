@@ -37,19 +37,20 @@ lg.Preloader = cc.Scene.extend({
         var winSize = cc.director.getWinSize();
 
         //logo
-        var logoWidth = logoW;
-        var logoHeight = logoH;
         var centerPos = cc.p(winSize.width / 2, winSize.height / 2);
 
         //logo
-        this._logo = cc.Sprite.create(logoSrc);
-        this._logo.setPosition(centerPos);
-        this.addChild(this._logo, 10);
+        var loadingImg = cc.game.config.loading;
+        if(loadingImg){
+            this._logo = cc.Sprite.create(loadingImg);
+            this._logo.setPosition(centerPos);
+            this.addChild(this._logo, 10);
+        }
 
         //loading percent
         var label = self._label = cc.LabelTTF.create("Loading... 0%", "Arial", 14);
         label.setColor(cc.color(38, 192, 216));
-        label.setPosition(cc.pAdd(centerPos, cc.p(0,  logoOnCenter ? 0 : (-logoHeight / 2 - 10))));
+        label.setPosition(cc.pAdd(centerPos, cc.p(0,  loadingImg ? (-cc.game.config.loadingHeight / 2 - 10) : 0)));
         this.addChild(this._label, 10);
 
         return true;
@@ -59,6 +60,18 @@ lg.Preloader = cc.Scene.extend({
         var self = this;
         cc.Node.prototype.onEnter.call(self);
         self.schedule(self._startLoading, 0.3);
+        //click logo to go
+        if(this._logo){
+            var listener = cc.EventListener.create({
+                event: cc.EventListener.TOUCH_ONE_BY_ONE,
+                swallowTouches: false,
+                onTouchBegan:function(touch, event)
+                {
+                    lg.goHomeUrl();
+                }
+            })
+            cc.eventManager.addListener(listener, this._logo);
+        }
     },
 
     onExit: function () {

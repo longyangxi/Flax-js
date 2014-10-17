@@ -17,6 +17,7 @@ lg.Anchor = cc.Class.extend({
 });
 
 lg.TimeLine = cc.Sprite.extend({
+    __instanceId:null,
     onAnimationOver:null,
     autoDestroyWhenOver:false,
     autoStopWhenOver:false,
@@ -64,6 +65,7 @@ lg.TimeLine = cc.Sprite.extend({
     ctor:function(plistFile, assetID){
         cc.Sprite.prototype.ctor.call(this);
         if(!plistFile || !assetID) throw "Please set plistFile and assetID to me!"
+        this.__instanceId = ClassManager.getNewInstanceId();
         this._anchorBindings = [];
         this._animSequence = [];
         this.onAnimationOver = new signals.Signal();
@@ -424,7 +426,7 @@ lg.TimeLine = cc.Sprite.extend({
     _animTime:0,
     onFrame:function(delta)
     {
-        if(!this._visible || this.inRecycle) return;
+        if(!this.visible || this.inRecycle) return;
         this.renderFrame(this.currentFrame);
         this.currentFrame++;
         this._animTime += delta;
@@ -608,7 +610,7 @@ lg.TimeLine = cc.Sprite.extend({
         }
     },
     _updateTileMap:function(forceUpdate){
-        var pos = this._position;
+        var pos = this.getPosition();
         if(this.parent) pos = this.parent.convertToWorldSpace(pos);
         var t = this._tileMap.getTileIndex(pos);
         this.setTile(t.x, t.y, forceUpdate);
@@ -627,10 +629,10 @@ lg.TimeLine = cc.Sprite.extend({
     {
         var dirty = false;
         if(yValue === undefined) {
-            dirty = (pos.x != this._position._x || pos.y != this._position._y);
+            dirty = (pos.x != this.x || pos.y != this.y);
             if(dirty) this._super(pos);
         }else {
-            dirty = (pos != this._position._x || yValue != this._position._y);
+            dirty = (pos != this.x || yValue != this.y);
             if(dirty) this._super(pos, yValue);
         }
         if(!dirty || this.inRecycle) return;
@@ -640,10 +642,10 @@ lg.TimeLine = cc.Sprite.extend({
         this._updateCollider();
     },
     setPositionX:function (x) {
-        this.setPosition(x, this._position.y);
+        this.setPosition(x, this.y);
     },
     setPositionY:function (y) {
-        this.setPosition(this._position.x, y);
+        this.setPosition(this.x, y);
     },
     setTile:function(tx, ty, forceUpdate)
     {

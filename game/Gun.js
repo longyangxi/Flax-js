@@ -318,7 +318,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
 
 lg.BulletCanvas.fetch = function (plistFile) {
     if(lg._bulletCanvases[plistFile]) return lg._bulletCanvases[plistFile];
-    var texturePath = cc.path.changeBasename(plistFile, ".png");
+    var texturePath = plistFile.replace("."+lg.getFileExtension(plistFile), ".png");
     var c = new lg.BulletCanvas(texturePath, 100);
     c.plistFile = plistFile;
     lg._bulletCanvases[plistFile] = c;

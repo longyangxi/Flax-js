@@ -11,6 +11,7 @@ var InputType = {
 };
 
 lg.InputManager = cc.Node.extend({
+    __instanceId:null,
     enabled:true,
     inTouching:false,
     inDragging:false,
@@ -19,6 +20,10 @@ lg.InputManager = cc.Node.extend({
     _masks:[],
     _callbacks:{},
     _radioButtons:{},
+    ctor:function(){
+        cc.Node.prototype.ctor.call(this);
+        this.__instanceId = ClassManager.getNewInstanceId();
+    },
     onEnter:function()
     {
         this._super();
@@ -249,7 +254,7 @@ lg.InputManager = cc.Node.extend({
     _createListener:function(target, swallow)
     {
         var self = this;
-        listener = cc.EventListener.create({
+        var listener = cc.EventListener.create({
             event: cc.EventListener.TOUCH_ONE_BY_ONE,
             swallowTouches: swallow,
             onTouchBegan:function(touch, event)
@@ -344,6 +349,5 @@ lg.InputManager = cc.Node.extend({
 
 lg.InputManager.create = function(){
     var im = new lg.InputManager();
-    im.init();
     return im;
 }

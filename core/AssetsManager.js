@@ -128,7 +128,7 @@ lg.AssetsManager = cc.Class.extend({
         }
         if(typeof this.framesCache[plistFile] !== "undefined") return false;
 
-        var dict = this._getFrameConfig(plistFile);
+        var dict = cc.loader.getRes(plistFile);
         cc.spriteFrameCache.addSpriteFrames(plistFile);
 
         var frames = [];
@@ -331,83 +331,6 @@ lg.AssetsManager = cc.Class.extend({
     {
         var arr = str.split(",");
         return cc.rect(parseFloat(arr[0]), parseFloat(arr[1]), parseFloat(arr[2]), parseFloat(arr[3]));
-    },
-    /**
-     * Copy from the cocos2d engine!
-     * Get the real data structure of frame used by engine.
-     * @param url
-     * @returns {*}
-     * @private
-     */
-    _getFrameConfig : function(url){
-        var dict = cc.loader.getRes(url);
-        if(!dict) throw "Please load the resource first : " + url;
-        var frameCache = cc.spriteFrameCache;
-        cc.loader.release(url);//release it in loader
-        if(dict._inited){
-            frameCache._frameConfigCache[url] = dict;
-            return dict;
-        }
-        var tempFrames = dict["frames"], tempMeta = dict["metadata"] || dict["meta"];
-        var frames = {}, meta = {};
-        var format = 0;
-        if(tempMeta){//init meta
-            var tmpFormat = tempMeta["format"];
-            format = (tmpFormat.length <= 1) ? parseInt(tmpFormat) : tmpFormat;
-            meta.image = tempMeta["textureFileName"] || tempMeta["textureFileName"] || tempMeta["image"];
-        }
-        for (var key in tempFrames) {
-            var frameDict = tempFrames[key];
-            if(!frameDict) continue;
-            var tempFrame = {};
-
-            if (format == 0) {
-                tempFrame.rect = cc.rect(frameDict["x"], frameDict["y"], frameDict["width"], frameDict["height"]);
-                tempFrame.rotated = false;
-                tempFrame.offset = cc.p(frameDict["offsetX"], frameDict["offsetY"]);
-                var ow = frameDict["originalWidth"];
-                var oh = frameDict["originalHeight"];
-                // check ow/oh
-                if (!ow || !oh) {
-                    cc.log("cocos2d: WARNING: originalWidth/Height not found on the cc.SpriteFrame. AnchorPoint won't work as expected. Regenrate the .plist");
-                }
-                // Math.abs ow/oh
-                ow = Math.abs(ow);
-                oh = Math.abs(oh);
-                tempFrame.size = cc.size(ow, oh);
-            } else if (format == 1 || format == 2) {
-                tempFrame.rect = frameCache._rectFromString(frameDict["frame"]);
-                tempFrame.rotated = frameDict["rotated"] || false;
-                tempFrame.offset = frameCache._pointFromString(frameDict["offset"]);
-                tempFrame.size = frameCache._sizeFromString(frameDict["sourceSize"]);
-            } else if (format == 3) {
-                // get values
-                var spriteSize = frameCache._sizeFromString(frameDict["spriteSize"]);
-                var textureRect = frameCache._rectFromString(frameDict["textureRect"]);
-                if (spriteSize) {
-                    textureRect = cc.rect(textureRect.x, textureRect.y, spriteSize.width, spriteSize.height);
-                }
-                tempFrame.rect = textureRect;
-                tempFrame.rotated = frameDict["textureRotated"] || false; // == "true";
-                tempFrame.offset = frameCache._pointFromString(frameDict["spriteOffset"]);
-                tempFrame.size = frameCache._sizeFromString(frameDict["spriteSourceSize"]);
-                tempFrame.aliases = frameDict["aliases"];
-            } else {
-                var tmpFrame = frameDict["frame"], tmpSourceSize = frameDict["sourceSize"];
-                key = frameDict["filename"] || key;
-                tempFrame.rect = cc.rect(tmpFrame["x"], tmpFrame["y"], tmpFrame["w"], tmpFrame["h"]);
-                tempFrame.rotated = frameDict["rotated"] || false;
-                tempFrame.offset = cc.p(0, 0);
-                tempFrame.size = cc.size(tmpSourceSize["w"], tmpSourceSize["h"]);
-            }
-            frames[key] = tempFrame;
-        }
-        var cfg = frameCache._frameConfigCache[url] = {
-            _inited : true,
-            frames : frames,
-            meta : meta
-        };
-        return dict;
     }
 });
 
@@ -417,3 +340,63 @@ lg.AssetsManager.create = function()
     am.init();
     return am;
 };
+//
+//lg._flaxLoader = {
+//    load : function(realUrl, url, res, cb){
+//        cc.loader.loadBinary(realUrl, function(err, data){
+//            var zlib = new Zlib.RawInflate(data);
+//            var txt = zlib.decompress();
+//            cc.log(String.fromCharCode(txt[0]));
+//            cc.log(String.fromCharCode(txt[1]));
+//            cc.log(String.fromCharCode(txt[2]));
+//            cc.log(String.fromCharCode(txt[3]));
+//            cc.log(String.fromCharCode(txt[4]));
+//
+////             var txt = JXG.decompress(data);
+//
+////            try {
+//                var keyWord = "data:image/gif;base64,";
+//                var data = txt.split(keyWord);
+//                var pUrl = realUrl.replace(".flax","");
+//                //hadle json
+//                cc.loader.cache[pUrl+".json"] = JSON.parse(data[0]);
+//                //handle image
+//                var image = new Image();
+//                image.src = keyWord+data[1];
+//                cc.loader.cache[pUrl+".png"] = image;
+//                cc.textureCache.handleLoadedTexture(pUrl+".png");
+//
+//                err ? cb(err) : cb(null, "Not reachable!");
+//                cc.loader.release(realUrl);
+////            } catch (e) {
+////                throw "load flax [" + realUrl + "] failed : " + e;
+////            }
+//        });
+////        cc.loader.loadTxt(realUrl, function (err, txt) {
+//////            txt = pako.inflate(txt, { to: 'string' });
+//////            txt = JXG.decompress(txt);
+////
+////            var zlib = new Zlib.RawInflate(txt);
+////            txt = zlib.decompress();
+////
+////            try {
+////                var keyWord = "data:image/gif;base64,";
+////                var data = txt.split(keyWord);
+////                var pUrl = realUrl.replace(".flax","");
+////                //hadle json
+////                cc.loader.cache[pUrl+".json"] = JSON.parse(data[0]);
+////                //handle image
+////                var image = new Image();
+////                image.src = keyWord+data[1];
+////                cc.loader.cache[pUrl+".png"] = image;
+////                cc.textureCache.handleLoadedTexture(pUrl+".png");
+////
+////                err ? cb(err) : cb(null, "Not reachable!");
+////                cc.loader.release(realUrl);
+////            } catch (e) {
+////                throw "load flax [" + realUrl + "] failed : " + e;
+////            }
+////        });
+//    }
+//};
+//cc.loader.register(["flax"], lg._flaxLoader);

@@ -29,7 +29,7 @@ lg._orientationTip = null;
 lg._languageDict = null;
 lg._languageToLoad = null;
 
-if(typeof document !== "undefined"){
+if(!cc.sys.isNative){
     /**Fixed the grey banner on the botton when landscape*/
     document.body.scrollTop = 0;
 
@@ -55,7 +55,6 @@ lg.init = function()
 
     lg.frameInterval = 1/cc.game.config.frameRate;
     lg.assetsManager = lg.AssetsManager.create();
-    lg.inputManager = lg.InputManager.create();
     if(cc.game.config.timeScale)  cc.director.getScheduler().setTimeScale(cc.game.config.timeScale);
 
     var lan = cc.game.config.language;
@@ -131,6 +130,7 @@ lg.callModuleOnExit = function(owner){
 
 //todo, now only handle the mobile device
 lg._checkOSVersion = function(){
+    if(cc.sys.isNative) return;
     var ua = navigator.userAgent;
     var i;
     if(ua.match(/iPad/i) || ua.match(/iPhone/i)){
@@ -164,15 +164,15 @@ lg.replaceScene = function(sceneName)
     if(lg.Label) lg.Label.pool = {};
     cc.director.resume();
     lg.currentSceneName = sceneName;
-    lg.inputManager.removeFromParent(false);
     if(lg.stopPhysicsWorld) lg.stopPhysicsWorld();
-    lg.currentScene = new s.scene();
     lg.preload(s.res,function(){
         //init language
         if(lg._languageToLoad){
             lg._languageDict = cc.loader.getRes(lg._getLanguagePath());
             lg._languageToLoad = null;
         }
+        lg.currentScene = new s.scene();
+        lg.inputManager = lg.InputManager.create();
         lg.currentScene.addChild(lg.inputManager, 999999);
         cc.director.runScene(lg.currentScene);
         lg._checkDeviceOrientation();
@@ -231,6 +231,7 @@ lg.playSound = function(path)
 }
 //----------------------sound about-------------------------------------------------------
 lg._checkDeviceOrientation = function(){
+    if(cc.sys.isNative) return;
     if(!lg._orientationTip && cc.sys.isMobile && cc.game.config.rotateImg){
         lg._orientationTip = cc.LayerColor.create(cc.color(0,0,0), cc.visibleRect.width + 10, cc.visibleRect.height +10);
         var img =  cc.Sprite.create(cc.game.config.rotateImg);
@@ -251,7 +252,7 @@ lg._showOrientaionTip = function(){
     lg.landscape = (Math.abs(window.orientation) == 90);
     lg._orientationTip.visible = (cc.game.config.landscape != lg.landscape);
     lg._orientationTip.__icon.rotation = (lg.landscape ? -90 : 0);
-    if(typeof document !== "undefined") document.body.scrollTop = 0;
+    document.body.scrollTop = 0;
     if(lg._orientationTip.visible) {
         lg._oldGamePauseState = cc.director.isPaused();
         cc.director.pause();
@@ -504,3 +505,10 @@ lg.createDInts = function(count, centerInt)
     }
     return ds;
 };
+
+lg.goHomeUrl = function()
+{
+    if(!cc.sys.isNative && cc.game.config.homeUrl){
+        window.open(cc.game.config.homeUrl);
+    }
+}
