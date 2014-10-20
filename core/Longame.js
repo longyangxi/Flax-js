@@ -156,6 +156,7 @@ lg.replaceScene = function(sceneName)
         throw "Please register the scene: "+sceneName+" firstly!";
         return;
     }
+    if(s.res == null) s.res = [];
     if(lg._languageToLoad && s.res.indexOf(lg._languageToLoad) == -1){
         s.res.push(lg._languageToLoad);
     }
@@ -334,6 +335,8 @@ lg.getRect = function(sprite, global)
     if(sprite.getRect) {
         rect = sprite.getRect(global);
         return rect;
+    }else if(sprite instanceof cc.Layer || sprite instanceof cc.Scene){
+        return cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height);
     }
     global = (global !== false);
     var pos = sprite.getPosition();

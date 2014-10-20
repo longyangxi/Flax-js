@@ -531,7 +531,7 @@ lg.TimeLine = cc.Sprite.extend({
         this.inRecycle = false;
         this._destroyed = false;
         if(this._tileMap && !this._tileInited) {
-            this._updateTileMap(true);
+            this.updateTile(true);
         }
         this._updateCollider();
         if(this._physicsBodyParam) {
@@ -612,11 +612,12 @@ lg.TimeLine = cc.Sprite.extend({
         if(this._tileMap == null) return;
 
         if(this.parent) {
-            this._updateTileMap(true);
+            this.updateTile(true);
             this._updateCollider();
         }
     },
-    _updateTileMap:function(forceUpdate){
+    updateTile:function(forceUpdate){
+        if(!this._tileMap) return;
         var pos = this.getPosition();
         if(this.parent) pos = this.parent.convertToWorldSpace(pos);
         var t = this._tileMap.getTileIndex(pos);
@@ -642,11 +643,9 @@ lg.TimeLine = cc.Sprite.extend({
             dirty = (pos != this.x || yValue != this.y);
             if(dirty) this._super(pos, yValue);
         }
-        cc.log("pos: "+dirty+","+this.inRecycle+","+this.autoUpdateTileWhenMove+","+this._tileMap);
         if(!dirty || this.inRecycle) return;
         if(this.autoUpdateTileWhenMove && this._tileMap){
-            cc.log("update tile map");
-            this._updateTileMap();
+            this.updateTile();
         }
         this._updateCollider();
     },
@@ -699,7 +698,6 @@ lg.TimeLine = cc.Sprite.extend({
         //when recycled, reset all the prarams as default
         this.autoRecycle = false;
         //todo, if reset zIndex to 0, when it is reused, the zIndex is not correct!
-//        this.zIndex = 0;
         this.setScale(1);
         this.opacity = 255;
         this.rotation = 0;
@@ -707,26 +705,12 @@ lg.TimeLine = cc.Sprite.extend({
         this.autoStopWhenOver = false;
         this.autoHideWhenOver = false;
         this.gotoAndStop(0);
-//        if(this._tileMap) this._tileMap.removeObject(this);
-//        this._tileMap = null;
-//        lg.inputManager.removeListener(this);
+
         this._tileInited = false;
         this.setPosition(0, 0);
         this._animSequence.length = 0;
         this._loopSequence = false;
         this._sequenceIndex = 0;
-
-        //remove all anchor nodes
-//        var node = null;
-//        var i = -1;
-//        var n = this._anchorBindings.length;
-//        while(++i < n) {
-//            node = this._anchorBindings[i];
-//            if(node.destroy) node.destroy();
-//            else node.removeFromParent(true);
-//            delete  node.__anchor__;
-//        }
-//        this._anchorBindings.length = 0;
     },
     isMouseEnabled:function()
     {
@@ -771,5 +755,15 @@ cc.defineGetterSetter(_p, "fps", _p.getFPS, _p.setFPS);
 
 _p.tileMap;
 cc.defineGetterSetter(_p, "tileMap", _p.getTileMap, _p.setTileMap);
+//fix the
+try{
+    _p.x;
+    cc.defineGetterSetter(_p, "x", _p.getPositionX, _p.setPositionX);
+    _p.y;
+    cc.defineGetterSetter(_p, "y", _p.getPositionY, _p.setPositionY);
+}catch (e){
+
+}
+
 
 delete window._p;

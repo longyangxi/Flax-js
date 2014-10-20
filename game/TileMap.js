@@ -29,16 +29,15 @@ lg.TileMap = cc.Class.extend({
     _mapHeight:0,
     _objectsMap:null,
     _objectsArr:null,
+    _inUpdate:false,
 
-//    ctor:function(){
-//        cc.director.getScheduler().scheduleUpdateForTarget(this);
-//    },
-//    update:function(delta){
-//        var i = this._objectsArr ? this._objectsArr.length : 0;
-//        while(i--){
-//            this._objectsArr[i]._updateTileMap(true);
-//        }
-//    },
+    //fix the tile update bug when in JSB
+    update:function(delta){
+        var i = this._objectsArr ? this._objectsArr.length : 0;
+        while(i--){
+            this._objectsArr[i].updateTile();
+        }
+    },
     setTileSize:function(tw, th)
     {
         if(this._tileWidth == tw && this._tileHeight == th) return;
@@ -241,6 +240,13 @@ lg.TileMap = cc.Class.extend({
         if(this._objectsArr.indexOf(object) > -1) return;
         this._objectsArr.push(object);
         var objs = this._objectsMap[tx][ty];
+
+        //fix the update tile bug when in JSB
+        if(!this._inUpdate && cc.sys.isNative) {
+            this._inUpdate = true;
+            cc.director.getScheduler().scheduleUpdateForTarget(this);
+        }
+
         if(!(object instanceof cc.Node)|| !this.autoLayout) {
             objs.push(object);
             return;
@@ -307,6 +313,11 @@ lg.TileMap = cc.Class.extend({
             if(i > -1){
                 this._objectsArr.splice(i, 1);
             }
+        }
+        //fix the update tile bug when in JSB
+        if(this._inUpdate && cc.sys.isNative && this._objectsArr.length == 0) {
+            this._inUpdate = false;
+            cc.director.getScheduler().unscheduleUpdateForTarget(this);
         }
     },
     removeObjects:function(tx, ty)
