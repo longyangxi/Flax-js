@@ -11,7 +11,6 @@ var InputType = {
 };
 
 lg.InputManager = cc.Node.extend({
-    __instanceId:null,
     enabled:true,
     inTouching:false,
     inDragging:false,
@@ -20,10 +19,7 @@ lg.InputManager = cc.Node.extend({
     _masks:[],
     _callbacks:{},
     _radioButtons:{},
-    ctor:function(){
-        cc.Node.prototype.ctor.call(this);
-        this.__instanceId = ClassManager.getNewInstanceId();
-    },
+
     onEnter:function()
     {
         this._super();
@@ -127,7 +123,7 @@ lg.InputManager = cc.Node.extend({
         }
 
         type = (type == null) ? InputType.click : type;
-
+        if(target.__instanceId == null) target.__instanceId = ClassManager.getNewInstanceId();
         var arr = this._callbacks[target.__instanceId];
         if(arr == null){
             arr = [];
@@ -326,9 +322,14 @@ lg.InputManager = cc.Node.extend({
     _dispatch:function(target, touch, event, type){
         var p = target;
         //if the child triggered some event, then its parent should also be informed
+        var ps = [];
         while(p){
-            this._dispatchOne(p, touch, event, type);
+            ps.push(p);
             p = p.parent;
+        }
+        for(var i = 0; i < ps.length; i++){
+            p = ps[i];
+            this._dispatchOne(p, touch, event, type);
         }
     },
     _dispatchOne:function(target, touch, event, type)

@@ -37,6 +37,7 @@ lg.ObjectPool = cc.Class.extend({
         var obj = null;
         if(this._pool.length > 0){
             obj = this._pool.shift();
+            obj.__fromPool = true;
             obj.setPlist(this._plistFile, assetID);
         }else{
             if(this._cls.create) obj = this._cls.create(this._plistFile, assetID);
@@ -56,7 +57,7 @@ lg.ObjectPool = cc.Class.extend({
         }
         obj.attr(params);
         if(parent) parent.addChild(obj);
-
+//        cc.log("fetch: "+obj.assetID);
         return obj;
     },
     recycle:function(object)
@@ -66,12 +67,18 @@ lg.ObjectPool = cc.Class.extend({
             return;
         }
         if(this._pool.length < this.maxCount){
-            if(object.onRecycle) object.onRecycle();
+//            cc.log("recycle: "+object.assetID);
+            object.onRecycle&&object.onRecycle();
+            object.retain&&object.retain();
             this._pool.push(object);
         }
     },
     release:function()
     {
+        var i = this._pool.length;
+        while(i--){
+            this._pool[i].release&&this._pool[i].release();
+        }
         this._pool.length = 0;
     }
 });

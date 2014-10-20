@@ -30,6 +30,15 @@ lg.TileMap = cc.Class.extend({
     _objectsMap:null,
     _objectsArr:null,
 
+//    ctor:function(){
+//        cc.director.getScheduler().scheduleUpdateForTarget(this);
+//    },
+//    update:function(delta){
+//        var i = this._objectsArr ? this._objectsArr.length : 0;
+//        while(i--){
+//            this._objectsArr[i]._updateTileMap(true);
+//        }
+//    },
     setTileSize:function(tw, th)
     {
         if(this._tileWidth == tw && this._tileHeight == th) return;

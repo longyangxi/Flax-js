@@ -161,7 +161,6 @@ lg.replaceScene = function(sceneName)
     }
     lg.ObjectPool.release();
     if(lg.BulletCanvas) lg.BulletCanvas.reset();
-    if(lg.Label) lg.Label.pool = {};
     cc.director.resume();
     lg.currentSceneName = sceneName;
     if(lg.stopPhysicsWorld) lg.stopPhysicsWorld();
@@ -256,8 +255,10 @@ lg._showOrientaionTip = function(){
     if(lg._orientationTip.visible) {
         lg._oldGamePauseState = cc.director.isPaused();
         cc.director.pause();
+        lg.inputManager.enabled = false;
     }else if(!lg._oldGamePauseState){
         cc.director.resume();
+        lg.inputManager.enabled = true;
     }
 }
 

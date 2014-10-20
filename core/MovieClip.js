@@ -139,7 +139,7 @@ lg.MovieClip = lg.TimeLine.extend({
         var define = lg.assetsManager.getMc(this.plistFile, this.assetID);
         return define;
     },
-    getChildByName:function(name, nest)
+    getChildOfName:function(name, nest)
     {
         if(nest === undefined) nest = true;
         var child = this._namedChildren[name];
@@ -147,8 +147,8 @@ lg.MovieClip = lg.TimeLine.extend({
         if(!nest) return null;
         for(var key in this._namedChildren) {
             child = this._namedChildren[key];
-            if(child.getChildByName) {
-                child = child.getChildByName(name, nest);
+            if(child.getChildOfName) {
+                child = child.getChildOfName(name, nest);
                 if(child) return child;
             }
         }
@@ -166,13 +166,13 @@ lg.MovieClip = lg.TimeLine.extend({
     },
     getLabelText:function(labelName, ifNest)
     {
-        var label = this.getChildByName(labelName, ifNest === undefined ? true : ifNest);
+        var label = this.getChildOfName(labelName, ifNest === undefined ? true : ifNest);
         if(label && (label instanceof lg.Label)) return label.getString();
         return null;
     },
     setLabelText:function(labelName, text, ifNest)
     {
-        var label = this.getChildByName(labelName, ifNest === undefined ? true : ifNest);
+        var label = this.getChildOfName(labelName, ifNest === undefined ? true : ifNest);
         if(label && (label instanceof lg.Label)) {
             label.setString(text);
             return label;

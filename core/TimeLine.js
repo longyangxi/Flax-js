@@ -529,6 +529,7 @@ lg.TimeLine = cc.Sprite.extend({
     {
         this._super();
         this.inRecycle = false;
+        this._destroyed = false;
         if(this._tileMap && !this._tileInited) {
             this._updateTileMap(true);
         }
@@ -548,6 +549,11 @@ lg.TimeLine = cc.Sprite.extend({
         this._updateLaguage();
         //call the module onEnter
         lg.callModuleOnEnter(this);
+
+        if(this.__fromPool){
+            this.__fromPool = false;
+            this.release();
+        }
     },
     onExit:function()
     {
@@ -604,7 +610,8 @@ lg.TimeLine = cc.Sprite.extend({
         if(this._tileMap) this._tileMap.removeObject(this);
         this._tileMap = map;
         if(this._tileMap == null) return;
-        if(this._parent) {
+
+        if(this.parent) {
             this._updateTileMap(true);
             this._updateCollider();
         }
@@ -635,8 +642,10 @@ lg.TimeLine = cc.Sprite.extend({
             dirty = (pos != this.x || yValue != this.y);
             if(dirty) this._super(pos, yValue);
         }
+        cc.log("pos: "+dirty+","+this.inRecycle+","+this.autoUpdateTileWhenMove+","+this._tileMap);
         if(!dirty || this.inRecycle) return;
         if(this.autoUpdateTileWhenMove && this._tileMap){
+            cc.log("update tile map");
             this._updateTileMap();
         }
         this._updateCollider();
@@ -654,7 +663,7 @@ lg.TimeLine = cc.Sprite.extend({
             var oldTy = this.ty;
             this.tx = tx;
             this.ty = ty;
-            if(this._tileMap && this._parent)
+            if(this._tileMap && this.parent)
             {
                 this._tileMap.removeObject(this, oldTx, oldTy);
                 if(!this.inRecycle) {
@@ -667,14 +676,18 @@ lg.TimeLine = cc.Sprite.extend({
 //            this._tileMap.updateLayout(tx, ty);
         }
     },
+    _destroyed:false,
     destroy:function()
     {
+        if(this._destroyed) return;
+        this._destroyed = true;
         if(this.autoRecycle) {
             if(!this.inRecycle) {
                 var pool = lg.ObjectPool.get(this.plistFile, this.clsName, this.__pool__id__ || "");
                 pool.recycle(this);
             }
         }
+
         this.removeFromParent();
     },
     /**

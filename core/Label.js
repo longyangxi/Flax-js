@@ -81,21 +81,7 @@ lg.Label = cc.Sprite.extend({
             this._charCanvas = new cc.SpriteBatchNode(imgFile, this.str.length);
             this.addChild(this._charCanvas);
         }
-        var pool = lg.Label.pool;
-
-        //recycle the old chars
-        var i = this._charCanvas.childrenCount;
-        var charChild = null;
-        while(i--){
-            charChild = this._charCanvas.children[i];
-            var arr = pool[charChild.__key];
-            if(arr == null) {
-                arr = [];
-                pool[charChild.__key] = arr;
-            }
-            arr.push(charChild);
-            charChild.removeFromParent();
-        }
+        this._charCanvas.removeAllChildren();
 
         this.mlWidth = 0;
         this.mlHeight = 0;
@@ -127,15 +113,7 @@ lg.Label = cc.Sprite.extend({
                 continue;
             }
 
-            //create a char sprite
-            var key = this.plistFile+"_"+this.fontName+"_"+charIndex;
-            var sprite = pool[key];
-            if(sprite == null || sprite.length == 0){
-                sprite = cc.Sprite.create(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
-                sprite.__key = key;
-            }else{
-                sprite = sprite.shift();
-            }
+            sprite = cc.Sprite.create(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
             sprite.anchorX = this._fontDefine.anchorX;
             sprite.anchorY = this._fontDefine.anchorY;
             // calculate the position of the sprite;
@@ -191,8 +169,6 @@ lg.Label = cc.Sprite.extend({
         this.removeFromParent();
     }
 });
-
-lg.Label.pool = {};
 
 lg.LabelTTF = cc.LabelTTF.extend({
     __isTTF:true,
