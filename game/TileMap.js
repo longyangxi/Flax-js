@@ -35,7 +35,8 @@ lg.TileMap = cc.Class.extend({
     update:function(delta){
         var i = this._objectsArr ? this._objectsArr.length : 0;
         while(i--){
-            this._objectsArr[i].updateTile();
+            var obj = this._objectsArr[i];
+            if(obj.autoUpdateTileWhenMove) obj.updateTile();
         }
     },
     setTileSize:function(tw, th)

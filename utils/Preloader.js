@@ -48,10 +48,12 @@ lg.Preloader = cc.Scene.extend({
         }
 
         //loading percent
-        var label = self._label = cc.LabelTTF.create("Loading... 0%", "Arial", 14);
-        label.setColor(cc.color(38, 192, 216));
-        label.setPosition(cc.pAdd(centerPos, cc.p(0,  loadingImg ? (-cc.game.config.loadingHeight / 2 - 10) : 0)));
-        this.addChild(this._label, 10);
+        if(!cc.sys.isNative){
+            var label = self._label = cc.LabelTTF.create("Loading... 0%", "Arial", 14);
+            label.setColor(cc.color(38, 192, 216));
+            label.setPosition(cc.pAdd(centerPos, cc.p(0,  loadingImg ? (-cc.game.config.loadingHeight / 2 - 10) : 0)));
+            this.addChild(this._label, 10);
+        }
 
         return true;
     },
@@ -76,8 +78,9 @@ lg.Preloader = cc.Scene.extend({
 
     onExit: function () {
         cc.Node.prototype.onExit.call(this);
-        var tmpStr = "Loading... 0%";
-        this._label.setString(tmpStr);
+//        var tmpStr = "Loading... 0%";
+        var tmpStr = "Loaded";
+        if(this._label) this._label.setString(tmpStr);
     },
 
     /**
@@ -99,7 +102,7 @@ lg.Preloader = cc.Scene.extend({
         cc.loader.load(res, function(result, count){ self._count = count; }, function(){
             self.cb();
         });
-        self.schedule(self._updatePercent);
+        if(self._label) self.schedule(self._updatePercent);
     },
 
     _updatePercent: function () {
