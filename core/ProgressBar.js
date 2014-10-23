@@ -109,9 +109,9 @@ lg.ProgressBar = lg.Animator.extend({
         }
     }
 });
-lg.ProgressBar.create = function(plistFile, assetID)
+lg.ProgressBar.create = function(assetsFile, assetID)
 {
-    var p = new lg.ProgressBar(plistFile, assetID);
+    var p = new lg.ProgressBar(assetsFile, assetID);
     p.clsName = "lg.ProgressBar";
     return p;
 };

@@ -7,13 +7,13 @@ lg.ObjectPool = cc.Class.extend({
     maxCount:100,
     _clsName:null,
     _cls:null,
-    _plistFile:null,
+    _assetsFile:null,
     _pool:null,
     _extraID:"",
 
-    init:function(plistFile, clsName, maxCount)
+    init:function(assetsFile, clsName, maxCount)
     {
-        if(this._plistFile && this._cls){
+        if(this._assetsFile && this._cls){
             cc.log("The pool has been inited with cls: "+this._cls);
             return false;
         }
@@ -23,7 +23,7 @@ lg.ObjectPool = cc.Class.extend({
             cc.log("There is no class named: "+clsName);
             return false;
         }
-        this._plistFile = plistFile;
+        this._assetsFile = assetsFile;
         this._pool = [];
         if(maxCount !== undefined) this.maxCount = maxCount;
         return true;
@@ -38,10 +38,10 @@ lg.ObjectPool = cc.Class.extend({
         if(this._pool.length > 0){
             obj = this._pool.shift();
             obj.__fromPool = true;
-            obj.setPlist(this._plistFile, assetID);
+            obj.setSource(this._assetsFile, assetID);
         }else{
-            if(this._cls.create) obj = this._cls.create(this._plistFile, assetID);
-            else obj = new this._cls(this._plistFile, assetID);
+            if(this._cls.create) obj = this._cls.create(this._assetsFile, assetID);
+            else obj = new this._cls(this._assetsFile, assetID);
         }
 
         obj.__pool__id__ = this._extraID;
@@ -85,22 +85,22 @@ lg.ObjectPool = cc.Class.extend({
 
 lg.ObjectPool.all = {};
 
-lg.ObjectPool.create = function(plistFile, clsName, maxCount)
+lg.ObjectPool.create = function(assetsFile, clsName, maxCount)
 {
     var pool = new lg.ObjectPool();
-    if(pool.init(plistFile, clsName, maxCount)) {
+    if(pool.init(assetsFile, clsName, maxCount)) {
         return pool;
     }
     return null;
 };
-lg.ObjectPool.get = function(plistFile, clsName, id)
+lg.ObjectPool.get = function(assetsFile, clsName, id)
 {
     if(clsName == null) clsName = "lg.Animator";
     if(id == null) id = "";
-    var key = plistFile+clsName+id;
+    var key = assetsFile+clsName+id;
     var pool = lg.ObjectPool.all[key];
     if(pool == null){
-        pool = lg.ObjectPool.create(plistFile, clsName);
+        pool = lg.ObjectPool.create(assetsFile, clsName);
         pool._extraID = id;
         lg.ObjectPool.all[key] = pool;
     }

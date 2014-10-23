@@ -77,13 +77,13 @@ lg._scrollPaneDefine = {
     }
 };
 lg.ScrollPane = lg.MovieClip.extend(lg._scrollPaneDefine);
-lg.ScrollPane.create = function(plistFile, assetID){
-    var s = new lg.ScrollPane(plistFile, assetID);
+lg.ScrollPane.create = function(assetsFile, assetID){
+    var s = new lg.ScrollPane(assetsFile, assetID);
     return s;
 }
 
 lg.ScrollPane1 = lg.Animator.extend(lg._scrollPaneDefine);
-lg.ScrollPane1.create = function(plistFile, assetID){
-    var s = new lg.ScrollPane1(plistFile, assetID);
+lg.ScrollPane1.create = function(assetsFile, assetID){
+    var s = new lg.ScrollPane1(assetsFile, assetID);
     return s;
 }

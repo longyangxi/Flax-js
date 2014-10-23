@@ -23,7 +23,7 @@ lg.TimeLine = cc.Sprite.extend({
     autoStopWhenOver:false,
     autoHideWhenOver:false,
     autoRecycle:false,
-    plistFile:null,
+    assetsFile:null,
     currentFrame:0,
     currentAnim:null,
     prevFrame:-1,
@@ -62,33 +62,33 @@ lg.TimeLine = cc.Sprite.extend({
     _physicsBodyParam:null,
     _physicsColliders:null,
 
-    ctor:function(plistFile, assetID){
+    ctor:function(assetsFile, assetID){
         cc.Sprite.prototype.ctor.call(this);
-        if(!plistFile || !assetID) throw "Please set plistFile and assetID to me!"
+        if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!"
         this.__instanceId = ClassManager.getNewInstanceId();
         this._anchorBindings = [];
         this._animSequence = [];
         this.onAnimationOver = new signals.Signal();
-        this.setPlist(plistFile, assetID);
+        this.setSource(assetsFile, assetID);
     },
     /**
-     * @param {String} plistFile the plist file path
-     * @param {String} assetID the display id in the plist file
+     * @param {String} assetsFile the assets file path
+     * @param {String} assetID the display id in the assets file
      * */
-    setPlist:function(plistFile, assetID)
+    setSource:function(assetsFile, assetID)
     {
-        if(plistFile == null || assetID == null){
-            throw 'plistFile and assetID can not be null!'
+        if(assetsFile == null || assetID == null){
+            throw 'assetsFile and assetID can not be null!'
             return;
         }
-        if(this.plistFile == plistFile && (this.assetID == assetID || this._baseAssetID == assetID)) return;
-        this.plistFile = plistFile;
-        lg.assetsManager.addPlist(plistFile);
+        if(this.assetsFile == assetsFile && (this.assetID == assetID || this._baseAssetID == assetID)) return;
+        this.assetsFile = assetsFile;
+        lg.assetsManager.addAssets(assetsFile);
 
         //see if there is a sub animation
         var ns = assetID.split("$");
         this._baseAssetID = ns[0];
-        this._subAnims = lg.assetsManager.getSubAnims(plistFile, this._baseAssetID);
+        this._subAnims = lg.assetsManager.getSubAnims(assetsFile, this._baseAssetID);
         var anim = ns[1];
         if(anim == null && this._subAnims) anim = this._subAnims[0];
         assetID = this._baseAssetID;
@@ -111,7 +111,7 @@ lg.TimeLine = cc.Sprite.extend({
             this.renderFrame(this.currentFrame, true);
             this._initColliders();
         }else {
-            cc.log("There is no display named: "+assetID+" in plist: "+plistFile);
+            cc.log("There is no display named: "+assetID+" in assets: "+assetsFile);
         }
         if(this.parent){
             this._updateLaguage();
@@ -333,7 +333,7 @@ lg.TimeLine = cc.Sprite.extend({
         }
 //        if(this._currentSubAnim == anim) return false;
         this._currentSubAnim = anim;
-        this.setPlist(this.plistFile, this._baseAssetID+"$"+anim);
+        this.setSource(this.assetsFile, this._baseAssetID+"$"+anim);
         if(autoPlay === false) this.gotoAndStop(0);
         else this.gotoAndPlay(0);
         this._animTime = 0;
@@ -682,7 +682,7 @@ lg.TimeLine = cc.Sprite.extend({
         this._destroyed = true;
         if(this.autoRecycle) {
             if(!this.inRecycle) {
-                var pool = lg.ObjectPool.get(this.plistFile, this.clsName, this.__pool__id__ || "");
+                var pool = lg.ObjectPool.get(this.assetsFile, this.clsName, this.__pool__id__ || "");
                 pool.recycle(this);
             }
         }
@@ -730,9 +730,9 @@ lg.TimeLine = cc.Sprite.extend({
     }
 });
 
-lg.TimeLine.create = function(plistFile, assetID)
+lg.TimeLine.create = function(assetsFile, assetID)
 {
-    var tl = new lg.TimeLine(plistFile, assetID);
+    var tl = new lg.TimeLine(assetsFile, assetID);
     tl.clsName = "lg.TimeLine";
     return tl;
 };
@@ -755,7 +755,7 @@ cc.defineGetterSetter(_p, "fps", _p.getFPS, _p.setFPS);
 
 _p.tileMap;
 cc.defineGetterSetter(_p, "tileMap", _p.getTileMap, _p.setTileMap);
-//fix the
+//fix the .x, .y bug no invoking setPosition mehtod
 try{
     _p.x;
     cc.defineGetterSetter(_p, "x", _p.getPositionX, _p.setPositionX);
@@ -764,6 +764,5 @@ try{
 }catch (e){
 
 }
-
 
 delete window._p;

@@ -10,7 +10,7 @@ lg.Animator = lg.TimeLine.extend({
         var startFrame = this.define["start"];
         var endFrame = this.define["end"];
 
-        this.frameNames = lg.assetsManager.getFrameNames(this.plistFile, startFrame, endFrame);
+        this.frameNames = lg.assetsManager.getFrameNames(this.assetsFile, startFrame, endFrame);
         this.totalFrames = this.frameNames.length;
         if(this.totalFrames == 0)
         {
@@ -25,13 +25,13 @@ lg.Animator = lg.TimeLine.extend({
     },
     getDefine:function()
     {
-       return lg.assetsManager.getDisplayDefine(this.plistFile, this.assetID);
+       return lg.assetsManager.getDisplayDefine(this.assetsFile, this.assetID);
     }
 });
 
-lg.Animator.create = function(plistFile, assetID)
+lg.Animator.create = function(assetsFile, assetID)
 {
-    var mc = new lg.Animator(plistFile, assetID);
+    var mc = new lg.Animator(assetsFile, assetID);
     mc.clsName = "lg.Animator";
     return mc;
 };

@@ -179,16 +179,16 @@ cc.defineGetterSetter(_p, "gunParam", _p.getGunParam, _p.setGunParam);
 
 delete window._p;
 
-lg.Gunner.create = function(plistFile, assetID)
+lg.Gunner.create = function(assetsFile, assetID)
 {
-    var h = new lg.Gunner(plistFile, assetID);
+    var h = new lg.Gunner(assetsFile, assetID);
     h.clsName = "lg.Gunner";
     return h;
 };
 
-lg.MCGunner.create = function(plistFile, assetID)
+lg.MCGunner.create = function(assetsFile, assetID)
 {
-    var h = new lg.MCGunner(plistFile, assetID);
+    var h = new lg.MCGunner(assetsFile, assetID);
     h.clsName = "lg.MCGunner";
     return h;
 };

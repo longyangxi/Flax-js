@@ -8,7 +8,7 @@ lg.TiledImage = cc.SpriteBatchNode.extend({
     tileMap:null,
     tileWidthOffset: -1,
     tileHeightOffset:-1,
-    _plistFile:null,
+    _assetsFile:null,
     _taID:null,
     _minWidth:0,
     _minHeight:0,
@@ -20,15 +20,15 @@ lg.TiledImage = cc.SpriteBatchNode.extend({
         this.tileMap = lg.TileMap.create("tile_image_"+lg.randInt(0, 1000));
         return true;
     },
-    setTileSource:function(plistFile, assetID)
+    setTileSource:function(assetsFile, assetID)
     {
-        if(this._plistFile == plistFile && this._taID == assetID) return;
-        this._plistFile = plistFile;
+        if(this._assetsFile == assetsFile && this._taID == assetID) return;
+        this._assetsFile = assetsFile;
         this._taID = assetID;
 
-        this._pool = lg.ObjectPool.get(plistFile, "lg.Animator");
+        this._pool = lg.ObjectPool.get(assetsFile, "lg.Animator");
 
-        var tile = lg.assetsManager.createDisplay(this._plistFile, this._taID);
+        var tile = lg.assetsManager.createDisplay(this._assetsFile, this._taID);
         var size = tile.getContentSize();
         this.tileMap.setTileSize(size.width + this.tileWidthOffset, size.height + this.tileHeightOffset);
 
@@ -44,7 +44,7 @@ lg.TiledImage = cc.SpriteBatchNode.extend({
         if(deltaW * deltaH == 0) return;
         this._minWidth = w;
         this._minHeight = h;
-        if(this._plistFile) {
+        if(this._assetsFile) {
             this._updateSize();
         }
     },
@@ -56,7 +56,7 @@ lg.TiledImage = cc.SpriteBatchNode.extend({
         while(++i < num)
         {
             child = this._children[i];
-            child.setPlist(this._plistFile, this._taID);
+            child.setSource(this._assetsFile, this._taID);
         }
     },
     _updateSize:function()
@@ -93,13 +93,13 @@ lg.TiledImage = cc.SpriteBatchNode.extend({
     }
 });
 
-lg.TiledImage.create = function(plistFile, assetID, minWidth, minHeight)
+lg.TiledImage.create = function(assetsFile, assetID, minWidth, minHeight)
 {
     var ts = new lg.TiledImage();
-    var imgFile = plistFile.replace("."+lg.getFileExtension(plistFile), ".png");
+    var imgFile = cc.path.changeBasename(assetsFile, ".png");
     if(ts.init(imgFile, 10))
     {
-        ts.setTileSource(plistFile, assetID);
+        ts.setTileSource(assetsFile, assetID);
         if(!isNaN(minWidth)) minWidth = cc.visibleRect.width;
         if(!isNaN(minHeight)) minHeight = cc.visibleRect.height;
         ts.setMinSize(minWidth, minHeight);

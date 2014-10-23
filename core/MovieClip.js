@@ -21,7 +21,7 @@ lg.MovieClip = lg.TimeLine.extend({
         var child = this._namedChildren[childName];
         if(child)
         {
-            child.setPlist(this.plistFile, assetID);
+            child.setSource(this.assetsFile, assetID);
         }else{
             childDefine["class"] = assetID;
         }
@@ -62,13 +62,13 @@ lg.MovieClip = lg.TimeLine.extend({
                 if(child == null){
                     //hadle the label text
                     if(childDefine.text != null){
-                        child = lg.Label.create(this.plistFile, childDefine);
+                        child = lg.Label.create(this.assetsFile, childDefine);
                         if(child.__isTTF){
                             offsetX = childDefine.width/2;
                             offsetY = -childDefine.height/2;
                         }
                     }else{
-                        child = lg.assetsManager.createDisplay(this.plistFile, childDefine["class"], null, true);
+                        child = lg.assetsManager.createDisplay(this.assetsFile, childDefine["class"], null, true);
                     }
                     child.name = childName;
                     this._namedChildren[childName] = child;
@@ -136,7 +136,7 @@ lg.MovieClip = lg.TimeLine.extend({
     },
     getDefine:function()
     {
-        var define = lg.assetsManager.getMc(this.plistFile, this.assetID);
+        var define = lg.assetsManager.getMc(this.assetsFile, this.assetID);
         return define;
     },
     getChildOfName:function(name, nest)
@@ -206,9 +206,9 @@ lg.MovieClip = lg.TimeLine.extend({
 
     }
 });
-lg.MovieClip.create = function(plistFile, assetID)
+lg.MovieClip.create = function(assetsFile, assetID)
 {
-    var mc = new lg.MovieClip(plistFile, assetID);
+    var mc = new lg.MovieClip(assetsFile, assetID);
     mc.clsName = "lg.MovieClip";
     return mc;
 };

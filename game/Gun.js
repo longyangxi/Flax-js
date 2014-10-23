@@ -4,7 +4,7 @@
 var lg = lg || {};
 
 lg.GunParam = cc.Class.extend({
-    bulletPlist:null,//the plist of the bullet
+    bulletAssets:null,//the assets file of the bullet
     bulletID:null,//the id of the bullet asset
     targetMap:null,//the TileMap name of the target to shoot
     selfMap:null,//the TileMap the bullet itself to be added to, the bullet can be shooted on this situation
@@ -20,8 +20,8 @@ lg.GunParam = cc.Class.extend({
     gravityX:0,//gravity on x
     gravityY:0,//gravity on y
     fireSound:null,//the sound when fire
-    fireEffectID:null,//the id of fire effect, it must be packed with the bullet plist together
-    hitEffectID:null,//the id of hit effect, it must be packed with the bullet plist together
+    fireEffectID:null,//the id of fire effect, it must be packed with the bullet asset id together
+    hitEffectID:null,//the id of hit effect, it must be packed with the bullet assets id together
     alwaysLive:false,//if true, when the bullet hurt target, it'll not disappear, continue to hurt next enemy on the path
     bulletPlayOnce:false,//if true, the bullet will play only once after fire, otherwise always play again and again
     fps:30,//if the bullet has animation, then set the fps
@@ -50,7 +50,7 @@ lg.Gun = cc.Node.extend({
         if(this._firing) return;
         this._firing = true;
 
-        this._canvas = lg.BulletCanvas.fetch(this.param.bulletPlist);
+        this._canvas = lg.BulletCanvas.fetch(this.param.bulletAssets);
 
         if(this.param.waveInterval <= 0 || this.param.countInWave < 1) {
             this.schedule(this.shootOnce, this.param.interval);
@@ -116,7 +116,7 @@ lg.Gun = cc.Node.extend({
     _showFireEffect:function(pos, rot)
     {
         if(this.param.fireEffectID == null || this.param.fireEffectID == "") return;
-        var fireEffect = lg.assetsManager.createDisplay(this.param.bulletPlist, this.param.fireEffectID, null, true, this._canvas);
+        var fireEffect = lg.assetsManager.createDisplay(this.param.bulletAssets, this.param.fireEffectID, null, true, this._canvas);
         fireEffect.zIndex = 999;
         fireEffect.autoDestroyWhenOver = true;
         fireEffect.setPosition(pos);
@@ -127,7 +127,7 @@ lg.Gun = cc.Node.extend({
 lg.BulletCanvas = cc.SpriteBatchNode.extend({
     //out of the rect, the bullet will auto destroyed
     stageRect:null,
-    plistFile:null,
+    assetsFile:null,
     onBulletHit:null,
     onBulletOut:null,
     _bullets:null,
@@ -146,11 +146,11 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
     },
     addBullet:function(rotation, position, param, owner){
         if(this.parent == null) {
-            cc.log("Please add the bullet canvas to the stage: container.addChild(lg.BulletCanvas.fetch('"+this.plistFile+"'));");
+            cc.log("Please add the bullet canvas to the stage: container.addChild(lg.BulletCanvas.fetch('"+this.assetsFile+"'));");
             return;
         }
         if(!(param instanceof lg.GunParam)) param = lg.GunParam.create(param);
-        var b = lg.assetsManager.createDisplay(param.bulletPlist, param.bulletID, null, true, this);
+        var b = lg.assetsManager.createDisplay(param.bulletAssets, param.bulletID, null, true, this);
         b.owner = owner;
         b.param = param;
         if(owner && owner.targets) b.targets = owner.targets;
@@ -307,7 +307,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
     _showHitEffect:function(bullet, rot, pos)
     {
         if(bullet.param.hitEffectID == null || bullet.param.hitEffectID == "") return;
-        var hitEffect = lg.assetsManager.createDisplay(bullet.param.bulletPlist, bullet.param.hitEffectID, null, true, this);
+        var hitEffect = lg.assetsManager.createDisplay(bullet.param.bulletAssets, bullet.param.hitEffectID, null, true, this);
         hitEffect.zIndex = 999;
         hitEffect.autoDestroyWhenOver = true;
         hitEffect.setPosition(pos || bullet.getPosition());
@@ -316,12 +316,12 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
     }
 });
 
-lg.BulletCanvas.fetch = function (plistFile) {
-    if(lg._bulletCanvases[plistFile]) return lg._bulletCanvases[plistFile];
-    var texturePath = plistFile.replace("."+lg.getFileExtension(plistFile), ".png");
+lg.BulletCanvas.fetch = function (assetsFile) {
+    if(lg._bulletCanvases[assetsFile]) return lg._bulletCanvases[assetsFile];
+    var texturePath = cc.path.changeBasename(assetsFile, ".png");
     var c = new lg.BulletCanvas(texturePath, 100);
-    c.plistFile = plistFile;
-    lg._bulletCanvases[plistFile] = c;
+    c.assetsFile = assetsFile;
+    lg._bulletCanvases[assetsFile] = c;
     return c;
 };
 lg._bulletCanvases = {};

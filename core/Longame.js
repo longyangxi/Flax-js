@@ -4,7 +4,7 @@
 PTM_RATIO = 32;
 RADIAN_TO_DEGREE = 180.0/Math.PI;
 DEGREE_TO_RADIAN = Math.PI/180.0;
-IMAGE_TYPES = ["png", "jpg", "bmp","jpeg","gif"];
+IMAGE_TYPES = [".png", ".jpg", ".bmp",".jpeg",".gif"];
 H_ALIGHS = ["left","center","right"];
 LANGUAGES = ['en','zh','de','fr','it','es','tr','pt','ru'];
 
@@ -30,20 +30,28 @@ lg._languageDict = null;
 lg._languageToLoad = null;
 
 if(!cc.sys.isNative){
-    /**Fixed the grey banner on the botton when landscape*/
-    document.body.scrollTop = 0;
-
 //set the game canvas color as html body color
     /************************************************/
-    var bgColor = document.body.style.backgroundColor;
+    //delay call to override the black color setting in js-boot.js
+    setTimeout(function(){
+        var bgColor = document.body.style.backgroundColor;
+        var canvasNode = document.getElementById(cc.game.config["id"]);
+        canvasNode.style.backgroundColor = bgColor;
 
-    var canvasNode = document.getElementById(cc.game.config["id"]);
-    canvasNode.style.backgroundColor = bgColor;
-
-    bgColor = bgColor.replace("rgb(","");
-    bgColor = bgColor.replace(")", "");
-    bgColor = bgColor.split(",");
-    lg.bgColor = cc.color(parseInt(bgColor[0]), parseInt(bgColor[1]), parseInt(bgColor[2]));
+        bgColor = bgColor.replace("rgb(","");
+        bgColor = bgColor.replace(")", "");
+        bgColor = bgColor.split(",");
+        lg.bgColor = cc.color(parseInt(bgColor[0]), parseInt(bgColor[1]), parseInt(bgColor[2]));
+    }, 0.01);
+    /**Fixed the grey banner on the botton when landscape when in iOS*/
+    if(cc.sys.isMobile){
+        var __hideBottomBar = function(){
+            document.body.scrollTop = 0;
+        }
+        var orientationEvent = ("onorientationchange" in window) ? "orientationchange" : "resize";
+        window.addEventListener(orientationEvent, __hideBottomBar, true);
+        __hideBottomBar();
+    }
     /************************************************/
 }
 
@@ -233,7 +241,7 @@ lg.playSound = function(path)
 lg._checkDeviceOrientation = function(){
     if(cc.sys.isNative) return;
     if(!lg._orientationTip && cc.sys.isMobile && cc.game.config.rotateImg){
-        lg._orientationTip = cc.LayerColor.create(cc.color(0,0,0), cc.visibleRect.width + 10, cc.visibleRect.height +10);
+        lg._orientationTip = cc.LayerColor.create(lg.bgColor, cc.visibleRect.width + 10, cc.visibleRect.height +10);
         var img =  cc.Sprite.create(cc.game.config.rotateImg);
         img.setPosition(cc.visibleRect.center);
         lg._orientationTip.__icon = img;
@@ -463,16 +471,9 @@ lg.getRandomInArray = function (arr)
     return arr[i];
 };
 
-lg.getFileExtension = function(path)
-{
-    var ext = path.substring(path.lastIndexOf(".") + 1,path.length);
-    var index = ext.indexOf("?");
-    if(index > 0) ext = ext.substring(0, index);
-    return ext;
-};
 lg.isImageFile = function(path)
 {
-    var ext = lg.getFileExtension(path);
+    var ext = cc.path.extname(path);
     return IMAGE_TYPES.indexOf(ext) > -1;
 };
 /**

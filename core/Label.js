@@ -15,7 +15,7 @@ lg.Label = cc.Sprite.extend({
     fontSize:20,
     frames:[],
     chars:[],
-    plistFile:null,
+    assetsFile:null,
     name:null,
     params:null,
     noOpacity:true,
@@ -66,18 +66,18 @@ lg.Label = cc.Sprite.extend({
         if(font == null) return;
         if(this.fontName != null && this.fontName == font) return;
         this.fontName = font;
-        this._fontDefine = lg.assetsManager.getFont(this.plistFile, this.fontName);
+        this._fontDefine = lg.assetsManager.getFont(this.assetsFile, this.fontName);
         if(this._fontDefine == null){
             throw "Can't find the font named: " + this.fontName;
         }
-        this.frames = lg.assetsManager.getFrameNames(this.plistFile, parseInt(this._fontDefine.start), parseInt(this._fontDefine.end));
+        this.frames = lg.assetsManager.getFrameNames(this.assetsFile, parseInt(this._fontDefine.start), parseInt(this._fontDefine.end));
         this.chars = this._fontDefine.chars;
         this.fontSize = parseInt(this._fontDefine.size);
     },
     _updateStr:function()
     {
         if(this._charCanvas == null) {
-            var imgFile = this.plistFile.replace("."+lg.getFileExtension(this.plistFile), ".png");
+            var imgFile = cc.path.changeBasename(this.assetsFile, ".png");
             this._charCanvas = new cc.SpriteBatchNode(imgFile, this.str.length);
             this.addChild(this._charCanvas);
         }
@@ -191,11 +191,11 @@ lg.LabelTTF = cc.LabelTTF.extend({
     }
 })
 
-lg.Label.create = function(plistFile, define)
+lg.Label.create = function(assetsFile, define)
 {
     var lbl = null;
     var txtCls = define["class"];
-    var bmpFontName = lg.assetsManager.getFont(plistFile, txtCls);
+    var bmpFontName = lg.assetsManager.getFont(assetsFile, txtCls);
     //If it is ttf label(has font and the bitmap font is null, other wise use bitmap label
     if(define.font && bmpFontName == null){
         var labelDef = new cc.FontDefinition();
@@ -211,8 +211,8 @@ lg.Label.create = function(plistFile, define)
         lbl = new lg.LabelTTF(lg.getLanguageStr(txtCls) || define.text, labelDef);
     }else{
         lbl = new lg.Label();
-        lg.assetsManager.addPlist(plistFile);
-        lbl.plistFile = plistFile;
+        lg.assetsManager.addAssets(assetsFile);
+        lbl.assetsFile = assetsFile;
         lbl.params = define;
         lbl.setFontName(txtCls);
         lbl.setAnchorPoint(0, 0);

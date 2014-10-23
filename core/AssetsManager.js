@@ -32,26 +32,26 @@ lg.AssetsManager = cc.Class.extend({
        this.fontsCache = {};
    },
     /**
-     * Create a display from a plistFile with assetID
-     * @param {String} plistFile the plistFile
-     * @param {String} assetID the asset id in the plistFile
-     * @param {String} clsName the class name to create the display, if null, it'll be automatically set according by the plist
+     * Create a display from a assetsFile with assetID
+     * @param {String} assetsFile the assetsFile
+     * @param {String} assetID the asset id in the assetsFile
+     * @param {String} clsName the class name to create the display, if null, it'll be automatically set according by the assets file
      * @param {Boolean} fromPool if the display should fetch from the pool
      * @param {Node} parent its parent container
      * @param {Object} params params could be set to the target with attr function
      * */
-   createDisplay:function(plistFile, assetID, clsName, fromPool, parent, params)
+   createDisplay:function(assetsFile, assetID, clsName, fromPool, parent, params)
    {
-       if(plistFile == null || assetID == null){
-           throw  "Pleas give me plistFile and assetID!";
+       if(assetsFile == null || assetID == null){
+           throw  "Pleas give me assetsFile and assetID!";
        }
-       this.addPlist(plistFile);
+       this.addAssets(assetsFile);
 
        var clsPreDefined = false;
        if(clsName) clsPreDefined = true;
        else clsName = assetID;
 
-       var subAnims = this.getSubAnims(plistFile, assetID);
+       var subAnims = this.getSubAnims(assetsFile, assetID);
        if(subAnims.length) {
            assetID = assetID + "$" + subAnims[0];
        }
@@ -61,10 +61,10 @@ lg.AssetsManager = cc.Class.extend({
            throw "The class: "+clsName+" doesn't exist!"
        }
         if(mcCls == null && !clsPreDefined) {
-            var define = this.getDisplayDefine(plistFile, assetID);
+            var define = this.getDisplayDefine(assetsFile, assetID);
             var isMC = false;
             if(define == null) {
-                define = this.getMc(plistFile, assetID);
+                define = this.getMc(assetsFile, assetID);
                 isMC = true;
             }
             if(define){
@@ -80,16 +80,16 @@ lg.AssetsManager = cc.Class.extend({
                     clsName = isMC ? "lg.MovieClip" : "lg.Animator";
                 }
             }else{
-                throw  "There is no display with assetID: "+assetID+" in plist: "+plistFile;
+                throw  "There is no display with assetID: "+assetID+" in assets file: "+assetsFile;
             }
         }
 //       this._checkCreateFunc(mcCls, clsName);
        var mc = null;
        if(fromPool === true) {
-           mc = lg.ObjectPool.get(plistFile,clsName,assetID).fetch(assetID, parent, params);
+           mc = lg.ObjectPool.get(assetsFile,clsName,assetID).fetch(assetID, parent, params);
        }else{
-           if(mcCls.create) mc = mcCls.create(plistFile, assetID);
-           else mc = new mcCls(plistFile, assetID);
+           if(mcCls.create) mc = mcCls.create(assetsFile, assetID);
+           else mc = new mcCls(assetsFile, assetID);
            if(params) mc.attr(params);
            if(parent) parent.addChild(mc);
            mc.clsName = clsName;
@@ -105,7 +105,7 @@ lg.AssetsManager = cc.Class.extend({
         if(!(target instanceof lg.TimeLine)) {
             throw "cloneDisplay only support lg.TimeLine type!"
         }
-        var obj = this.createDisplay(target.plistFile, target.assetID, target.clsName, fromPool, autoAdd ? target.parent : null);
+        var obj = this.createDisplay(target.assetsFile, target.assetID, target.clsName, fromPool, autoAdd ? target.parent : null);
         if(autoAdd) obj.setPosition(target.getPosition());
         obj.setScale(target.getScale());
         obj.setRotation(target.rotation);
@@ -117,19 +117,27 @@ lg.AssetsManager = cc.Class.extend({
         if(target == null) {
             throw "The class: "+clsName+" is not found!";
         }else if(target.create == null){
-            throw "Please implement  a create(plistFile, assetID) method for the target class: "+clsName;
+            throw "Please implement  a create(assetsFile, assetID) method for the target class: "+clsName;
         }
     },
-    addPlist:function(plistFile)
+    addAssets:function(assetsFile)
     {
-        if(plistFile == null) {
-            cc.log("Plist File can't be null!");
+        if(assetsFile == null) {
+            cc.log("Assets File can't be null!");
             return;
         }
-        if(typeof this.framesCache[plistFile] !== "undefined") return false;
+        if(typeof this.framesCache[assetsFile] !== "undefined") return false;
 
-        var dict = cc.loader.getRes(plistFile);
-        cc.spriteFrameCache.addSpriteFrames(plistFile);
+        var assetsFile1 = assetsFile;
+        var ext = cc.path.extname(assetsFile)
+        if(ext != ".plist" && ext != ".json") assetsFile1 = cc.path.changeBasename(assetsFile, ".json");
+        var dict = cc.loader.getRes(assetsFile1);
+        cc.spriteFrameCache.addSpriteFrames(assetsFile1);
+
+        if(dict == null){
+            cc.log(assetsFile);
+            cc.log(assetsFile1);
+        }
 
         var frames = [];
         //parse the frames
@@ -141,10 +149,10 @@ lg.AssetsManager = cc.Class.extend({
         //sort ascending
         frames.sort();
 
-        this.framesCache[plistFile] = frames;
+        this.framesCache[assetsFile] = frames;
     //    cc.log("frames: "+frames.length);
 
-        //parse the displays defined in the plist
+        //parse the displays defined in the assets
         if(dict.hasOwnProperty("displays"))
         {
             var displays = dict.displays;
@@ -157,11 +165,11 @@ lg.AssetsManager = cc.Class.extend({
                     dDefine = displays[dName];
                     dDefine.anchors = this._parseFrames(dDefine.anchors, lg.Anchor);
                     dDefine.colliders = this._parseFrames(dDefine.colliders, lg.Collider);
-                    this.displayDefineCache[plistFile + dName] = dDefine;
-                    this._parseSubAnims(plistFile, dName);
+                    this.displayDefineCache[assetsFile + dName] = dDefine;
+                    this._parseSubAnims(assetsFile, dName);
                 }
             }
-            this.displaysCache[plistFile] = displayNames;
+            this.displaysCache[assetsFile] = displayNames;
     //        cc.log("displays: "+displayNames.length);
         }
         //parse the movieClipgs
@@ -200,9 +208,9 @@ lg.AssetsManager = cc.Class.extend({
                         ch.height = childDefine.height;
                     }
                 }
-                this.mcsCache[plistFile + sName] = mc;
+                this.mcsCache[assetsFile + sName] = mc;
                 //see if there is a '$' sign which present sub animation of the mc
-                this._parseSubAnims(plistFile, sName);
+                this._parseSubAnims(assetsFile, sName);
             }
         }
         //parse the fonts
@@ -211,74 +219,74 @@ lg.AssetsManager = cc.Class.extend({
             var fonts = dict.fonts;
             for(var fName in fonts)
             {
-                this.fontsCache[plistFile + fName] = fonts[fName];
+                this.fontsCache[assetsFile + fName] = fonts[fName];
     //            cc.log("add font: "+fName);
             }
         }
         return true;
     },
-    getFrameNames:function(plistFile, startFrame, endFrame)
+    getFrameNames:function(assetsFile, startFrame, endFrame)
     {
-        if(typeof this.framesCache[plistFile] === "undefined") {
-            this.addPlist(plistFile);
+        if(typeof this.framesCache[assetsFile] === "undefined") {
+            this.addassetsFile(assetsFile);
         }
-        var frames = this.framesCache[plistFile];
+        var frames = this.framesCache[assetsFile];
         if(frames == null) return [];
         if(startFrame == -1) startFrame = 0;
         if(endFrame == -1) endFrame = frames.length - 1;
         return frames.slice(parseInt(startFrame), parseInt(endFrame) + 1);
     },
-    getDisplayDefine:function(plistFile, assetID)
+    getDisplayDefine:function(assetsFile, assetID)
     {
-        var key = plistFile + assetID;
+        var key = assetsFile + assetID;
         if(!(key in this.displayDefineCache))
         {
-            this.addPlist(plistFile);
+            this.addAssets(assetsFile);
         }
         return this.displayDefineCache[key];
     },
-    getDisplayNames:function(plistFile)
+    getDisplayNames:function(assetsFile)
     {
-        if(typeof this.displaysCache[plistFile] === "undefined")
+        if(typeof this.displaysCache[assetsFile] === "undefined")
         {
-            this.addPlist(plistFile);
+            this.addAssets(assetsFile);
         }
-        return this.displaysCache[plistFile] || [];
+        return this.displaysCache[assetsFile] || [];
     },
-    getRandomDisplayName:function(plistFile)
+    getRandomDisplayName:function(assetsFile)
     {
-        var names = this.getDisplayNames(plistFile);
+        var names = this.getDisplayNames(assetsFile);
         var i = Math.floor(Math.random()*names.length);
         return names[i];
     },
-    getMc:function(plistFile, assetID)
+    getMc:function(assetsFile, assetID)
     {
-        var key = plistFile + assetID;
+        var key = assetsFile + assetID;
         if(!(key in this.mcsCache)) {
-            this.addPlist(plistFile);
+            this.addAssets(assetsFile);
         }
         return this.mcsCache[key];
     },
-    getSubAnims:function(plistFile, theName)
+    getSubAnims:function(assetsFile, theName)
     {
-        var akey = plistFile + theName;
+        var akey = assetsFile + theName;
         return this.subAnimsCache[akey] || [];
     },
-    getFont:function(plistFile, fontName)
+    getFont:function(assetsFile, fontName)
     {
-        var key = plistFile + fontName;
+        var key = assetsFile + fontName;
         if(typeof this.fontsCache[key] === "undefined"){
-            this.addPlist(plistFile);
+            this.addAssets(assetsFile);
         }
         return this.fontsCache[key];
     },
-    _parseSubAnims:function(plistFile, assetID)
+    _parseSubAnims:function(assetsFile, assetID)
     {
         var aarr = assetID.split("$");
         var rname = aarr[0];
         var aname = aarr[1];
         if(rname && aname && rname != '' && aname != ''){
-            var akey = plistFile + rname;
+            var akey = assetsFile + rname;
             var anims = this.subAnimsCache[akey];
             if(anims == null) {
                 anims = [];
@@ -340,63 +348,40 @@ lg.AssetsManager.create = function()
     am.init();
     return am;
 };
-//
-//lg._flaxLoader = {
-//    load : function(realUrl, url, res, cb){
-//        cc.loader.loadBinary(realUrl, function(err, data){
-//            var zlib = new Zlib.RawInflate(data);
-//            var txt = zlib.decompress();
-//            cc.log(String.fromCharCode(txt[0]));
-//            cc.log(String.fromCharCode(txt[1]));
-//            cc.log(String.fromCharCode(txt[2]));
-//            cc.log(String.fromCharCode(txt[3]));
-//            cc.log(String.fromCharCode(txt[4]));
-//
-////             var txt = JXG.decompress(data);
-//
-////            try {
-//                var keyWord = "data:image/gif;base64,";
-//                var data = txt.split(keyWord);
-//                var pUrl = realUrl.replace(".flax","");
-//                //hadle json
-//                cc.loader.cache[pUrl+".json"] = JSON.parse(data[0]);
-//                //handle image
-//                var image = new Image();
-//                image.src = keyWord+data[1];
-//                cc.loader.cache[pUrl+".png"] = image;
-//                cc.textureCache.handleLoadedTexture(pUrl+".png");
-//
-//                err ? cb(err) : cb(null, "Not reachable!");
-//                cc.loader.release(realUrl);
-////            } catch (e) {
-////                throw "load flax [" + realUrl + "] failed : " + e;
-////            }
-//        });
-////        cc.loader.loadTxt(realUrl, function (err, txt) {
-//////            txt = pako.inflate(txt, { to: 'string' });
-//////            txt = JXG.decompress(txt);
-////
-////            var zlib = new Zlib.RawInflate(txt);
-////            txt = zlib.decompress();
-////
-////            try {
-////                var keyWord = "data:image/gif;base64,";
-////                var data = txt.split(keyWord);
-////                var pUrl = realUrl.replace(".flax","");
-////                //hadle json
-////                cc.loader.cache[pUrl+".json"] = JSON.parse(data[0]);
-////                //handle image
-////                var image = new Image();
-////                image.src = keyWord+data[1];
-////                cc.loader.cache[pUrl+".png"] = image;
-////                cc.textureCache.handleLoadedTexture(pUrl+".png");
-////
-////                err ? cb(err) : cb(null, "Not reachable!");
-////                cc.loader.release(realUrl);
-////            } catch (e) {
-////                throw "load flax [" + realUrl + "] failed : " + e;
-////            }
-////        });
-//    }
-//};
-//cc.loader.register(["flax"], lg._flaxLoader);
+
+lg._flaxLoader = {
+    load : function(realUrl, url, res, cb){
+        cc.loader.loadBinary(realUrl, function(err, data){
+            var zlib = new Zlib.RawInflate(data);
+            var txts = zlib.decompress();
+
+            //from char code to string
+            var txt = "";
+            var len = txts.length;
+            for(var i = 0; i < len; i++){
+                txt += String.fromCharCode(txts[i]);
+            }
+
+            var keyWord = "data:image/gif;base64,";
+            data = txt.split(keyWord);
+            var jsonUrl = cc.path.changeBasename(realUrl, ".json");
+            var pngUrl = cc.path.changeBasename(realUrl, ".png");
+            //hadle json
+            cc.loader.cache[jsonUrl] = JSON.parse(data[0]);
+            lg.assetsManager.addAssets(jsonUrl);
+            //handle image
+            var image = new Image();
+            image.src = keyWord+data[1];
+            cc.loader.cache[pngUrl] = image;
+            cc.textureCache.handleLoadedTexture(pngUrl);
+
+            err ? cb(err) : cb(null, "Not reachable!");
+            cc.loader.release(realUrl);
+        });
+    }
+};
+//because the uncompression takes too much time to handle and in JSB it is not support that
+//so, the flax loader only used in pc and web
+if(!cc.sys.isNative && !cc.sys.isMobile){
+    cc.loader.register(["flax"], lg._flaxLoader);
+}
