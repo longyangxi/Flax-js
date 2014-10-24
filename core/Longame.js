@@ -276,11 +276,10 @@ lg._showOrientaionTip = function(){
     if(lg._orientationTip.visible) {
         lg._oldGamePauseState = cc.director.isPaused();
         cc.director.pause();
-        lg.inputManager.enabled = false;
     }else if(!lg._oldGamePauseState){
         cc.director.resume();
-        lg.inputManager.enabled = true;
     }
+    lg.inputManager.enabled = !lg._orientationTip.visible;
 }
 
 ///---------------------utils-------------------------------------------------------------
