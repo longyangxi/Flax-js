@@ -134,11 +134,6 @@ lg.AssetsManager = cc.Class.extend({
         var dict = cc.loader.getRes(assetsFile1);
         cc.spriteFrameCache.addSpriteFrames(assetsFile1);
 
-        if(dict == null){
-            cc.log(assetsFile);
-            cc.log(assetsFile1);
-        }
-
         var frames = [];
         //parse the frames
         var frameDict = dict.frames;
@@ -361,14 +356,13 @@ lg._flaxLoader = {
             for(var i = 0; i < len; i++){
                 txt += String.fromCharCode(txts[i]);
             }
-
             var keyWord = "data:image/gif;base64,";
             data = txt.split(keyWord);
             var jsonUrl = cc.path.changeBasename(realUrl, ".json");
             var pngUrl = cc.path.changeBasename(realUrl, ".png");
             //hadle json
             cc.loader.cache[jsonUrl] = JSON.parse(data[0]);
-            lg.assetsManager.addAssets(jsonUrl);
+            lg.assetsManager.addAssets(realUrl);
             //handle image
             var image = new Image();
             image.src = keyWord+data[1];
@@ -380,8 +374,8 @@ lg._flaxLoader = {
         });
     }
 };
-//because the uncompression takes too much time to handle and in JSB it is not support that
-//so, the flax loader only used in pc and web
-if(!cc.sys.isNative && !cc.sys.isMobile){
+//the uncompression takes too much time to handle, so you'd beter use it in mobile.
+// and in JSB it is not support, not use tow
+if(!cc.sys.isNative){
     cc.loader.register(["flax"], lg._flaxLoader);
 }

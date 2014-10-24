@@ -134,14 +134,11 @@ lg.preload = function(res, callBack)
     if(hasLoaded){
         callBack();
     }else{
-        var _cc = cc;
-        if(!_cc.loaderScene) {
-            _cc.loaderScene = new lg.Preloader();
-            _cc.loaderScene.init();
-        }
-        _cc.loaderScene.initWithResources(res, callBack);
+        var loaderScene = new lg.Preloader();
+        loaderScene.init();
+        loaderScene.initWithResources(res, callBack);
 
-        cc.director.runScene(_cc.loaderScene);
-        return _cc.loaderScene;
+        cc.director.runScene(loaderScene);
+        return loaderScene;
     }
 }

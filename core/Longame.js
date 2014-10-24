@@ -61,6 +61,18 @@ lg.init = function()
     lg._inited = true;
     lg._checkOSVersion();
 
+    var width = cc.game.config.width;
+    var height = cc.game.config.height;
+    if(!cc.sys.isNative){
+        var stg = document.getElementById(cc.game.config.id);
+        stg.width = width;
+        stg.height = height;
+        cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.SHOW_ALL);
+        cc.view.resizeWithBrowserSize(true);
+    }else{
+        cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.EXACT_FIT);
+    }
+
     lg.frameInterval = 1/cc.game.config.frameRate;
     lg.assetsManager = lg.AssetsManager.create();
     if(cc.game.config.timeScale)  cc.director.getScheduler().setTimeScale(cc.game.config.timeScale);
@@ -154,7 +166,6 @@ lg._checkOSVersion = function(){
 
 lg.registerScene = function(name, scene, resources)
 {
-    lg.init();
     lg._scenesDict[name] = {scene:scene, res:resources};
 }
 lg.replaceScene = function(sceneName)
