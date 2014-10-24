@@ -10,7 +10,7 @@ LANGUAGES = ['en','zh','de','fr','it','es','tr','pt','ru'];
 
 var lg = lg || {};
 
-lg.version = 1.41;
+lg.version = 1.42;
 lg.language = null;
 lg.languageIndex = -1;
 lg.landscape = false;
@@ -59,6 +59,7 @@ lg.init = function()
 {
     if(lg._inited) return;
     lg._inited = true;
+    cc.log("Flax inited, version: "+lg.version);
     lg._checkOSVersion();
 
     var width = cc.game.config.width;
