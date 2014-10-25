@@ -169,7 +169,7 @@ lg.registerScene = function(name, scene, resources)
 {
     lg._scenesDict[name] = {scene:scene, res:resources};
 }
-lg.replaceScene = function(sceneName)
+lg.replaceScene = function(sceneName, transition, duration)
 {
     var s = lg._scenesDict[sceneName];
     if(s == null){
@@ -185,6 +185,7 @@ lg.replaceScene = function(sceneName)
     cc.director.resume();
     lg.currentSceneName = sceneName;
     if(lg.stopPhysicsWorld) lg.stopPhysicsWorld();
+    if(lg.inputManager) lg.inputManager.removeFromParent();
     lg.preload(s.res,function(){
         //init language
         if(lg._languageToLoad){
@@ -192,9 +193,20 @@ lg.replaceScene = function(sceneName)
             lg._languageToLoad = null;
         }
         lg.currentScene = new s.scene();
+        var transitioned = false;
+        if(transition){
+            if(!duration || duration < 0) duration = 0.5;
+            var tScene = transition.create(duration,lg.currentScene);
+            if(tScene){
+                transitioned = true;
+                cc.director.runScene(tScene);
+            }
+        }
+        if(!transitioned){
+            cc.director.runScene(lg.currentScene);
+        }
         lg.inputManager = lg.InputManager.create();
         lg.currentScene.addChild(lg.inputManager, 999999);
-        cc.director.runScene(lg.currentScene);
         lg._checkDeviceOrientation();
     });
 }
