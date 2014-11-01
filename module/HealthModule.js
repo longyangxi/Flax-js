@@ -1,9 +1,9 @@
 /**
  * Created by long on 14-7-10.
  */
-var lg = lg || {};
+var flax = flax || {};
 
-lg.HealthModule = {
+flax.HealthModule = {
     maxHealth:100,
     health:100,
     hurtable:true,

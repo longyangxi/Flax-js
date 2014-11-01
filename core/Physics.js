@@ -2,16 +2,16 @@
  * Created by long on 14-8-1.
  * for box2d
  */
-var lg = lg || {};
-lg.ColliderType = {
+var flax = flax || {};
+flax.ColliderType = {
     rect: "Rect",
     circle: "Circle",
     polygon: "Poly"
 }
-lg.Collider = cc.Class.extend({
+flax.Collider = cc.Class.extend({
     name:null,
     owner:null,
-    type:lg.ColliderType.rect,
+    type:flax.ColliderType.rect,
     physicsBody:null,//the physics body if exist
     physicsFixture:null,//the physics fixture
     physicsContact:null,//the contact info if collision happens
@@ -43,7 +43,7 @@ lg.Collider = cc.Class.extend({
         this._localRect = cc.rect(this._center.x - this._width/2, this._center.y - this._height/2, this._width, this._height);
     },
     clone:function(){
-        var c = new lg.Collider([this.type,this._center.x, this._center.y, this._width, this._height, this._rotation]);
+        var c = new flax.Collider([this.type,this._center.x, this._center.y, this._width, this._height, this._rotation]);
         if(this._polygons) c._polygons = this._polygons;
         c.name = this.name;
         c.owner = this.owner;
@@ -60,17 +60,17 @@ lg.Collider = cc.Class.extend({
 
         var size = this.getSize();
         var centerPos = this.getCenter();
-        var bodyPos = lg.getPosition(this.owner, true);
+        var bodyPos = flax.getPosition(this.owner, true);
 
         var shape =null;
-        if(this.type == lg.ColliderType.circle){
+        if(this.type == flax.ColliderType.circle){
             shape = new Box2D.Collision.Shapes.b2CircleShape();
-            shape.SetRadius(0.5*size.width*lg.getScale(this.owner, true).x/PTM_RATIO);
+            shape.SetRadius(0.5*size.width*flax.getScale(this.owner, true).x/PTM_RATIO);
             var offsetToAnchor = cc.pSub(centerPos, bodyPos);
             shape.SetLocalPosition(cc.pMult(offsetToAnchor, 1/PTM_RATIO));
-        }else if(this.type == lg.ColliderType.rect || this.type == lg.ColliderType.polygon){
+        }else if(this.type == flax.ColliderType.rect || this.type == flax.ColliderType.polygon){
             //convert the rect to polygon
-            if(this.type == lg.ColliderType.rect){
+            if(this.type == flax.ColliderType.rect){
                 this._polygons = [cc.p(-0.5*size.width, -0.5*size.height), cc.p(0.5*size.width, - 0.5*size.height), cc.p(0.5*size.width, 0.5*size.height),cc.p(-0.5*size.width, 0.5*size.height)];
                 for(var i = 0; i < this._polygons.length; i++){
                     var p = this._polygons[i];
@@ -114,29 +114,29 @@ lg.Collider = cc.Class.extend({
     },
     destroyPhysics:function(){
         if(this.physicsFixture){
-            lg.removePhysicsFixture(this.physicsFixture);
+            flax.removePhysicsFixture(this.physicsFixture);
             this.physicsFixture = null;
             this.physicsBody = null;
         }
     },
     //todo, with polygon
     checkCollision:function(collider){
-        if(collider.type == this.type && this.type == lg.ColliderType.rect){
+        if(collider.type == this.type && this.type == flax.ColliderType.rect){
             return cc.rectIntersectsRect(this.getRect(true), collider.getRect(true));
-        }else if(collider.type == this.type && this.type == lg.ColliderType.circle){
+        }else if(collider.type == this.type && this.type == flax.ColliderType.circle){
             var pos = this.getCenter(true);
             var pos1 = collider.getCenter(true);
             return cc.pDistance(pos, pos1) <= (this.getSize().width + collider.getSize().width)/2;
-        }else if(this.type == lg.ColliderType.rect){
+        }else if(this.type == flax.ColliderType.rect){
             return this._ifRectCollidCircle(this.getRect(true),collider.getRect(true));
-        }else if(this.type == lg.ColliderType.circle){
+        }else if(this.type == flax.ColliderType.circle){
             return this._ifRectCollidCircle(collider.getRect(true), this.getRect(true));
         }
     },
     //todo, with polygon
     containPoint:function(pos){
         pos = this.owner.convertToNodeSpace(pos);
-        if(this.type == lg.ColliderType.rect){
+        if(this.type == flax.ColliderType.rect){
             return cc.rectContainsPoint(this._localRect, pos);
         }
         var dis = cc.pDistance(pos, this._center);
@@ -179,23 +179,23 @@ lg.Collider = cc.Class.extend({
      * If the owner or its parent has been scaled, the calculate the real size of the collider
      * */
     getSize:function(){
-        var s = lg.getScale(this.owner, true);
+        var s = flax.getScale(this.owner, true);
         var w = this._width*Math.abs(s.x);
         var h = this._height*Math.abs(s.y);
         return {width:w, height:h};
     },
     debugDraw:function(){
         var rect = this.getRect(true);
-        if(this.type == lg.ColliderType.rect){
-            lg.drawRect(rect)
+        if(this.type == flax.ColliderType.rect){
+            flax.drawRect(rect)
         }else{
             var drawNode = cc.DrawNode.create();
-            if(lg.currentScene) lg.currentScene.addChild(drawNode, 99999);
+            if(flax.currentScene) flax.currentScene.addChild(drawNode, 99999);
             var lineWidth = 1;
             var lineColor = cc.color(255, 0, 0, 255);
             var fillColor = cc.color(0, 255, 0, 122);
 
-            if(this.type == lg.ColliderType.circle){
+            if(this.type == flax.ColliderType.circle){
                 drawNode.drawCircle(this.getCenter(true), rect.width/2, 0, 360, false,lineWidth, lineColor, fillColor);
             }else{
                 var first = null;
@@ -215,82 +215,82 @@ lg.Collider = cc.Class.extend({
 
     }
 });
-lg.onCollideStart = new signals.Signal();
-lg.onCollideEnd = new signals.Signal();
-lg.onCollidePre = new signals.Signal();
-lg.onCollidePost = new signals.Signal();
-lg._physicsWorld = null;
-lg._physicsListener = null;
-lg._physicsRunning = false;
-lg._physicsBodyToRemove = null;
-lg._physicsFixtureToRemove = null;
-lg.physicsTypeStatic = 0;
-lg.physicsTypeKinematic = 1;
-lg.physicsTypeDynamic = 2;
+flax.onCollideStart = new signals.Signal();
+flax.onCollideEnd = new signals.Signal();
+flax.onCollidePre = new signals.Signal();
+flax.onCollidePost = new signals.Signal();
+flax._physicsWorld = null;
+flax._physicsListener = null;
+flax._physicsRunning = false;
+flax._physicsBodyToRemove = null;
+flax._physicsFixtureToRemove = null;
+flax.physicsTypeStatic = 0;
+flax.physicsTypeKinematic = 1;
+flax.physicsTypeDynamic = 2;
 
-lg.createPhysicsWorld = function(gravity, doSleep){
-    if(lg._physicsWorld) lg.destroyPhysicsWorld();
+flax.createPhysicsWorld = function(gravity, doSleep){
+    if(flax._physicsWorld) flax.destroyPhysicsWorld();
     var world = new Box2D.Dynamics.b2World(new Box2D.Common.Math.b2Vec2(gravity.x, gravity.y), doSleep !== false);
     world.SetContinuousPhysics(true);
-    lg._physicsWorld = world;
-    lg._physicsBodyToRemove = [];
-    lg._physicsFixtureToRemove = [];
+    flax._physicsWorld = world;
+    flax._physicsBodyToRemove = [];
+    flax._physicsFixtureToRemove = [];
     return world;
 }
-lg.getPhysicsWorld = function(){
-    if(lg._physicsWorld == null) throw "Pleas use lg.createPhysicsWorld to create the world firstly!";
-    return lg._physicsWorld;
+flax.getPhysicsWorld = function(){
+    if(flax._physicsWorld == null) throw "Pleas use flax.createPhysicsWorld to create the world firstly!";
+    return flax._physicsWorld;
 }
-lg.startPhysicsWorld = function(){
-    var world = lg.getPhysicsWorld();
-    if(world && lg.currentScene && !lg._physicsRunning){
-        lg._createPhysicsListener();
-        lg.currentScene.schedule(lg._updatePhysicsWorld, 1.0/cc.game.config.frameRate);
-        lg._physicsRunning = true;
+flax.startPhysicsWorld = function(){
+    var world = flax.getPhysicsWorld();
+    if(world && flax.currentScene && !flax._physicsRunning){
+        flax._createPhysicsListener();
+        flax.currentScene.schedule(flax._updatePhysicsWorld, 1.0/cc.game.config.frameRate);
+        flax._physicsRunning = true;
     }
 }
-lg.stopPhysicsWorld = function(){
-    if(lg._physicsRunning && lg.currentScene) {
-        lg.currentScene.unschedule(lg._updatePhysicsWorld);
-        lg._physicsRunning = false;
+flax.stopPhysicsWorld = function(){
+    if(flax._physicsRunning && flax.currentScene) {
+        flax.currentScene.unschedule(flax._updatePhysicsWorld);
+        flax._physicsRunning = false;
     }
 }
-lg.destroyPhysicsWorld = function(){
-    if(!lg._physicsWorld) return;
-    lg.stopPhysicsWorld();
-    for (var b = lg._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
+flax.destroyPhysicsWorld = function(){
+    if(!flax._physicsWorld) return;
+    flax.stopPhysicsWorld();
+    for (var b = flax._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
         //todo
         var sprite = b.GetUserData();
         if(sprite) sprite._physicsBody = null;
-        lg._physicsWorld.DestroyBody(b);
+        flax._physicsWorld.DestroyBody(b);
     }
-    lg.onCollideStart.removeAll();
-    lg.onCollideEnd.removeAll();
-    lg.onCollidePre.removeAll();
-    lg.onCollidePost.removeAll();
+    flax.onCollideStart.removeAll();
+    flax.onCollideEnd.removeAll();
+    flax.onCollidePre.removeAll();
+    flax.onCollidePost.removeAll();
 
-    lg._physicsWorld = null;
-    lg._physicsListener = null;
-    lg._physicsBodyToRemove = null;
+    flax._physicsWorld = null;
+    flax._physicsListener = null;
+    flax._physicsBodyToRemove = null;
 }
 
-lg.removePhysicsBody = function(body){
-    var i = lg._physicsBodyToRemove.indexOf(body);
-    if(i == -1) lg._physicsBodyToRemove.push(body);
+flax.removePhysicsBody = function(body){
+    var i = flax._physicsBodyToRemove.indexOf(body);
+    if(i == -1) flax._physicsBodyToRemove.push(body);
 }
-lg.removePhysicsFixture = function(fixture){
-    var i = lg._physicsFixtureToRemove.indexOf(fixture);
-    if(i == -1) lg._physicsFixtureToRemove.push(fixture);
+flax.removePhysicsFixture = function(fixture){
+    var i = flax._physicsFixtureToRemove.indexOf(fixture);
+    if(i == -1) flax._physicsFixtureToRemove.push(fixture);
 }
 /**
  * Cast a ray from point0 to point1, callBack when there is a collid happen
- * @param {function} callBack Callback when collid, function(lg.Collider, point, reflectedPoint, fraction)
+ * @param {function} callBack Callback when collid, function(flax.Collider, point, reflectedPoint, fraction)
  * @param {point} point0 the start point0
  * @param {point} point1 the end point1
  * @param {float} radius if the ray need a size to check collision
  * */
-lg.physicsRaycast = function(callBack, point0, point1, radius){
-    lg.getPhysicsWorld().RayCast(function(fixture, point, normal, fraction){
+flax.physicsRaycast = function(callBack, point0, point1, radius){
+    flax.getPhysicsWorld().RayCast(function(fixture, point, normal, fraction){
         var collider = fixture.GetUserData();
         point = cc.pMult(point, PTM_RATIO);
 
@@ -299,20 +299,20 @@ lg.physicsRaycast = function(callBack, point0, point1, radius){
         //the new positon of the ray end point after reflected
         var reflectedPoint = cc.pSub(point1,cc.pMult(pj, 2));
         //the angle of the reflected ray
-        var reflectAngle = lg.getAngle(point, reflectedPoint);
+        var reflectAngle = flax.getAngle(point, reflectedPoint);
 
         //if the ray has a size, adjust the collision point
         //todo, not correct for some non-flat surface
         if(radius && radius > 0) {
-            var inAngle = lg.getAngle(point0, point1);
+            var inAngle = flax.getAngle(point0, point1);
             radius = radius/Math.sin(Math.abs(reflectAngle/2 - inAngle/2)*Math.PI/180);
-            point = cc.pSub(point, lg.getPointOnCircle(cc.p(), radius, inAngle));
+            point = cc.pSub(point, flax.getPointOnCircle(cc.p(), radius, inAngle));
             var dist = cc.pDistance(point0, point1);
             fraction = cc.pDistance(point0, point)/dist;
-            reflectedPoint = lg.getPointOnCircle(point, dist*(1 - fraction), reflectAngle);
+            reflectedPoint = flax.getPointOnCircle(point, dist*(1 - fraction), reflectAngle);
         }
 
-        //collider: the collision target, lg.collider
+        //collider: the collision target, flax.collider
         //point: the collision point
         //reflectedPoint: the end point after refected
         //fraction: the distance rate from the start point to the collision point of the total ray length
@@ -320,18 +320,18 @@ lg.physicsRaycast = function(callBack, point0, point1, radius){
     }, cc.pMult(point0, 1/PTM_RATIO), cc.pMult(point1, 1/PTM_RATIO));
 }
 
-lg.physicsSimulate = function(body, time, step){
-    if(!step) step = lg.frameInterval;
+flax.physicsSimulate = function(body, time, step){
+    if(!step) step = flax.frameInterval;
     var steps = Math.round(time/step);
 
     var oldTrans = {pos: body.GetPosition(), rot: body.GetAngle()};
     var dTypes = {};
     var i = 0;
-    for (var b = lg._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
+    for (var b = flax._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
         if(b == body) continue;
         var type = b.GetType();
-        if(type != lg.physicsTypeStatic){
-            b.m_type = lg.physicsTypeStatic;
+        if(type != flax.physicsTypeStatic){
+            b.m_type = flax.physicsTypeStatic;
             b.__tempKey = ++i;
             dTypes[b.__tempKey] = type;
         }
@@ -339,12 +339,12 @@ lg.physicsSimulate = function(body, time, step){
 
     var path = [];
     for(i = 0; i < steps; i++){
-        lg._physicsWorld.Step(step, velocityIterations, positionIterations);
+        flax._physicsWorld.Step(step, velocityIterations, positionIterations);
         var pos = body.GetPosition();
         path.push(cc.p(pos.x*PTM_RATIO, pos.y*PTM_RATIO));
     }
 
-    for (var b = lg._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
+    for (var b = flax._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
         if(b.__tempKey){
             b.SetType(dTypes[b.__tempKey]);
             delete b.__tempKey;
@@ -353,10 +353,10 @@ lg.physicsSimulate = function(body, time, step){
     body.SetPositionAndAngle(oldTrans.pos, oldTrans.rot);
     return path;
 }
-lg._createPhysicsListener = function(){
-    if(lg._physicsListener) return;
-    lg._physicsListener = new Box2D.Dynamics.b2ContactListener();
-    lg._physicsListener.BeginContact = function (contact) {
+flax._createPhysicsListener = function(){
+    if(flax._physicsListener) return;
+    flax._physicsListener = new Box2D.Dynamics.b2ContactListener();
+    flax._physicsListener.BeginContact = function (contact) {
         var fa = contact.GetFixtureA();
         var fb = contact.GetFixtureB();
         var ca = fa.GetUserData() || fa;
@@ -370,13 +370,13 @@ lg._createPhysicsListener = function(){
 //        var mainfold = new Box2D.Collision.b2WorldManifold();
 //        contact.GetWorldManifold(mainfold);
 //        var contactPoint = cc.pMult(mainfold.m_points[0], PTM_RATIO);
-//        lg.drawRect(cc.rect(contactPoint.x - 2, contactPoint.y - 2, 4, 4));
+//        flax.drawRect(cc.rect(contactPoint.x - 2, contactPoint.y - 2, 4, 4));
 //        cc.log(mainfold.m_points.length);
 
-        lg.onCollideStart.dispatch(ca, cb);
+        flax.onCollideStart.dispatch(ca, cb);
         ca.physicsContact = cb.physicsContact = null;
     }
-    lg._physicsListener.EndContact = function (contact) {
+    flax._physicsListener.EndContact = function (contact) {
         var fa = contact.GetFixtureA();
         var fb = contact.GetFixtureB();
         var ca = fa.GetUserData() || fa;
@@ -384,10 +384,10 @@ lg._createPhysicsListener = function(){
         if(ca.owner && ca.owner.parent == null) return;
         if(cb.owner && cb.owner.parent == null) return;
         ca.physicsContact = cb.physicsContact = contact;
-        lg.onCollideEnd.dispatch(ca, cb);
+        flax.onCollideEnd.dispatch(ca, cb);
         ca.physicsContact = cb.physicsContact = null;
     }
-    lg._physicsListener.PreSolve = function (contact, oldManifold) {
+    flax._physicsListener.PreSolve = function (contact, oldManifold) {
         var fa = contact.GetFixtureA();
         var fb = contact.GetFixtureB();
         var ca = fa.GetUserData() || fa;
@@ -395,10 +395,10 @@ lg._createPhysicsListener = function(){
         if(ca.owner && ca.owner.parent == null) return;
         if(cb.owner && cb.owner.parent == null) return;
         ca.physicsContact = cb.physicsContact = contact;
-        lg.onCollidePre.dispatch(ca, cb);
+        flax.onCollidePre.dispatch(ca, cb);
         ca.physicsContact = cb.physicsContact = null;
     }
-    lg._physicsListener.PostSolve = function (contact, impulse) {
+    flax._physicsListener.PostSolve = function (contact, impulse) {
         var fa = contact.GetFixtureA();
         var fb = contact.GetFixtureB();
         var ca = fa.GetUserData() || fa;
@@ -406,19 +406,19 @@ lg._createPhysicsListener = function(){
         if(ca.owner && ca.owner.parent == null) return;
         if(cb.owner && cb.owner.parent == null) return;
         ca.physicsContact = cb.physicsContact = contact;
-        lg.onCollidePost.dispatch(ca, cb);
+        flax.onCollidePost.dispatch(ca, cb);
         ca.physicsContact = cb.physicsContact = null;
     }
-    lg._physicsWorld.SetContactListener(lg._physicsListener);
+    flax._physicsWorld.SetContactListener(flax._physicsListener);
 }
 
 /**
  * Create physical walls, up/down/left/right
- * lg.createPhysicalWalls(0, 0.8, [1,1,1,1]);
+ * flax.createPhysicalWalls(0, 0.8, [1,1,1,1]);
  * */
-lg.createPhysicalWalls = function(walls, friction){
+flax.createPhysicalWalls = function(walls, friction){
     if(walls == null || walls.length == 0) walls = [1,1,1,1];
-    var world = lg.getPhysicsWorld();
+    var world = flax.getPhysicsWorld();
     var fixDef = new Box2D.Dynamics.b2FixtureDef();
     fixDef.density = 1.0;
     if(friction == null)  friction = 3;
@@ -460,25 +460,25 @@ lg.createPhysicalWalls = function(walls, friction){
 //http://gafferongames.com/game-physics/fix-your-timestep/
 var velocityIterations = 8;
 var positionIterations = 1;
-lg._updatePhysicsWorld = function(dt){
-    var i = lg._physicsFixtureToRemove.length;
+flax._updatePhysicsWorld = function(dt){
+    var i = flax._physicsFixtureToRemove.length;
     while(i--){
-        var fixture = lg._physicsFixtureToRemove[i];
+        var fixture = flax._physicsFixtureToRemove[i];
         var body = fixture.GetBody();
         if(body) body.DestroyFixture(fixture);
-        lg._physicsFixtureToRemove.splice(i, 1);
+        flax._physicsFixtureToRemove.splice(i, 1);
     }
 
-    i = lg._physicsBodyToRemove.length;
+    i = flax._physicsBodyToRemove.length;
     while(i--){
-        lg._physicsWorld.DestroyBody(lg._physicsBodyToRemove[i]);
-        lg._physicsBodyToRemove.splice(i, 1);
+        flax._physicsWorld.DestroyBody(flax._physicsBodyToRemove[i]);
+        flax._physicsBodyToRemove.splice(i, 1);
     }
     // Instruct the world to perform a single step of simulation. It is
     // generally best to keep the time step and iterations fixed.
-    lg._physicsWorld.Step(dt, velocityIterations, positionIterations);
+    flax._physicsWorld.Step(dt, velocityIterations, positionIterations);
     //Iterate over the bodies in the physics world
-    for (var b = lg._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
+    for (var b = flax._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
         var sprite = b.GetUserData();
         if(sprite == null) continue;
         if (sprite != null && sprite.parent) {
@@ -494,17 +494,17 @@ lg._updatePhysicsWorld = function(dt){
         }
     }
 }
-lg._debugBox2DNode = null;
+flax._debugBox2DNode = null;
 /**
  * todo, bug
  * */
-lg.debugDrawPhysics = function(){
-    if(lg._debugBox2DNode == null){
-        lg._debugBox2DNode = new lg.DebugBox2DNode(lg.getPhysicsWorld());
-        lg.currentScene.addChild(lg._debugBox2DNode, Number.MAX_VALUE);
+flax.debugDrawPhysics = function(){
+    if(flax._debugBox2DNode == null){
+        flax._debugBox2DNode = new flax.DebugBox2DNode(flax.getPhysicsWorld());
+        flax.currentScene.addChild(flax._debugBox2DNode, Number.MAX_VALUE);
     }
 }
-lg.DebugBox2DNode = cc.Node.extend({
+flax.DebugBox2DNode = cc.Node.extend({
     _refWorld: null,
     ctor: function(world) {
         this._super();

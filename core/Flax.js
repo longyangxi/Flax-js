@@ -8,25 +8,25 @@ IMAGE_TYPES = [".png", ".jpg", ".bmp",".jpeg",".gif"];
 H_ALIGHS = ["left","center","right"];
 LANGUAGES = ['en','zh','de','fr','it','es','tr','pt','ru'];
 
-var lg = lg || {};
+var flax = flax || {};
 
-lg.version = 1.42;
-lg.language = null;
-lg.languageIndex = -1;
-lg.landscape = false;
-lg.osVersion = "unknown";
-lg.assetsManager = null;
-lg.inputManager = null;
-lg.currentSceneName = "";
-lg.currentScene = null;
-lg.buttonSound = null;
-lg.frameInterval = 1/60;
-lg._scenesDict = {};
-lg._soundEnabled = true;
-lg._inited = false;
-lg._orientationTip = null;
-lg._languageDict = null;
-lg._languageToLoad = null;
+flax.version = 1.42;
+flax.language = null;
+flax.languageIndex = -1;
+flax.landscape = false;
+flax.osVersion = "unknown";
+flax.assetsManager = null;
+flax.inputManager = null;
+flax.currentSceneName = "";
+flax.currentScene = null;
+flax.buttonSound = null;
+flax.frameInterval = 1/60;
+flax._scenesDict = {};
+flax._soundEnabled = true;
+flax._inited = false;
+flax._orientationTip = null;
+flax._languageDict = null;
+flax._languageToLoad = null;
 
 if(!cc.sys.isNative){
 //set the game canvas color as html body color
@@ -40,7 +40,7 @@ if(!cc.sys.isNative){
         bgColor = bgColor.replace("rgb(","");
         bgColor = bgColor.replace(")", "");
         bgColor = bgColor.split(",");
-        lg.bgColor = cc.color(parseInt(bgColor[0]), parseInt(bgColor[1]), parseInt(bgColor[2]));
+        flax.bgColor = cc.color(parseInt(bgColor[0]), parseInt(bgColor[1]), parseInt(bgColor[2]));
     }, 0.01);
     /**Fixed the grey banner on the botton when landscape when in iOS*/
     if(cc.sys.isMobile){
@@ -54,12 +54,12 @@ if(!cc.sys.isNative){
     /************************************************/
 }
 
-lg.init = function()
+flax.init = function()
 {
-    if(lg._inited) return;
-    lg._inited = true;
-    cc.log("Flax inited, version: "+lg.version);
-    lg._checkOSVersion();
+    if(flax._inited) return;
+    flax._inited = true;
+    cc.log("Flax inited, version: "+flax.version);
+    flax._checkOSVersion();
 
     var width = cc.game.config.width;
     var height = cc.game.config.height;
@@ -73,48 +73,48 @@ lg.init = function()
         cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.EXACT_FIT);
     }
 
-    lg.frameInterval = 1/cc.game.config.frameRate;
-    lg.assetsManager = lg.AssetsManager.create();
+    flax.frameInterval = 1/cc.game.config.frameRate;
+    flax.assetsManager = flax.AssetsManager.create();
     if(cc.game.config.timeScale)  cc.director.getScheduler().setTimeScale(cc.game.config.timeScale);
 
     var lan = cc.game.config.language;
     if(lan == null || lan == "") {
-        if(lg.language == null) {
+        if(flax.language == null) {
             lan = cc.sys.language;
-            lg.updateLanguage(lan);
+            flax.updateLanguage(lan);
         }
     }else{
-        lg.updateLanguage(lan);
+        flax.updateLanguage(lan);
     }
 }
-lg.getLanguageStr = function(key){
-    if(lg._languageDict == null) {
-        cc.log("Error: there is no language defined: "+lg.language);
+flax.getLanguageStr = function(key){
+    if(flax._languageDict == null) {
+        cc.log("Error: there is no language defined: "+flax.language);
         return null;
     }
-    var str = lg._languageDict[key];
+    var str = flax._languageDict[key];
     if(str == null) cc.log("Warning: there is no language string for key: "+key);
     //todo, more param replace
     return str;
 }
-lg.updateLanguage = function(lan){
-    if(lan == null || lan == "" || lan == lg.language) return;
-    lg.language = lan;
-    lg.languageIndex = LANGUAGES.indexOf(lan);
-    if(lg.languageIndex == -1) cc.log("Invalid language: " + lan);
-    else lg._languageToLoad = lg._getLanguagePath(lan);
+flax.updateLanguage = function(lan){
+    if(lan == null || lan == "" || lan == flax.language) return;
+    flax.language = lan;
+    flax.languageIndex = LANGUAGES.indexOf(lan);
+    if(flax.languageIndex == -1) cc.log("Invalid language: " + lan);
+    else flax._languageToLoad = flax._getLanguagePath(lan);
 }
-lg._getLanguagePath = function(lan){
-    return  "res/locale/"+(lan || lg.language)+".json";
+flax._getLanguagePath = function(lan){
+    return  "res/locale/"+(lan || flax.language)+".json";
 }
 /**
  * Add a function module to some class
  * The function in the class will override the same name function in the module
  * But if override === true, the function in the module will override the same name function in the class,
- * Note: if the owner is not a lg.TimeLine and its successor,
- * pls call lg.callModuleOnEnter(this) within onEnter and call lg.callModuleOnExit(this) within onExit
+ * Note: if the owner is not a flax.FlaxSprite and its successor,
+ * pls call flax.callModuleOnEnter(this) within onEnter and call flax.callModuleOnExit(this) within onExit
  * */
-lg.addModule = function(cls, module, override){
+flax.addModule = function(cls, module, override){
     for(var k in module){
         if(k === "onEnter"){
             if(cls.prototype.__onEnterNum === undefined) cls.prototype.__onEnterNum = 0;
@@ -129,7 +129,7 @@ lg.addModule = function(cls, module, override){
         }
     }
 }
-lg.callModuleOnEnter = function(owner){
+flax.callModuleOnEnter = function(owner){
     if(owner.__onEnterNum !== undefined){
         var i = owner.__onEnterNum;
         while(i >= 0){
@@ -138,7 +138,7 @@ lg.callModuleOnEnter = function(owner){
         }
     }
 }
-lg.callModuleOnExit = function(owner){
+flax.callModuleOnExit = function(owner){
     if(owner.__onExitNum !== undefined){
         var i = owner.__onExitNum;
         while(i >= 0){
@@ -149,158 +149,158 @@ lg.callModuleOnExit = function(owner){
 }
 
 //todo, now only handle the mobile device
-lg._checkOSVersion = function(){
+flax._checkOSVersion = function(){
     if(cc.sys.isNative) return;
     var ua = navigator.userAgent;
     var i;
     if(ua.match(/iPad/i) || ua.match(/iPhone/i)){
         i = ua.indexOf( 'OS ' );
         cc.sys.os = cc.sys.OS_IOS;
-        if(i > -1) lg.osVersion = ua.substr( i + 3, 3 ).replace( '_', '.' );
+        if(i > -1) flax.osVersion = ua.substr( i + 3, 3 ).replace( '_', '.' );
     }else if(ua.match(/Android/i)){
         i = ua.indexOf( 'Android ' );
         cc.sys.os = cc.sys.OS_ANDROID;
-        if(i > -1) lg.osVersion = ua.substr( i + 8, 3 );
+        if(i > -1) flax.osVersion = ua.substr( i + 8, 3 );
     }
 }
 
-lg.registerScene = function(name, scene, resources)
+flax.registerScene = function(name, scene, resources)
 {
-    lg._scenesDict[name] = {scene:scene, res:resources};
+    flax._scenesDict[name] = {scene:scene, res:resources};
 }
-lg.replaceScene = function(sceneName, transition, duration)
+flax.replaceScene = function(sceneName, transition, duration)
 {
-    var s = lg._scenesDict[sceneName];
+    var s = flax._scenesDict[sceneName];
     if(s == null){
         throw "Please register the scene: "+sceneName+" firstly!";
         return;
     }
     if(s.res == null) s.res = [];
-    if(lg._languageToLoad && s.res.indexOf(lg._languageToLoad) == -1){
-        s.res.push(lg._languageToLoad);
+    if(flax._languageToLoad && s.res.indexOf(flax._languageToLoad) == -1){
+        s.res.push(flax._languageToLoad);
     }
-    lg.ObjectPool.release();
-    if(lg.BulletCanvas) lg.BulletCanvas.reset();
+    flax.ObjectPool.release();
+    if(flax.BulletCanvas) flax.BulletCanvas.reset();
     cc.director.resume();
-    lg.currentSceneName = sceneName;
-    if(lg.stopPhysicsWorld) lg.stopPhysicsWorld();
-    if(lg.inputManager) lg.inputManager.removeFromParent();
-    lg.preload(s.res,function(){
+    flax.currentSceneName = sceneName;
+    if(flax.stopPhysicsWorld) flax.stopPhysicsWorld();
+    if(flax.inputManager) flax.inputManager.removeFromParent();
+    flax.preload(s.res,function(){
         //init language
-        if(lg._languageToLoad){
-            lg._languageDict = cc.loader.getRes(lg._getLanguagePath());
-            lg._languageToLoad = null;
+        if(flax._languageToLoad){
+            flax._languageDict = cc.loader.getRes(flax._getLanguagePath());
+            flax._languageToLoad = null;
         }
-        lg.currentScene = new s.scene();
+        flax.currentScene = new s.scene();
         var transitioned = false;
         if(transition){
             if(!duration || duration < 0) duration = 0.5;
-            var tScene = transition.create(duration,lg.currentScene);
+            var tScene = transition.create(duration,flax.currentScene);
             if(tScene){
                 transitioned = true;
                 cc.director.runScene(tScene);
             }
         }
         if(!transitioned){
-            cc.director.runScene(lg.currentScene);
+            cc.director.runScene(flax.currentScene);
         }
-        lg.inputManager = lg.InputManager.create();
-        lg.currentScene.addChild(lg.inputManager, 999999);
-        lg._checkDeviceOrientation();
+        flax.inputManager = flax.InputManager.create();
+        flax.currentScene.addChild(flax.inputManager, 999999);
+        flax._checkDeviceOrientation();
     });
 }
-lg._tileMaps = {};
-lg.getTileMap = function(id)
+flax._tileMaps = {};
+flax.getTileMap = function(id)
 {
-    if(typeof lg._tileMaps[id] !== "undefined") return lg._tileMaps[id];
-    cc.log("The tileMap: "+id+" hasn't been defined, pls use lg.registerTileMap to define it firstly!");
+    if(typeof flax._tileMaps[id] !== "undefined") return flax._tileMaps[id];
+    cc.log("The tileMap: "+id+" hasn't been defined, pls use flax.registerTileMap to define it firstly!");
     return null;
 }
-lg.registerTileMap = function(tileMap)
+flax.registerTileMap = function(tileMap)
 {
-    lg._tileMaps[tileMap.id] = tileMap;
+    flax._tileMaps[tileMap.id] = tileMap;
 }
 //----------------------scene about-------------------------------------------------------
 
 //----------------------sound about-------------------------------------------------------
-lg.setSoundEnabled = function(value)
+flax.setSoundEnabled = function(value)
 {
-    if(lg._soundEnabled == value) return;
-    lg._soundEnabled = value;
+    if(flax._soundEnabled == value) return;
+    flax._soundEnabled = value;
     var audioEngine = cc.audioEngine;
     if(value)
     {
         audioEngine.resumeMusic();
-        if(lg._lastMusic) {
-            lg.playMusic(lg._lastMusic, true);
-            lg._lastMusic = null;
+        if(flax._lastMusic) {
+            flax.playMusic(flax._lastMusic, true);
+            flax._lastMusic = null;
         }
     }else{
         audioEngine.pauseMusic();
         audioEngine.stopAllEffects();
     }
 }
-lg.getSoundEnabled = function() {
-    return lg._soundEnabled;
+flax.getSoundEnabled = function() {
+    return flax._soundEnabled;
 }
-lg._lastMusic = null;
-lg.playMusic = function(path, loop)
+flax._lastMusic = null;
+flax.playMusic = function(path, loop)
 {
     var audioEngine = cc.audioEngine;
     audioEngine.stopMusic(true);
-    if(lg._soundEnabled){
+    if(flax._soundEnabled){
         audioEngine.playMusic(path, loop);
     }else{
-        lg._lastMusic = path;
+        flax._lastMusic = path;
     }
 }
-lg.playSound = function(path)
+flax.playSound = function(path)
 {
-    if(lg._soundEnabled){
+    if(flax._soundEnabled){
         cc.audioEngine.playEffect(path);
     }
 }
 //----------------------sound about-------------------------------------------------------
-lg._checkDeviceOrientation = function(){
+flax._checkDeviceOrientation = function(){
     if(cc.sys.isNative) return;
-    if(!lg._orientationTip && cc.sys.isMobile && cc.game.config.rotateImg){
-        lg._orientationTip = cc.LayerColor.create(lg.bgColor, cc.visibleRect.width + 10, cc.visibleRect.height +10);
+    if(!flax._orientationTip && cc.sys.isMobile && cc.game.config.rotateImg){
+        flax._orientationTip = cc.LayerColor.create(flax.bgColor, cc.visibleRect.width + 10, cc.visibleRect.height +10);
         var img =  cc.Sprite.create(cc.game.config.rotateImg);
         img.setPosition(cc.visibleRect.center);
-        lg._orientationTip.__icon = img;
-        lg._orientationTip.addChild(img);
+        flax._orientationTip.__icon = img;
+        flax._orientationTip.addChild(img);
         var orientationEvent = ("onorientationchange" in window) ? "orientationchange" : "resize";
-        window.addEventListener(orientationEvent, lg._showOrientaionTip, true);
-        lg._showOrientaionTip();
+        window.addEventListener(orientationEvent, flax._showOrientaionTip, true);
+        flax._showOrientaionTip();
     }
-    if(lg._orientationTip){
-        lg._orientationTip.removeFromParent();
-        lg.currentScene.addChild(lg._orientationTip, 1000000);
+    if(flax._orientationTip){
+        flax._orientationTip.removeFromParent();
+        flax.currentScene.addChild(flax._orientationTip, 1000000);
     }
 }
-lg._oldGamePauseState = false;
-lg._showOrientaionTip = function(){
-    lg.landscape = (Math.abs(window.orientation) == 90);
-    lg._orientationTip.visible = (cc.game.config.landscape != lg.landscape);
-    lg._orientationTip.__icon.rotation = (lg.landscape ? -90 : 0);
+flax._oldGamePauseState = false;
+flax._showOrientaionTip = function(){
+    flax.landscape = (Math.abs(window.orientation) == 90);
+    flax._orientationTip.visible = (cc.game.config.landscape != flax.landscape);
+    flax._orientationTip.__icon.rotation = (flax.landscape ? -90 : 0);
     document.body.scrollTop = 0;
-    if(lg._orientationTip.visible) {
-        lg._oldGamePauseState = cc.director.isPaused();
+    if(flax._orientationTip.visible) {
+        flax._oldGamePauseState = cc.director.isPaused();
         cc.director.pause();
-    }else if(!lg._oldGamePauseState){
+    }else if(!flax._oldGamePauseState){
         cc.director.resume();
     }
-    lg.inputManager.enabled = !lg._orientationTip.visible;
+    flax.inputManager.enabled = !flax._orientationTip.visible;
 }
 
 ///---------------------utils-------------------------------------------------------------
-lg.getAngle = function(startPoint, endPoint, forDegree)
+flax.getAngle = function(startPoint, endPoint, forDegree)
 {
     var dx = endPoint.x - startPoint.x;
     var dy = endPoint.y - startPoint.y;
-    return lg.getAngle1(dx, dy, forDegree);
+    return flax.getAngle1(dx, dy, forDegree);
 };
-lg.getAngle1 = function(dx, dy, forDegree)
+flax.getAngle1 = function(dx, dy, forDegree)
 {
     if(forDegree === undefined) forDegree = true;
     var angle = Math.atan2(dx, dy);
@@ -311,14 +311,14 @@ lg.getAngle1 = function(dx, dy, forDegree)
     }
     return angle;
 };
-lg.getPointOnCircle = function(center, radius, angleDegree)
+flax.getPointOnCircle = function(center, radius, angleDegree)
 {
     angleDegree = 90 - angleDegree;
     angleDegree *= DEGREE_TO_RADIAN;
     if(center == null) center = cc.p();
     return cc.pAdd(center, cc.p(radius*Math.cos(angleDegree), radius*Math.sin(angleDegree)));
 };
-lg.getPosition = function(sprite, global)
+flax.getPosition = function(sprite, global)
 {
     var pos = sprite.getPosition();
     if(global === true && sprite.parent) pos = sprite.parent.convertToWorldSpace(pos);
@@ -327,7 +327,7 @@ lg.getPosition = function(sprite, global)
 /**
  * Get the sprite's global rotation, if the sprite rotated 30 and the parent rotated -15, then the sprite's global rotation is 15
  * */
-lg.getRotation = function(sprite, global)
+flax.getRotation = function(sprite, global)
 {
     if(global !== true) return sprite.rotation;
     var r = 0;
@@ -342,7 +342,7 @@ lg.getRotation = function(sprite, global)
 /**
  * Get the sprite's global scale
  * */
-lg.getScale = function(sprite, global)
+flax.getScale = function(sprite, global)
 {
     if(global !== true) return cc.p(sprite.scaleX, sprite.scaleY);
     var sx = 1.0;
@@ -359,7 +359,7 @@ lg.getScale = function(sprite, global)
 /**
  * Get the bounding rect of the sprite, maybe should refer the getBoundingBoxToWorld of the cc.Node
  * */
-lg.getRect = function(sprite, global)
+flax.getRect = function(sprite, global)
 {
     var rect;
     if(sprite.getRect) {
@@ -377,23 +377,23 @@ lg.getRect = function(sprite, global)
     return rect;
 };
 
-lg.ifTouched = function(target, pos)
+flax.ifTouched = function(target, pos)
 {
     if(target == null) return false;
     if(!(target instanceof cc.Node)) return false;
-    //if its lg.TimeLine
+    //if its flax.FlaxSprite
     if(target.mainCollider){
         return target.mainCollider.containPoint(pos);
     }
     var local = target.convertToNodeSpace(pos);
-    var r = lg.getRect(target,false);
+    var r = flax.getRect(target,false);
     return cc.rectContainsPoint(r, local);
 };
-lg.ifCollide = function(sprite1, sprite2)
+flax.ifCollide = function(sprite1, sprite2)
 {
     return sprite1.mainCollider.checkCollision(sprite2.mainCollider);
 };
-lg.isChildOf = function(child, parent)
+flax.isChildOf = function(child, parent)
 {
     if(child == null || parent == null) return false;
     if(child == parent) return false;
@@ -406,7 +406,7 @@ lg.isChildOf = function(child, parent)
     return false;
 };
 
-lg.findParentWithClass = function(sprite, cls)
+flax.findParentWithClass = function(sprite, cls)
 {
     var p = sprite;
     while(p){
@@ -416,7 +416,7 @@ lg.findParentWithClass = function(sprite, cls)
     return null;
 }
 
-lg.findChildWithClass = function(sprite, cls)
+flax.findChildWithClass = function(sprite, cls)
 {
     var children = sprite.children;
     var i = children.length;
@@ -424,7 +424,7 @@ lg.findChildWithClass = function(sprite, cls)
     while(i--){
         child = children[i];
         if(child instanceof cls) return child;
-        child = lg.findChildWithClass(child, cls);
+        child = flax.findChildWithClass(child, cls);
         if(child) return child;
     }
     return null;
@@ -435,7 +435,7 @@ lg.findChildWithClass = function(sprite, cls)
  * @param {String}name cc.Sprite
  * @param {String}type function or object, defaut is function
  * */
-lg.nameToObject = function(name, type) {
+flax.nameToObject = function(name, type) {
     if(name == undefined || name == "") return null;
     type = type || "function";
     var arr = name.split(".");
@@ -454,7 +454,7 @@ lg.nameToObject = function(name, type) {
     }
     return  fn;
 };
-lg.createBGLayer = function(scene, color)
+flax.createBGLayer = function(scene, color)
 {
     if(color == null) color = cc.color(255, 255, 255, 255);
     var layer = cc.LayerColor.create(color, cc.visibleRect.width, cc.visibleRect.height);
@@ -472,28 +472,28 @@ Array.prototype.shuffle = function(len)
         this[j] = v;
     }
 };
-lg.restrictValue = function(value, min, max)
+flax.restrictValue = function(value, min, max)
 {
     value = Math.max(min, value);
     value = Math.min(max, value);
     return value;
 }
-lg.numberSign = function(number){
+flax.numberSign = function(number){
     if(number == 0) return 0;
     return number > 0 ? 1 : -1;
 }
-lg.randInt = function (start, end)
+flax.randInt = function (start, end)
 {
     return start + Math.floor(Math.random()*(end - start));
 };
-lg.getRandomInArray = function (arr)
+flax.getRandomInArray = function (arr)
 {
     if(arr == null) return null;
-    var i = lg.randInt(0, arr.length);
+    var i = flax.randInt(0, arr.length);
     return arr[i];
 };
 
-lg.isImageFile = function(path)
+flax.isImageFile = function(path)
 {
     var ext = cc.path.extname(path);
     return IMAGE_TYPES.indexOf(ext) > -1;
@@ -501,7 +501,7 @@ lg.isImageFile = function(path)
 /**
  * Copy all the properties of params to target if it own the property
  * */
-lg.copyProperties = function(params, target)
+flax.copyProperties = function(params, target)
 {
     if(params == null || target == null) return;
     for(var k in params){
@@ -516,7 +516,7 @@ lg.copyProperties = function(params, target)
 /**
  * Create an int array like this: [0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6, -7, 7, ...]
  * */
-lg.createDInts = function(count, centerInt)
+flax.createDInts = function(count, centerInt)
 {
     if(isNaN(centerInt)) centerInt = 0;
     var ds = [];
@@ -533,7 +533,7 @@ lg.createDInts = function(count, centerInt)
     return ds;
 };
 
-lg.goHomeUrl = function()
+flax.goHomeUrl = function()
 {
     if(!cc.sys.isNative && cc.game.config.homeUrl){
         window.open(cc.game.config.homeUrl);

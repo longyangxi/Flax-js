@@ -4,8 +4,8 @@
 
 SPACE_CHAR_GAP = 10;
 
-var lg = lg || {};
-lg.Label = cc.Sprite.extend({
+var flax = flax || {};
+flax.Label = cc.Sprite.extend({
     mlWidth:0.0,
     mlHeight:0.0,
     //font gap, 1.0 means the gap between two fonts is zero
@@ -33,11 +33,11 @@ lg.Label = cc.Sprite.extend({
     },
     tweenInt:function(from, to, time){
         this.setString(from);
-        var sign = lg.numberSign(to - from);
+        var sign = flax.numberSign(to - from);
         if(sign == 0) return;
 
         var num = Math.abs(to - from);
-        var interval = Math.max(time/num, lg.frameInterval);
+        var interval = Math.max(time/num, flax.frameInterval);
         num = Math.round(time/interval);
         sign *= Math.round(Math.abs(to - from)/num);
 
@@ -66,11 +66,11 @@ lg.Label = cc.Sprite.extend({
         if(font == null) return;
         if(this.fontName != null && this.fontName == font) return;
         this.fontName = font;
-        this._fontDefine = lg.assetsManager.getFont(this.assetsFile, this.fontName);
+        this._fontDefine = flax.assetsManager.getFont(this.assetsFile, this.fontName);
         if(this._fontDefine == null){
             throw "Can't find the font named: " + this.fontName;
         }
-        this.frames = lg.assetsManager.getFrameNames(this.assetsFile, parseInt(this._fontDefine.start), parseInt(this._fontDefine.end));
+        this.frames = flax.assetsManager.getFrameNames(this.assetsFile, parseInt(this._fontDefine.start), parseInt(this._fontDefine.end));
         this.chars = this._fontDefine.chars;
         this.fontSize = parseInt(this._fontDefine.size);
     },
@@ -170,15 +170,15 @@ lg.Label = cc.Sprite.extend({
     }
 });
 
-lg.LabelTTF = cc.LabelTTF.extend({
+flax.LabelTTF = cc.LabelTTF.extend({
     __isTTF:true,
     tweenInt:function(from, to, time){
         this.setString(from);
-        var sign = lg.numberSign(to - from);
+        var sign = flax.numberSign(to - from);
         if(sign == 0) return;
 
         var num = Math.abs(to - from);
-        var interval = Math.max(time/num, lg.frameInterval);
+        var interval = Math.max(time/num, flax.frameInterval);
         num = Math.round(time/interval);
         sign *= Math.round(Math.abs(to - from)/num);
 
@@ -191,11 +191,11 @@ lg.LabelTTF = cc.LabelTTF.extend({
     }
 })
 
-lg.Label.create = function(assetsFile, define)
+flax.Label.create = function(assetsFile, define)
 {
     var lbl = null;
     var txtCls = define["class"];
-    var bmpFontName = lg.assetsManager.getFont(assetsFile, txtCls);
+    var bmpFontName = flax.assetsManager.getFont(assetsFile, txtCls);
     //If it is ttf label(has font and the bitmap font is null, other wise use bitmap label
     if(define.font && bmpFontName == null){
         var labelDef = new cc.FontDefinition();
@@ -208,10 +208,10 @@ lg.Label.create = function(assetsFile, define)
         labelDef.boundingWidth = define.width;
         labelDef.boundingHeight = define.height;
         //todo, outline and shadow effect
-        lbl = new lg.LabelTTF(lg.getLanguageStr(txtCls) || define.text, labelDef);
+        lbl = new flax.LabelTTF(flax.getLanguageStr(txtCls) || define.text, labelDef);
     }else{
-        lbl = new lg.Label();
-        lg.assetsManager.addAssets(assetsFile);
+        lbl = new flax.Label();
+        flax.assetsManager.addAssets(assetsFile);
         lbl.assetsFile = assetsFile;
         lbl.params = define;
         lbl.setFontName(txtCls);

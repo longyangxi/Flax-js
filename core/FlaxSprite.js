@@ -1,9 +1,9 @@
 /**
  * Created by long on 14-2-14.
  */
-var lg = lg || {};
+var flax = flax || {};
 
-lg.Anchor = cc.Class.extend({
+flax.Anchor = cc.Class.extend({
     x:0,
     y:0,
     zIndex:0,
@@ -16,7 +16,7 @@ lg.Anchor = cc.Class.extend({
     }
 });
 
-lg.TimeLine = cc.Sprite.extend({
+flax.FlaxSprite = cc.Sprite.extend({
     __instanceId:null,
     onAnimationOver:null,
     autoDestroyWhenOver:false,
@@ -34,8 +34,8 @@ lg.TimeLine = cc.Sprite.extend({
     define:null,
     name:null,
     assetID:null,
-    clsName:"lg.TimeLine",
-    __isTimeLine:true,
+    clsName:"flax.FlaxSprite",
+    __isFlaxSprite:true,
     _fps:30,
     playing:false,
     inRecycle:false,
@@ -83,12 +83,12 @@ lg.TimeLine = cc.Sprite.extend({
         }
         if(this.assetsFile == assetsFile && (this.assetID == assetID || this._baseAssetID == assetID)) return;
         this.assetsFile = assetsFile;
-        lg.assetsManager.addAssets(assetsFile);
+        flax.assetsManager.addAssets(assetsFile);
 
         //see if there is a sub animation
         var ns = assetID.split("$");
         this._baseAssetID = ns[0];
-        this._subAnims = lg.assetsManager.getSubAnims(assetsFile, this._baseAssetID);
+        this._subAnims = flax.assetsManager.getSubAnims(assetsFile, this._baseAssetID);
         var anim = ns[1];
         if(anim == null && this._subAnims) anim = this._subAnims[0];
         assetID = this._baseAssetID;
@@ -155,9 +155,9 @@ lg.TimeLine = cc.Sprite.extend({
             def.fixedRotation = fixedRotation;
             def.bullet = bullet;
             def.userData = this;
-            var pos = lg.getPosition(this, true);
+            var pos = flax.getPosition(this, true);
             def.position.Set(pos.x / PTM_RATIO, pos.y / PTM_RATIO);
-            this._physicsBody = lg.getPhysicsWorld().CreateBody(def);
+            this._physicsBody = flax.getPhysicsWorld().CreateBody(def);
             this._physicsBody.__rotationOffset = this.rotation;
         }
         return this._physicsBody;
@@ -197,7 +197,7 @@ lg.TimeLine = cc.Sprite.extend({
             }
         }
         if(this._physicsColliders.length == 0){
-            lg.removePhysicsBody(this._physicsBody);
+            flax.removePhysicsBody(this._physicsBody);
             this._physicsBody = null;
         }
     },
@@ -227,7 +227,7 @@ lg.TimeLine = cc.Sprite.extend({
         }
         this._definedMainCollider = (this._mainCollider != null);
         if(!this._definedMainCollider){
-            this._mainCollider = new lg.Collider(["Rect", 0, 0, this.width, this.height, 0], false);
+            this._mainCollider = new flax.Collider(["Rect", 0, 0, this.width, this.height, 0], false);
             this._mainCollider.name = "main";
             this._mainCollider.owner = this;
         }
@@ -548,7 +548,7 @@ lg.TimeLine = cc.Sprite.extend({
         }
         this._updateLaguage();
         //call the module onEnter
-        lg.callModuleOnEnter(this);
+        flax.callModuleOnEnter(this);
 
         if(this.__fromPool){
             this.__fromPool = false;
@@ -560,7 +560,7 @@ lg.TimeLine = cc.Sprite.extend({
         this._super();
 
         this.onAnimationOver.removeAll();
-        lg.inputManager.removeListener(this);
+        flax.inputManager.removeListener(this);
 
         //remove tilemap
         if(this._tileMap) this._tileMap.removeObject(this);
@@ -585,16 +585,16 @@ lg.TimeLine = cc.Sprite.extend({
         this._physicsColliders = [];
 
         if(this._physicsBody){
-            lg.removePhysicsBody(this._physicsBody);
+            flax.removePhysicsBody(this._physicsBody);
             this._physicsBody = null;
         }
         this._physicsBodyParam = null;
         //call the module onExit
-        lg.callModuleOnExit(this);
+        flax.callModuleOnExit(this);
     },
     _updateLaguage:function(){
-        if(lg.languageIndex > -1 && this.name && this.name.indexOf("label__") > -1){
-            if(!this.gotoAndStop(lg.languageIndex)){
+        if(flax.languageIndex > -1 && this.name && this.name.indexOf("label__") > -1){
+            if(!this.gotoAndStop(flax.languageIndex)){
                 this.gotoAndStop(0);
             }
         }
@@ -605,7 +605,7 @@ lg.TimeLine = cc.Sprite.extend({
     },
     setTileMap:function(map)
     {
-        if(map && !(map instanceof lg.TileMap)) map = lg.getTileMap(map);
+        if(map && !(map instanceof flax.TileMap)) map = flax.getTileMap(map);
         if(this._tileMap == map) return;
         if(this._tileMap) this._tileMap.removeObject(this);
         this._tileMap = map;
@@ -625,10 +625,10 @@ lg.TimeLine = cc.Sprite.extend({
     },
     _updateCollider:function(){
 //        if(this._mainCollider == null) {
-//            this._mainCollider = lg.getRect(this, true);
+//            this._mainCollider = flax.getRect(this, true);
 //        }else{
         //todo
-//            this._mainCollider = lg.getRect(this, true);
+//            this._mainCollider = flax.getRect(this, true);
 //        }
 //        this.collidCenter.x = this._mainCollider.x + this._mainCollider.width/2;
 //        this.collidCenter.y = this._mainCollider.y + this._mainCollider.height/2;
@@ -682,7 +682,7 @@ lg.TimeLine = cc.Sprite.extend({
         this._destroyed = true;
         if(this.autoRecycle) {
             if(!this.inRecycle) {
-                var pool = lg.ObjectPool.get(this.assetsFile, this.clsName, this.__pool__id__ || "");
+                var pool = flax.ObjectPool.get(this.assetsFile, this.clsName, this.__pool__id__ || "");
                 pool.recycle(this);
             }
         }
@@ -730,14 +730,14 @@ lg.TimeLine = cc.Sprite.extend({
     }
 });
 
-lg.TimeLine.create = function(assetsFile, assetID)
+flax.FlaxSprite.create = function(assetsFile, assetID)
 {
-    var tl = new lg.TimeLine(assetsFile, assetID);
-    tl.clsName = "lg.TimeLine";
+    var tl = new flax.FlaxSprite(assetsFile, assetID);
+    tl.clsName = "flax.FlaxSprite";
     return tl;
 };
 
-window._p = lg.TimeLine.prototype;
+window._p = flax.FlaxSprite.prototype;
 
 /** @expose */
 _p.mainCollider;

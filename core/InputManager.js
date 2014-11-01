@@ -1,7 +1,7 @@
 /**
  * Created by long on 14-2-5.
  */
-var lg = lg || {};
+var flax = flax || {};
 
 var InputType = {
     press:"onPress",
@@ -10,7 +10,7 @@ var InputType = {
     move:"onMouseMove"//The touch position maybe not within the press target
 };
 
-lg.InputManager = cc.Node.extend({
+flax.InputManager = cc.Node.extend({
     enabled:true,
     inTouching:false,
     inDragging:false,
@@ -130,7 +130,7 @@ lg.InputManager = cc.Node.extend({
             this._callbacks[target.__instanceId] = arr;
             if(target != this) {
                 this._createListener(target, true);
-                if(lg.isButton(target) && target.radioGroup){
+                if(flax.isButton(target) && target.radioGroup){
                     if(this._radioButtons[target.radioGroup] == null) this._radioButtons[target.radioGroup] = [];
                     this._radioButtons[target.radioGroup].push(target);
                 }
@@ -178,7 +178,7 @@ lg.InputManager = cc.Node.extend({
         var maskTouchedItem = null;
         while(i--){
             mask = this._masks[i];
-            if(target == mask || lg.isChildOf(target, mask) || lg.isChildOf(mask, target)) continue;
+            if(target == mask || flax.isChildOf(target, mask) || flax.isChildOf(mask, target)) continue;
             if(this._ifTargetIgnore(mask)) continue;
             if(this._compareRealZIndex(mask, target) == 1){
                 maskTouchedItem = this._findRealTarget(mask, pos);
@@ -186,14 +186,14 @@ lg.InputManager = cc.Node.extend({
             }
         }
 
-        if(lg.isButton(target)) {
-            if(lg.buttonSound) lg.playSound(lg.buttonSound);
+        if(flax.isButton(target)) {
+            if(flax.buttonSound) flax.playSound(flax.buttonSound);
             this._setButtonState(target, ButtonState.DOWN);
         }
         event.currentTarget = target;
         event.target = this._findRealTarget(target, pos) || target;
-        //if currentTarget is cc.Layer or lg.MovieClip and hasn't touch any of it's child, then ignore!
-        if((target instanceof cc.Layer || target instanceof lg.MovieClip) && event.target == target) {
+        //if currentTarget is cc.Layer or flax.MovieClip and hasn't touch any of it's child, then ignore!
+        if((target instanceof cc.Layer || target instanceof flax.MovieClip) && event.target == target) {
             return false;
         }
         this._dispatch(target, touch, event, InputType.press);
@@ -209,8 +209,8 @@ lg.InputManager = cc.Node.extend({
 
         this._dispatch(target, touch, event, InputType.up);
 //        cc.log("touch end: "+this.name+", "+this.type+", "+this._itemTouched);
-        var onTarget = lg.ifTouched(target, touch.getLocation());
-        if(onTarget && (lg.isButton(target))){
+        var onTarget = flax.ifTouched(target, touch.getLocation());
+        if(onTarget && (flax.isButton(target))){
             if(target.isSelectable())
             {
                 if (!target.isSelected() || target.radioGroup){
@@ -237,8 +237,8 @@ lg.InputManager = cc.Node.extend({
     handleTouchMoved:function(touch, event)
     {
         var target = event.getCurrentTarget();
-        if(lg.isButton(target)){
-            if(lg.ifTouched(target, touch.getLocation())){
+        if(flax.isButton(target)){
+            if(flax.ifTouched(target, touch.getLocation())){
                 this._setButtonState(target, ButtonState.DOWN);
             }else{
                 this._setButtonState(target, ButtonState.UP);
@@ -288,7 +288,7 @@ lg.InputManager = cc.Node.extend({
                     return this._temp;
                 }
             }
-            if(lg.ifTouched(target, pos)){
+            if(flax.ifTouched(target, pos)){
                 return target;
             }
         }
@@ -300,7 +300,7 @@ lg.InputManager = cc.Node.extend({
         if(!target.running) return true;
         if(!this._ifTargetVisible(target)) return true;
         if(target.isMouseEnabled && target.isMouseEnabled() === false) return true;
-        if(touch && !lg.ifTouched(target, touch.getLocation())) return true;
+        if(touch && !flax.ifTouched(target, touch.getLocation())) return true;
         return false;
     },
     _ifTargetVisible:function(target){
@@ -348,7 +348,7 @@ lg.InputManager = cc.Node.extend({
     }
 });
 
-lg.InputManager.create = function(){
-    var im = new lg.InputManager();
+flax.InputManager.create = function(){
+    var im = new flax.InputManager();
     return im;
 }

@@ -1,7 +1,7 @@
 /**
  * Created by long on 14-4-25.
  */
-var lg = lg || {};
+var flax = flax || {};
 
 var ButtonState = {
     UP:"up",
@@ -13,7 +13,7 @@ var ButtonState = {
     DISABLED:"disabled"
 };
 
-lg._buttonDefine = {
+flax._buttonDefine = {
     radioGroup:"",//All the button with the same radioGroup will only have only one button selected!
     _state:null,
     _initScale:null,
@@ -71,24 +71,24 @@ lg._buttonDefine = {
     }
 }
 
-lg.SimpleButton = lg.Animator.extend(lg._buttonDefine);
-lg.SimpleButton.create = function(assetsFile, assetID)
+flax.SimpleButton = flax.Animator.extend(flax._buttonDefine);
+flax.SimpleButton.create = function(assetsFile, assetID)
 {
-    var btn = new lg.SimpleButton(assetsFile, assetID);
-    btn.clsName = "lg.SimpleButton";
+    var btn = new flax.SimpleButton(assetsFile, assetID);
+    btn.clsName = "flax.SimpleButton";
     btn.setState(ButtonState.UP);
     return btn;
 };
 
-lg.Button = lg.MovieClip.extend(lg._buttonDefine);
-lg.Button.create = function(assetsFile, assetID)
+flax.Button = flax.MovieClip.extend(flax._buttonDefine);
+flax.Button.create = function(assetsFile, assetID)
 {
-    var btn = new lg.Button(assetsFile, assetID);
-    btn.clsName = "lg.Button";
+    var btn = new flax.Button(assetsFile, assetID);
+    btn.clsName = "flax.Button";
     btn.setState(ButtonState.UP);
     return btn;
 };
 
-lg.isButton = function(sprite){
-    return sprite instanceof lg.SimpleButton || sprite instanceof lg.Button;
+flax.isButton = function(sprite){
+    return sprite instanceof flax.SimpleButton || sprite instanceof flax.Button;
 }

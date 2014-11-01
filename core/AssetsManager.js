@@ -2,19 +2,19 @@
  * Created by long on 14-1-31.
  */
 
-var lg = lg || {};
+var flax = flax || {};
 
-F2C_ALIAS = {mc:"lg.MovieClip",
-             btn:"lg.SimpleButton",
-             button:"lg.Button",
-             progress:"lg.ProgressBar",
-             scrollPane:"lg.ScrollPane",
-             scrollPane1:"lg.ScrollPane1",
-             gun:"lg.Gunner",
-             gun1:"lg.MCGunner"
+F2C_ALIAS = {mc:"flax.MovieClip",
+             btn:"flax.SimpleButton",
+             button:"flax.Button",
+             progress:"flax.ProgressBar",
+             scrollPane:"flax.ScrollPane",
+             scrollPane1:"flax.ScrollPane1",
+             gun:"flax.Gunner",
+             gun1:"flax.MCGunner"
             };
 
-lg.AssetsManager = cc.Class.extend({
+flax.AssetsManager = cc.Class.extend({
     framesCache:null,
     displaysCache:null,
     displayDefineCache:null,
@@ -56,7 +56,7 @@ lg.AssetsManager = cc.Class.extend({
            assetID = assetID + "$" + subAnims[0];
        }
 
-       var mcCls = lg.nameToObject(clsName);
+       var mcCls = flax.nameToObject(clsName);
        if(mcCls == null && clsPreDefined){
            throw "The class: "+clsName+" doesn't exist!"
        }
@@ -69,15 +69,15 @@ lg.AssetsManager = cc.Class.extend({
             }
             if(define){
                 clsName = define.type;
-                mcCls = lg.nameToObject(clsName);
+                mcCls = flax.nameToObject(clsName);
                 if(mcCls == null){
                     clsName = F2C_ALIAS[clsName];
-                    mcCls = lg.nameToObject(clsName);
+                    mcCls = flax.nameToObject(clsName);
                 }
                 if(mcCls == null)
                 {
-                    mcCls = isMC ? lg.MovieClip : lg.Animator;
-                    clsName = isMC ? "lg.MovieClip" : "lg.Animator";
+                    mcCls = isMC ? flax.MovieClip : flax.Animator;
+                    clsName = isMC ? "flax.MovieClip" : "flax.Animator";
                 }
             }else{
                 throw  "There is no display with assetID: "+assetID+" in assets file: "+assetsFile;
@@ -86,7 +86,7 @@ lg.AssetsManager = cc.Class.extend({
 //       this._checkCreateFunc(mcCls, clsName);
        var mc = null;
        if(fromPool === true) {
-           mc = lg.ObjectPool.get(assetsFile,clsName,assetID).fetch(assetID, parent, params);
+           mc = flax.ObjectPool.get(assetsFile,clsName,assetID).fetch(assetID, parent, params);
        }else{
            if(mcCls.create) mc = mcCls.create(assetsFile, assetID);
            else mc = new mcCls(assetsFile, assetID);
@@ -98,12 +98,12 @@ lg.AssetsManager = cc.Class.extend({
    },
     /**
      * Clone a new display from the target, if fromPool = true, it'll be fetched from the pool
-     * It only supports lg.TimeLine or its sub classes
+     * It only supports flax.FlaxSprite or its sub classes
      * */
     cloneDisplay:function(target, fromPool, autoAdd)
     {
-        if(!(target instanceof lg.TimeLine)) {
-            throw "cloneDisplay only support lg.TimeLine type!"
+        if(!(target instanceof flax.FlaxSprite)) {
+            throw "cloneDisplay only support flax.FlaxSprite type!"
         }
         var obj = this.createDisplay(target.assetsFile, target.assetID, target.clsName, fromPool, autoAdd ? target.parent : null);
         if(autoAdd) obj.setPosition(target.getPosition());
@@ -157,8 +157,8 @@ lg.AssetsManager = cc.Class.extend({
                 {
                     displayNames.push(dName);
                     dDefine = displays[dName];
-                    dDefine.anchors = this._parseFrames(dDefine.anchors, lg.Anchor);
-                    dDefine.colliders = this._parseFrames(dDefine.colliders, lg.Collider);
+                    dDefine.anchors = this._parseFrames(dDefine.anchors, flax.Anchor);
+                    dDefine.colliders = this._parseFrames(dDefine.colliders, flax.Collider);
                     this.displayDefineCache[assetsFile + dName] = dDefine;
                     this._parseSubAnims(assetsFile, dName);
                 }
@@ -180,8 +180,8 @@ lg.AssetsManager = cc.Class.extend({
                 mc.anchorX = mcDefine.anchorX;
                 mc.anchorY = mcDefine.anchorY;
                 mc.rect = this._strToRect(mcDefine.rect);
-                mc.anchors = this._parseFrames(mcDefine.anchors, lg.Anchor);
-                mc.colliders = this._parseFrames(mcDefine.colliders, lg.Collider);
+                mc.anchors = this._parseFrames(mcDefine.anchors, flax.Anchor);
+                mc.colliders = this._parseFrames(mcDefine.colliders, flax.Collider);
                 mc.children = {};
                 var childDefine;
                 var childrenDefine = mcDefine.children;
@@ -336,14 +336,14 @@ lg.AssetsManager = cc.Class.extend({
     }
 });
 
-lg.AssetsManager.create = function()
+flax.AssetsManager.create = function()
 {
-    var am = new lg.AssetsManager();
+    var am = new flax.AssetsManager();
     am.init();
     return am;
 };
 
-lg._flaxLoader = {
+flax._flaxLoader = {
     load : function(realUrl, url, res, cb){
         cc.loader.loadBinary(realUrl, function(err, data){
             var zlib = new Zlib.RawInflate(data);
@@ -361,7 +361,7 @@ lg._flaxLoader = {
             var pngUrl = cc.path.changeBasename(realUrl, ".png");
             //hadle json
             cc.loader.cache[jsonUrl] = JSON.parse(data[0]);
-            lg.assetsManager.addAssets(realUrl);
+            flax.assetsManager.addAssets(realUrl);
             //handle image
             var image = new Image();
             image.src = keyWord+data[1];
@@ -376,5 +376,5 @@ lg._flaxLoader = {
 //the uncompression takes too much time to handle, so you'd beter use it in mobile.
 // and in JSB it is not support, not use tow
 if(!cc.sys.isNative){
-    cc.loader.register(["flax"], lg._flaxLoader);
+    cc.loader.register(["flax"], flax._flaxLoader);
 }

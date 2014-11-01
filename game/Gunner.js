@@ -1,15 +1,15 @@
 /**
  * Created by long on 14-4-24.
  */
-var lg = lg || {};
+var flax = flax || {};
 
-lg.GunnerCamp = {
+flax.GunnerCamp = {
     player:"Player",
     enemy:"Enemy"
 };
-lg._gunnerDefine = {
+flax._gunnerDefine = {
     camp:null,//Player or Enemy?
-    _gunParam:null,//see lg.GunParam, remember the anchors, ["weapon1","weapon2"]
+    _gunParam:null,//see flax.GunParam, remember the anchors, ["weapon1","weapon2"]
     targets:null,//the targets array of the enemy
     aimTarget:null,//the target the guns will aimed to
     alwaysBind:true,//if the gun always bind to the anchor every frame
@@ -47,7 +47,7 @@ lg._gunnerDefine = {
         while(++i < n)
         {
             gunAnchor = param.gunAnchors[i];
-            gun = lg.Gun.create(this._gunParam);
+            gun = flax.Gun.create(this._gunParam);
             if(this.bindAnchor(gunAnchor, gun, this.alwaysBind)) {
                 gun.owner = this;
                 gun.name = gunAnchor;
@@ -161,35 +161,35 @@ lg._gunnerDefine = {
     }
 };
 
-lg.Gunner = lg.Animator.extend(lg._gunnerDefine);
-lg.MCGunner = lg.MovieClip.extend(lg._gunnerDefine);
+flax.Gunner = flax.Animator.extend(flax._gunnerDefine);
+flax.MCGunner = flax.MovieClip.extend(flax._gunnerDefine);
 
-lg.addModule(lg.Gunner, lg.HealthModule, false);
-lg.addModule(lg.MCGunner, lg.HealthModule, false);
+flax.addModule(flax.Gunner, flax.HealthModule, false);
+flax.addModule(flax.MCGunner, flax.HealthModule, false);
 
-window._p = lg.Gunner.prototype;
+window._p = flax.Gunner.prototype;
 
 _p.gunParam;
 cc.defineGetterSetter(_p, "gunParam", _p.getGunParam, _p.setGunParam);
 
-window._p = lg.MCGunner.prototype;
+window._p = flax.MCGunner.prototype;
 
 _p.gunParam;
 cc.defineGetterSetter(_p, "gunParam", _p.getGunParam, _p.setGunParam);
 
 delete window._p;
 
-lg.Gunner.create = function(assetsFile, assetID)
+flax.Gunner.create = function(assetsFile, assetID)
 {
-    var h = new lg.Gunner(assetsFile, assetID);
-    h.clsName = "lg.Gunner";
+    var h = new flax.Gunner(assetsFile, assetID);
+    h.clsName = "flax.Gunner";
     return h;
 };
 
-lg.MCGunner.create = function(assetsFile, assetID)
+flax.MCGunner.create = function(assetsFile, assetID)
 {
-    var h = new lg.MCGunner(assetsFile, assetID);
-    h.clsName = "lg.MCGunner";
+    var h = new flax.MCGunner(assetsFile, assetID);
+    h.clsName = "flax.MCGunner";
     return h;
 };
 

@@ -1,16 +1,16 @@
 /**
  * Created by long on 14-5-7.
  */
-var lg = lg || {};
-lg.ProgressBarType = {
+var flax = flax || {};
+flax.ProgressBarType = {
     HORIZONTAL:"horizontal",
     VERTICAL:"vertical",
     RADIAL:"radial"
 };
-lg.ProgressBar = lg.Animator.extend({
+flax.ProgressBar = flax.Animator.extend({
     noOpacity:true,
     pBar:null,
-    _type:lg.ProgressBarType.HORIZONTAL,
+    _type:flax.ProgressBarType.HORIZONTAL,
     _reversed:false,
     _tween:null,
     onEnter:function()
@@ -89,7 +89,7 @@ lg.ProgressBar = lg.Animator.extend({
     _updatePBar:function()
     {
         if(this.pBar == null) return;
-        if(this._type == lg.ProgressBarType.RADIAL) {
+        if(this._type == flax.ProgressBarType.RADIAL) {
             //In version 3.0 alpha called cc.PROGRESS_TIMER_TYPE_RADIAL,  3.0 rc1 called cc.ProgressTimer.TYPE_RADIAL
             this.pBar.type = 0;
             this.pBar.setReverseDirection(this._reversed);
@@ -97,7 +97,7 @@ lg.ProgressBar = lg.Animator.extend({
         }else{
             //In version 3.0 alpha called cc.PROGRESS_TIMER_TYPE_BAR,  3.0 rc1 called cc.ProgressTimer.TYPE_BAR
             this.pBar.type = 1;
-            var isHorizontal = this._type == lg.ProgressBarType.HORIZONTAL;
+            var isHorizontal = this._type == flax.ProgressBarType.HORIZONTAL;
             var mid = cc.p(0, 0);
             var cRate = cc.p(isHorizontal ? 1: 0, isHorizontal ? 0 : 1);
             if(this._reversed){
@@ -109,14 +109,14 @@ lg.ProgressBar = lg.Animator.extend({
         }
     }
 });
-lg.ProgressBar.create = function(assetsFile, assetID)
+flax.ProgressBar.create = function(assetsFile, assetID)
 {
-    var p = new lg.ProgressBar(assetsFile, assetID);
-    p.clsName = "lg.ProgressBar";
+    var p = new flax.ProgressBar(assetsFile, assetID);
+    p.clsName = "flax.ProgressBar";
     return p;
 };
 
-window._p = lg.ProgressBar.prototype;
+window._p = flax.ProgressBar.prototype;
 
 /** @expose */
 _p.percentage;

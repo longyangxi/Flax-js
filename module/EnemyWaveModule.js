@@ -1,7 +1,7 @@
 /**
  * Created by long on 14-7-11.
  */
-var lg = lg || {};
+var flax = flax || {};
 /**
  * var waves = [{types:["enemy1","enemy2"],count:5,interval:[3,5],gap:5},
  *             {types:["enemy1","enemy2"],count:5,interval:[3,5],gap:5},
@@ -9,7 +9,7 @@ var lg = lg || {};
  *             ...]
  * Set waves and waveAssetJson, if need, override the _doCreateEnemy function
  * */
-lg.EnemyWaveModule = {
+flax.EnemyWaveModule = {
     waveAssetJson:null,
     waves:null,
     onWaveBegin:null,
@@ -63,11 +63,11 @@ lg.EnemyWaveModule = {
     _createWaveEnemy:function()
     {
         if(this.waveOver || this.wavePaused) return;
-        var assetID = lg.getRandomInArray(this._waveDefine.types);
+        var assetID = flax.getRandomInArray(this._waveDefine.types);
         var enemy = this._doCreateEnemy(assetID);
         this.onEnemyIn.dispatch(enemy);
         if(++this._enemyCount < this._waveDefine.count){
-            var interval = lg.randInt(parseInt(this._waveDefine.interval[0]), parseInt(this._waveDefine.interval[1]));
+            var interval = flax.randInt(parseInt(this._waveDefine.interval[0]), parseInt(this._waveDefine.interval[1]));
             this.scheduleOnce(function(){
                 this._createWaveEnemy();
             },interval);
@@ -79,7 +79,7 @@ lg.EnemyWaveModule = {
         }
     },
     _doCreateEnemy:function(assetID){
-        if(this.waveAssetJson) lg.assetsManager.createDisplay(this.waveAssetJson, assetID, null, true, this.batchCanvas, {x: this.x, y: this.y});
+        if(this.waveAssetJson) flax.assetsManager.createDisplay(this.waveAssetJson, assetID, null, true, this.batchCanvas, {x: this.x, y: this.y});
         //override this function yourself
     }
 }

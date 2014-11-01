@@ -2,9 +2,9 @@
  * Created by long on 14-2-21.
  */
 
-var lg = lg || {};
+var flax = flax || {};
 
-lg.TiledImage = cc.SpriteBatchNode.extend({
+flax.TiledImage = cc.SpriteBatchNode.extend({
     tileMap:null,
     tileWidthOffset: -1,
     tileHeightOffset:-1,
@@ -17,7 +17,7 @@ lg.TiledImage = cc.SpriteBatchNode.extend({
     init:function(fileImage, capacity)
     {
         this._super(fileImage, capacity);
-        this.tileMap = lg.TileMap.create("tile_image_"+lg.randInt(0, 1000));
+        this.tileMap = flax.TileMap.create("tile_image_"+flax.randInt(0, 1000));
         return true;
     },
     setTileSource:function(assetsFile, assetID)
@@ -26,9 +26,9 @@ lg.TiledImage = cc.SpriteBatchNode.extend({
         this._assetsFile = assetsFile;
         this._taID = assetID;
 
-        this._pool = lg.ObjectPool.get(assetsFile, "lg.Animator");
+        this._pool = flax.ObjectPool.get(assetsFile, "flax.Animator");
 
-        var tile = lg.assetsManager.createDisplay(this._assetsFile, this._taID);
+        var tile = flax.assetsManager.createDisplay(this._assetsFile, this._taID);
         var size = tile.getContentSize();
         this.tileMap.setTileSize(size.width + this.tileWidthOffset, size.height + this.tileHeightOffset);
 
@@ -93,9 +93,9 @@ lg.TiledImage = cc.SpriteBatchNode.extend({
     }
 });
 
-lg.TiledImage.create = function(assetsFile, assetID, minWidth, minHeight)
+flax.TiledImage.create = function(assetsFile, assetID, minWidth, minHeight)
 {
-    var ts = new lg.TiledImage();
+    var ts = new flax.TiledImage();
     var imgFile = cc.path.changeBasename(assetsFile, ".png");
     if(ts.init(imgFile, 10))
     {

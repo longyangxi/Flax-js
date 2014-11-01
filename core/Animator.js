@@ -1,16 +1,16 @@
 /**
  * Created by long on 14-2-1.
  */
-var lg = lg || {};
+var flax = flax || {};
 
-lg.Animator = lg.TimeLine.extend({
+flax.Animator = flax.FlaxSprite.extend({
     frameNames:null,
     onNewSheet:function()
     {
         var startFrame = this.define.start;
         var endFrame = this.define.end;
 
-        this.frameNames = lg.assetsManager.getFrameNames(this.assetsFile, startFrame, endFrame);
+        this.frameNames = flax.assetsManager.getFrameNames(this.assetsFile, startFrame, endFrame);
         this.totalFrames = this.frameNames.length;
         if(this.totalFrames == 0)
         {
@@ -25,13 +25,13 @@ lg.Animator = lg.TimeLine.extend({
     },
     getDefine:function()
     {
-       return lg.assetsManager.getDisplayDefine(this.assetsFile, this.assetID);
+       return flax.assetsManager.getDisplayDefine(this.assetsFile, this.assetID);
     }
 });
 
-lg.Animator.create = function(assetsFile, assetID)
+flax.Animator.create = function(assetsFile, assetID)
 {
-    var mc = new lg.Animator(assetsFile, assetID);
-    mc.clsName = "lg.Animator";
+    var mc = new flax.Animator(assetsFile, assetID);
+    mc.clsName = "flax.Animator";
     return mc;
 };

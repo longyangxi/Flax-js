@@ -1,9 +1,9 @@
 /**
  * Created by long on 14-2-22.
  */
-var lg = lg || {};
+var flax = flax || {};
 
-lg.GunParam = cc.Class.extend({
+flax.GunParam = cc.Class.extend({
     bulletAssets:null,//the assets file of the bullet
     bulletID:null,//the id of the bullet asset
     targetMap:null,//the TileMap name of the target to shoot
@@ -28,16 +28,16 @@ lg.GunParam = cc.Class.extend({
     isMissle:false//todo, if it's missile
 });
 
-lg.GunParam.create = function(param)
+flax.GunParam.create = function(param)
 {
-    var gp = new lg.GunParam();
+    var gp = new flax.GunParam();
     //fixed the speed == 0 bug
     if(param.speed == 0) param.speed = 0.001;
-    lg.copyProperties(param, gp);
+    flax.copyProperties(param, gp);
     return gp;
 }
 
-lg.Gun = cc.Node.extend({
+flax.Gun = cc.Node.extend({
     owner:null,
     param:null,
     aimTarget:null,
@@ -50,7 +50,7 @@ lg.Gun = cc.Node.extend({
         if(this._firing) return;
         this._firing = true;
 
-        this._canvas = lg.BulletCanvas.fetch(this.param.bulletAssets);
+        this._canvas = flax.BulletCanvas.fetch(this.param.bulletAssets);
 
         if(this.param.waveInterval <= 0 || this.param.countInWave < 1) {
             this.schedule(this.shootOnce, this.param.interval);
@@ -69,7 +69,7 @@ lg.Gun = cc.Node.extend({
     updateParam:function(param)
     {
         if(param == null) return;
-        lg.copyProperties(param, this.param);
+        flax.copyProperties(param, this.param);
         this.end();
         this.start();
     },
@@ -90,15 +90,15 @@ lg.Gun = cc.Node.extend({
 
         var pos = this.parent.convertToWorldSpace(this.getPosition());
         if(this.aimTarget){
-            var angle = lg.getAngle(lg.getPosition(this, true), this.aimTarget.center);
+            var angle = flax.getAngle(flax.getPosition(this, true), this.aimTarget.center);
             this.rotation = angle - this.param.angleOffset - this.parent.rotation;
         }
         pos = this._canvas.convertToNodeSpace(pos);
-        var rot = lg.getRotation(this, true);
+        var rot = flax.getRotation(this, true);
         var i = -1;
         var r = 0;
         var d = 0;
-        var ints  = lg.createDInts(this.param.count);
+        var ints  = flax.createDInts(this.param.count);
         while(++i < this.param.count)
         {
             d = ints[i];
@@ -106,7 +106,7 @@ lg.Gun = cc.Node.extend({
             this._canvas.addBullet(r, pos, this.param, this.owner);
         }
         this._showFireEffect(pos, r);
-        if(this.param.fireSound) lg.playSound(this.param.fireSound);
+        if(this.param.fireSound) flax.playSound(this.param.fireSound);
     },
     _createWave:function()
     {
@@ -116,7 +116,7 @@ lg.Gun = cc.Node.extend({
     _showFireEffect:function(pos, rot)
     {
         if(this.param.fireEffectID == null || this.param.fireEffectID == "") return;
-        var fireEffect = lg.assetsManager.createDisplay(this.param.bulletAssets, this.param.fireEffectID, null, true, this._canvas);
+        var fireEffect = flax.assetsManager.createDisplay(this.param.bulletAssets, this.param.fireEffectID, null, true, this._canvas);
         fireEffect.zIndex = 999;
         fireEffect.autoDestroyWhenOver = true;
         fireEffect.setPosition(pos);
@@ -124,7 +124,7 @@ lg.Gun = cc.Node.extend({
         fireEffect.gotoAndPlay(0);
     }
 });
-lg.BulletCanvas = cc.SpriteBatchNode.extend({
+flax.BulletCanvas = cc.SpriteBatchNode.extend({
     //out of the rect, the bullet will auto destroyed
     stageRect:null,
     assetsFile:null,
@@ -146,19 +146,19 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
     },
     addBullet:function(rotation, position, param, owner){
         if(this.parent == null) {
-            cc.log("Please add the bullet canvas to the stage: container.addChild(lg.BulletCanvas.fetch('"+this.assetsFile+"'));");
+            cc.log("Please add the bullet canvas to the stage: container.addChild(flax.BulletCanvas.fetch('"+this.assetsFile+"'));");
             return;
         }
-        if(!(param instanceof lg.GunParam)) param = lg.GunParam.create(param);
-        var b = lg.assetsManager.createDisplay(param.bulletAssets, param.bulletID, null, true, this);
+        if(!(param instanceof flax.GunParam)) param = flax.GunParam.create(param);
+        var b = flax.assetsManager.createDisplay(param.bulletAssets, param.bulletID, null, true, this);
         b.owner = owner;
         b.param = param;
         if(owner && owner.targets) b.targets = owner.targets;
-        if(param.targetMap) b.targetMap = lg.getTileMap(param.targetMap);
+        if(param.targetMap) b.targetMap = flax.getTileMap(param.targetMap);
         b.fps = param.fps;
         b.__physicalShooted = false;
         //if it's MovieClip
-        if(b instanceof lg.MovieClip){
+        if(b instanceof flax.MovieClip){
             b.__isMovieClip = true;
             b.autoPlayChildren = true;
             b.autoDestroyWhenOver = true;
@@ -187,7 +187,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
         var dmg = param.damage;
         if(dmg instanceof Array){
             if(dmg.length == 1) dmg = dmg[0];
-            else if(dmg.length >= 2) dmg = lg.randInt(dmg[0], dmg[1]);
+            else if(dmg.length >= 2) dmg = flax.randInt(dmg[0], dmg[1]);
         }
         b.damage = dmg;
 
@@ -230,16 +230,16 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
                 b.__vy = b.__vy + b.param.gravityY*delta;
                 b.x += b.__vx*delta;
                 b.y += b.__vy*delta;
-                b.rotation = lg.getAngle1(b.__vx, b.__vy, true) - b.param.angleOffset;
+                b.rotation = flax.getAngle1(b.__vx, b.__vy, true) - b.param.angleOffset;
             }
-            rect = lg.getRect(b, true);
+            rect = flax.getRect(b, true);
             hitted = false;
             targets = null;
             var outOfBounds = !cc.rectIntersectsRect(this.stageRect, rect);
             if(!outOfBounds){
                 targets = this._checkHittedTarget(b, rect, false);
                 if(targets && targets.length){
-                    pos = lg.getPosition(b, true);
+                    pos = flax.getPosition(b, true);
                     var radius = b.param.damageRadius;
                     if(radius > 0){
                         rect = cc.rect(pos.x - radius/2, pos.y - radius/2, radius, radius);
@@ -264,18 +264,18 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
         else if(b.targetMap) targets = b.targetMap.getCoveredTiles1(rect, true);
         if(!targets || !targets.length) return hittedTargets;
 
-        var rot = lg.getRotation(b, true);
+        var rot = flax.getRotation(b, true);
         var i = -1;
         while(++i < targets.length) {
             target = targets[i];
-            if(b.owner && (target == b.owner || lg.isChildOf(b.owner, target) || target.dead === true || (b.owner.camp != null && target.camp == b.owner.camp))) continue;
+            if(b.owner && (target == b.owner || flax.isChildOf(b.owner, target) || target.dead === true || (b.owner.camp != null && target.camp == b.owner.camp))) continue;
             //hit the target
             if(b.__isMovieClip){
                 var children = b.children;
                 var num = children.length;
                 while(num--){
                     var cb = children[num];
-                    rot = lg.getRotation(cb, true);
+                    rot = flax.getRotation(cb, true);
                     if(cb.mainCollider.checkCollision(target.mainCollider)) {
                         if(target.onHit) target.dead = target.onHit(b);
                         if(target.hurtable !== false) this._showHitEffect(b, rot, b.convertToWorldSpace(cb.getPosition()));
@@ -307,7 +307,7 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
     _showHitEffect:function(bullet, rot, pos)
     {
         if(bullet.param.hitEffectID == null || bullet.param.hitEffectID == "") return;
-        var hitEffect = lg.assetsManager.createDisplay(bullet.param.bulletAssets, bullet.param.hitEffectID, null, true, this);
+        var hitEffect = flax.assetsManager.createDisplay(bullet.param.bulletAssets, bullet.param.hitEffectID, null, true, this);
         hitEffect.zIndex = 999;
         hitEffect.autoDestroyWhenOver = true;
         hitEffect.setPosition(pos || bullet.getPosition());
@@ -316,30 +316,30 @@ lg.BulletCanvas = cc.SpriteBatchNode.extend({
     }
 });
 
-lg.BulletCanvas.fetch = function (assetsFile) {
-    if(lg._bulletCanvases[assetsFile]) return lg._bulletCanvases[assetsFile];
+flax.BulletCanvas.fetch = function (assetsFile) {
+    if(flax._bulletCanvases[assetsFile]) return flax._bulletCanvases[assetsFile];
     var texturePath = cc.path.changeBasename(assetsFile, ".png");
-    var c = new lg.BulletCanvas(texturePath, 100);
+    var c = new flax.BulletCanvas(texturePath, 100);
     c.assetsFile = assetsFile;
-    lg._bulletCanvases[assetsFile] = c;
+    flax._bulletCanvases[assetsFile] = c;
     return c;
 };
-lg._bulletCanvases = {};
-lg.BulletCanvas.reset = function(){
-    for(var k in lg._bulletCanvases){
-        lg._bulletCanvases[k].removeFromParent(true);
+flax._bulletCanvases = {};
+flax.BulletCanvas.reset = function(){
+    for(var k in flax._bulletCanvases){
+        flax._bulletCanvases[k].removeFromParent(true);
     }
-    lg._bulletCanvases = {};
+    flax._bulletCanvases = {};
 }
 
-lg.Gun.create = function(param)
+flax.Gun.create = function(param)
 {
     if(param == null) {
-        cc.log("Please give me a param defiled like: lg.GunParam!");
+        cc.log("Please give me a param defiled like: flax.GunParam!");
         return null;
     }
-    param = lg.GunParam.create(param);
-    var gun = new lg.Gun();
+    param = flax.GunParam.create(param);
+    var gun = new flax.Gun();
     gun.param = param;
     gun.init();
     return gun;

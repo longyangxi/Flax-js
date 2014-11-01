@@ -24,13 +24,13 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-var lg = lg || {};
-lg.Preloader = cc.Scene.extend({
+var flax = flax || {};
+flax.Preloader = cc.Scene.extend({
     _interval : null,
     _length : 0,
     _count : 0,
     _label : null,
-    _className:"lg.Preloader",
+    _className:"flax.Preloader",
     _logo:null,
     init : function(){
         var self = this;
@@ -41,7 +41,7 @@ lg.Preloader = cc.Scene.extend({
 
         //logo
         var loadingImg = cc.game.config.loading;
-        if(loadingImg && lg.isImageFile(loadingImg)){
+        if(loadingImg && flax.isImageFile(loadingImg)){
             cc.loader.load(loadingImg, function(){
                 self._logo = cc.Sprite.create(loadingImg);
                 self._logo.setPosition(centerPos);
@@ -71,8 +71,8 @@ lg.Preloader = cc.Scene.extend({
             swallowTouches: false,
             onTouchBegan:function(touch, event)
             {
-                if(cc.rectContainsPoint(lg.getRect(logo, true), touch.getLocation())){
-                    lg.goHomeUrl();
+                if(cc.rectContainsPoint(flax.getRect(logo, true), touch.getLocation())){
+                    flax.goHomeUrl();
                 }
             }
         })
@@ -123,7 +123,7 @@ lg.Preloader = cc.Scene.extend({
     }
 });
 
-lg.preload = function(res, callBack)
+flax.preload = function(res, callBack)
 {
     if(res == null || res.length == 0) {
         callBack();
@@ -141,7 +141,7 @@ lg.preload = function(res, callBack)
     if(hasLoaded){
         callBack();
     }else{
-        var loaderScene = new lg.Preloader();
+        var loaderScene = new flax.Preloader();
         loaderScene.init();
         loaderScene.initWithResources(res, callBack);
 

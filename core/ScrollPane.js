@@ -1,9 +1,9 @@
 /**
  * Created by long on 14-6-6.
  */
-var lg = lg || {};
+var flax = flax || {};
 
-lg._scrollPaneDefine = {
+flax._scrollPaneDefine = {
     _viewRect:null,
     onEnter:function(){
         this._super();
@@ -13,7 +13,7 @@ lg._scrollPaneDefine = {
             cc.log("If you want me scrollable, please set collider__view for me!");
             return;
         }
-        lg.inputManager.addListener(null, this._startDrag, InputType.press, this);
+        flax.inputManager.addListener(null, this._startDrag, InputType.press, this);
         //todo, mask the content
 //        var stencil = cc.DrawNode.create();
 //        var rectangle = [cc.p(0, 0),cc.p(this._viewRect.width, 0),cc.p(this._viewRect.width, this._viewRect.height),cc.p(0, this._viewRect.height)];
@@ -46,8 +46,8 @@ lg._scrollPaneDefine = {
     },
     _startDrag:function(touch, event){
         this.scheduleOnce(function(){
-            lg.inputManager.addListener(null, this._drag, InputType.move,this);
-            lg.inputManager.addListener(null, this._stopDrag, InputType.up, this);
+            flax.inputManager.addListener(null, this._drag, InputType.move,this);
+            flax.inputManager.addListener(null, this._stopDrag, InputType.up, this);
         },0.01);
     },
     _drag:function(touch, event){
@@ -63,8 +63,8 @@ lg._scrollPaneDefine = {
         this.y = newPos.y;
     },
     _stopDrag:function(touch, event){
-        lg.inputManager.removeListener(null, this._drag, InputType.move);
-        lg.inputManager.removeListener(null, this._stopDrag, InputType.up);
+        flax.inputManager.removeListener(null, this._drag, InputType.move);
+        flax.inputManager.removeListener(null, this._stopDrag, InputType.up);
     },
     _validatePos:function(x, y){
         x = Math.max(this._viewRect.x + this._viewRect.width - this.width, x);
@@ -76,14 +76,14 @@ lg._scrollPaneDefine = {
         return cc.p(x, y);
     }
 };
-lg.ScrollPane = lg.MovieClip.extend(lg._scrollPaneDefine);
-lg.ScrollPane.create = function(assetsFile, assetID){
-    var s = new lg.ScrollPane(assetsFile, assetID);
+flax.ScrollPane = flax.MovieClip.extend(flax._scrollPaneDefine);
+flax.ScrollPane.create = function(assetsFile, assetID){
+    var s = new flax.ScrollPane(assetsFile, assetID);
     return s;
 }
 
-lg.ScrollPane1 = lg.Animator.extend(lg._scrollPaneDefine);
-lg.ScrollPane1.create = function(assetsFile, assetID){
-    var s = new lg.ScrollPane1(assetsFile, assetID);
+flax.ScrollPane1 = flax.Animator.extend(flax._scrollPaneDefine);
+flax.ScrollPane1.create = function(assetsFile, assetID){
+    var s = new flax.ScrollPane1(assetsFile, assetID);
     return s;
 }

@@ -2,9 +2,9 @@
  * Created by long on 14-2-14.
  */
 
-var lg = lg || {};
+var flax = flax || {};
 
-lg.MovieClip = lg.TimeLine.extend({
+flax.MovieClip = flax.FlaxSprite.extend({
     autoPlayChildren:false,
     noOpacity:true,
     _namedChildren:null,
@@ -62,13 +62,13 @@ lg.MovieClip = lg.TimeLine.extend({
                 if(child == null){
                     //hadle the label text
                     if(childDefine.text != null){
-                        child = lg.Label.create(this.assetsFile, childDefine);
+                        child = flax.Label.create(this.assetsFile, childDefine);
                         if(child.__isTTF){
                             offsetX = childDefine.width/2;
                             offsetY = -childDefine.height/2;
                         }
                     }else{
-                        child = lg.assetsManager.createDisplay(this.assetsFile, childDefine["class"], null, true);
+                        child = flax.assetsManager.createDisplay(this.assetsFile, childDefine["class"], null, true);
                     }
                     child.name = childName;
                     this._namedChildren[childName] = child;
@@ -112,7 +112,7 @@ lg.MovieClip = lg.TimeLine.extend({
         if(this.autoPlayChildren) {
             for(var key in this._namedChildren) {
                 var child = this._namedChildren[key];
-                if(child instanceof lg.TimeLine) {
+                if(child instanceof flax.FlaxSprite) {
                     child.stop();
                 }
             }
@@ -124,7 +124,7 @@ lg.MovieClip = lg.TimeLine.extend({
         if(this.autoPlayChildren) {
             for(var key in this._namedChildren) {
                 var child = this._namedChildren[key];
-                if(child instanceof lg.TimeLine) {
+                if(child instanceof flax.FlaxSprite) {
                     child.play();
                 }
             }
@@ -136,7 +136,7 @@ lg.MovieClip = lg.TimeLine.extend({
     },
     getDefine:function()
     {
-        var define = lg.assetsManager.getMc(this.assetsFile, this.assetID);
+        var define = flax.assetsManager.getMc(this.assetsFile, this.assetID);
         return define;
     },
     getChildOfName:function(name, nest)
@@ -167,13 +167,13 @@ lg.MovieClip = lg.TimeLine.extend({
     getLabelText:function(labelName, ifNest)
     {
         var label = this.getChildOfName(labelName, ifNest === undefined ? true : ifNest);
-        if(label && (label instanceof lg.Label)) return label.getString();
+        if(label && (label instanceof flax.Label)) return label.getString();
         return null;
     },
     setLabelText:function(labelName, text, ifNest)
     {
         var label = this.getChildOfName(labelName, ifNest === undefined ? true : ifNest);
-        if(label && (label instanceof lg.Label)) {
+        if(label && (label instanceof flax.Label)) {
             label.setString(text);
             return label;
         }
@@ -199,16 +199,16 @@ lg.MovieClip = lg.TimeLine.extend({
         this.autoPlayChildren = false;
         for(var key in this._namedChildren) {
             var child = this._namedChildren[key];
-            if(child instanceof lg.TimeLine) {
+            if(child instanceof flax.FlaxSprite) {
                 child.gotoAndStop(0);
             }
         }
 
     }
 });
-lg.MovieClip.create = function(assetsFile, assetID)
+flax.MovieClip.create = function(assetsFile, assetID)
 {
-    var mc = new lg.MovieClip(assetsFile, assetID);
-    mc.clsName = "lg.MovieClip";
+    var mc = new flax.MovieClip(assetsFile, assetID);
+    mc.clsName = "flax.MovieClip";
     return mc;
 };

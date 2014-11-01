@@ -1,7 +1,7 @@
 /**
  * Created by long on 14-2-2.
  */
-var lg = lg || {};
+var flax = flax || {};
 ALL_DIRECTONS  = ["UP","DOWN","LEFT","RIGHT","LEFT_UP","RIGHT_UP","RIGHT_DOWN","LEFT_DOWN"];
 ALL_DIRECTONS0 = ["UP","DOWN","LEFT","RIGHT","LEFT_UP","LEFT_DOWN"];
 ALL_DIRECTONS1 = ["UP","DOWN","LEFT","RIGHT","RIGHT_UP","RIGHT_DOWN"];
@@ -17,7 +17,7 @@ var TileValue = TileValue || {
     BLOCK5:5
 };
 
-lg.TileMap = cc.Class.extend({
+flax.TileMap = cc.Class.extend({
     id:"default",
     offsetX:0,
     offsetY:0,
@@ -99,24 +99,24 @@ lg.TileMap = cc.Class.extend({
         return {width:this._mapWidth, height:this._mapHeight};
     },
     showDebugGrid:function(){
-        if(lg.currentScene == null) return;
-        if(lg.tileMapCanvas) lg.tileMapCanvas.clear();
+        if(flax.currentScene == null) return;
+        if(flax.tileMapCanvas) flax.tileMapCanvas.clear();
         else{
-            lg.tileMapCanvas = cc.DrawNode.create();
-            lg.currentScene.addChild(lg.tileMapCanvas, 100000);
+            flax.tileMapCanvas = cc.DrawNode.create();
+            flax.currentScene.addChild(flax.tileMapCanvas, 100000);
         }
-        lg.tileMapCanvas.setPosition(this.offsetX, this.offsetY);
+        flax.tileMapCanvas.setPosition(this.offsetX, this.offsetY);
         for(var i = 0; i <= this._mapWidth; i++){
-            lg.tileMapCanvas.drawSegment(cc.p(i*this._tileWidth, 0), cc.p(i*this._tileWidth, this._tileHeight*this._mapHeight), 1, cc.color(255,0,0,255));
+            flax.tileMapCanvas.drawSegment(cc.p(i*this._tileWidth, 0), cc.p(i*this._tileWidth, this._tileHeight*this._mapHeight), 1, cc.color(255,0,0,255));
         }
         for(var j = 0; j <= this._mapHeight; j++){
-            lg.tileMapCanvas.drawSegment(cc.p(0, j*this._tileHeight), cc.p(this._tileWidth*this._mapWidth, j*this._tileHeight), 1, cc.color(255,0,0,255));
+            flax.tileMapCanvas.drawSegment(cc.p(0, j*this._tileHeight), cc.p(this._tileWidth*this._mapWidth, j*this._tileHeight), 1, cc.color(255,0,0,255));
         }
     },
     showDebugTile:function(tx, ty, color){
         var pos = this.getTiledPosition(tx, ty);
         if(color == null) color = cc.color(0, 255, 0, 128);
-        lg.drawRect(cc.rect(pos.x - this._tileWidth/2, pos.y - this._tileHeight/2, this._tileWidth, this._tileHeight),1, color, color);
+        flax.drawRect(cc.rect(pos.x - this._tileWidth/2, pos.y - this._tileHeight/2, this._tileWidth, this._tileHeight),1, color, color);
     },
     clear:function(removeChildren)
     {
@@ -168,7 +168,7 @@ lg.TileMap = cc.Class.extend({
      * */
     getCoveredTiles:function(sprite, returnObjects)
     {
-        var rect = lg.getRect(sprite, true);
+        var rect = flax.getRect(sprite, true);
         return this.getCoveredTiles1(rect, returnObjects);
     },
     /**
@@ -563,14 +563,14 @@ lg.TileMap = cc.Class.extend({
     }
 });
 
-lg.TileMap.create = function(id)
+flax.TileMap.create = function(id)
 {
-    var map = new lg.TileMap();
+    var map = new flax.TileMap();
     map.id = id;
     return map;
 };
 
-window._p = lg.TileMap.prototype;
+window._p = flax.TileMap.prototype;
 _p.tileSize;
 cc.defineGetterSetter(_p, "tileSize", _p.getTileSize);
 _p.mapSize;

@@ -1,9 +1,9 @@
 /**
  * Created by long on 14-2-22.
  */
-var lg = lg || {};
+var flax = flax || {};
 
-lg.ObjectPool = cc.Class.extend({
+flax.ObjectPool = cc.Class.extend({
     maxCount:100,
     _clsName:null,
     _cls:null,
@@ -18,7 +18,7 @@ lg.ObjectPool = cc.Class.extend({
             return false;
         }
         this._clsName = clsName;
-        this._cls = lg.nameToObject(clsName);
+        this._cls = flax.nameToObject(clsName);
         if(this._cls == null){
             cc.log("There is no class named: "+clsName);
             return false;
@@ -83,35 +83,35 @@ lg.ObjectPool = cc.Class.extend({
     }
 });
 
-lg.ObjectPool.all = {};
+flax.ObjectPool.all = {};
 
-lg.ObjectPool.create = function(assetsFile, clsName, maxCount)
+flax.ObjectPool.create = function(assetsFile, clsName, maxCount)
 {
-    var pool = new lg.ObjectPool();
+    var pool = new flax.ObjectPool();
     if(pool.init(assetsFile, clsName, maxCount)) {
         return pool;
     }
     return null;
 };
-lg.ObjectPool.get = function(assetsFile, clsName, id)
+flax.ObjectPool.get = function(assetsFile, clsName, id)
 {
-    if(clsName == null) clsName = "lg.Animator";
+    if(clsName == null) clsName = "flax.Animator";
     if(id == null) id = "";
     var key = assetsFile+clsName+id;
-    var pool = lg.ObjectPool.all[key];
+    var pool = flax.ObjectPool.all[key];
     if(pool == null){
-        pool = lg.ObjectPool.create(assetsFile, clsName);
+        pool = flax.ObjectPool.create(assetsFile, clsName);
         pool._extraID = id;
-        lg.ObjectPool.all[key] = pool;
+        flax.ObjectPool.all[key] = pool;
     }
     return pool;
 };
 
-lg.ObjectPool.release = function()
+flax.ObjectPool.release = function()
 {
-    for(var k in lg.ObjectPool.all){
-        lg.ObjectPool.all[k].release();
-        delete  lg.ObjectPool.all[k];
+    for(var k in flax.ObjectPool.all){
+        flax.ObjectPool.all[k].release();
+        delete  flax.ObjectPool.all[k];
     }
 };
 

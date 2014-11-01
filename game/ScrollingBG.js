@@ -2,9 +2,9 @@
  * Created by long on 14-2-27.
  */
 
-var lg = lg || {};
+var flax = flax || {};
 
-lg.ScrollingBG = cc.Node.extend({
+flax.ScrollingBG = cc.Node.extend({
     name:null,
     source:null,
     assetID:null,
@@ -30,25 +30,25 @@ lg.ScrollingBG = cc.Node.extend({
             //If it's a custom display
             if(this.assetID != null){
                 if(this._isTiled !== true){
-                    this.bg0 = lg.assetsManager.createDisplay(this.source, this.assetID);
-                    this.bg1 = lg.assetsManager.createDisplay(this.source, this.assetID);
+                    this.bg0 = flax.assetsManager.createDisplay(this.source, this.assetID);
+                    this.bg1 = flax.assetsManager.createDisplay(this.source, this.assetID);
                 }else{
-                    this.bg0 = lg.TiledImage.create(this.source, this.assetID);
-                    this.bg1 = lg.TiledImage.create(this.source, this.assetID);
+                    this.bg0 = flax.TiledImage.create(this.source, this.assetID);
+                    this.bg1 = flax.TiledImage.create(this.source, this.assetID);
                 }
             }else if(this.source){
-                //if it's a TimeLine
-                if(this.source instanceof lg.TimeLine){
+                //if it's a FlaxSprite
+                if(this.source instanceof flax.FlaxSprite){
                     if(this.source.parent) this.source.parent.addChild(this, this.source.zIndex);
                     this.name = this.source.name;
                     if(this.parent) this.parent[this.name] = this;
                     this.setPosition(this.source.getPosition());
-                    this.bg0 = lg.assetsManager.cloneDisplay(this.source);
-                    this.bg1 = lg.assetsManager.cloneDisplay(this.source);
+                    this.bg0 = flax.assetsManager.cloneDisplay(this.source);
+                    this.bg1 = flax.assetsManager.cloneDisplay(this.source);
                     this.source.destroy();
                 }
                 //If it's a image
-                else if(lg.isImageFile(this.source)){
+                else if(flax.isImageFile(this.source)){
                     this.bg0 = cc.Sprite.create(this.source);
                     this.bg1 = cc.Sprite.create(this.source);
                 }else {
@@ -135,9 +135,9 @@ lg.ScrollingBG = cc.Node.extend({
     }
 });
 
-lg.ScrollingBG.create = function(source, assetID, isTiled)
+flax.ScrollingBG.create = function(source, assetID, isTiled)
 {
-    var bg = new lg.ScrollingBG();
+    var bg = new flax.ScrollingBG();
     bg.source = source;
     bg.assetID = assetID;
     bg._isTiled = isTiled;
