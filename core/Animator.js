@@ -7,8 +7,8 @@ lg.Animator = lg.TimeLine.extend({
     frameNames:null,
     onNewSheet:function()
     {
-        var startFrame = this.define["start"];
-        var endFrame = this.define["end"];
+        var startFrame = this.define.start;
+        var endFrame = this.define.end;
 
         this.frameNames = lg.assetsManager.getFrameNames(this.assetsFile, startFrame, endFrame);
         this.totalFrames = this.frameNames.length;

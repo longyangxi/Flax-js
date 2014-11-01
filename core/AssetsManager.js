@@ -122,16 +122,15 @@ lg.AssetsManager = cc.Class.extend({
     },
     addAssets:function(assetsFile)
     {
-        if(assetsFile == null) {
-            cc.log("Assets File can't be null!");
-            return;
-        }
         if(typeof this.framesCache[assetsFile] !== "undefined") return false;
 
         var assetsFile1 = assetsFile;
         var ext = cc.path.extname(assetsFile)
         if(ext != ".plist" && ext != ".json") assetsFile1 = cc.path.changeBasename(assetsFile, ".json");
         var dict = cc.loader.getRes(assetsFile1);
+        if(dict == null){
+            throw "Make sure you have pre-loaded the resource: "+assetsFile;
+        }
         cc.spriteFrameCache.addSpriteFrames(assetsFile1);
 
         var frames = [];

@@ -37,7 +37,7 @@ lg._gunnerDefine = {
         this._gunParam = param;
         if(this.parent == null) return;
         if(param.gunAnchors == null){
-            cc.log("Pleas set the gunAnchors param!");
+            cc.log("Please set the gunAnchors param!");
             return;
         }
         var i = -1;

@@ -41,46 +41,52 @@ lg.Preloader = cc.Scene.extend({
 
         //logo
         var loadingImg = cc.game.config.loading;
-        if(loadingImg){
-            this._logo = cc.Sprite.create(loadingImg);
-            this._logo.setPosition(centerPos);
-            this.addChild(this._logo, 10);
+        if(loadingImg && lg.isImageFile(loadingImg)){
+            cc.loader.load(loadingImg, function(){
+                self._logo = cc.Sprite.create(loadingImg);
+                self._logo.setPosition(centerPos);
+                self.addChild(self._logo, 10);
+                if(!cc.sys.isNative){
+                    self.createLabel(cc.pSub(centerPos, cc.p(0,  self._logo.height/2 + 10)))
+                }
+                self.logoClick();
+            })
+        }else{
+            self.createLabel(centerPos);
         }
-
-        //loading percent
-        if(!cc.sys.isNative){
-            var label = self._label = cc.LabelTTF.create("Loading... 0%", "Arial", 14);
-            label.setColor(cc.color(38, 192, 216));
-            label.setPosition(cc.pAdd(centerPos, cc.p(0,  loadingImg ? (-cc.game.config.loadingHeight / 2 - 10) : 0)));
-            this.addChild(this._label, 10);
-        }
-
         return true;
     },
-
+    createLabel:function(pos){
+        var label = this._label = cc.LabelTTF.create("Loading...", "Arial", 16);
+        label.enableStroke(cc.color(51, 51, 51), 2);
+        label.setColor(cc.color(255, 255, 255));
+        label.setPosition(pos);
+        this.addChild(label, 10);
+    },
+    logoClick:function(){
+        //click logo to go
+        var logo = this._logo;
+        var listener = cc.EventListener.create({
+            event: cc.EventListener.TOUCH_ONE_BY_ONE,
+            swallowTouches: false,
+            onTouchBegan:function(touch, event)
+            {
+                if(cc.rectContainsPoint(lg.getRect(logo, true), touch.getLocation())){
+                    lg.goHomeUrl();
+                }
+            }
+        })
+        cc.eventManager.addListener(listener, this._logo);
+    },
     onEnter: function () {
         var self = this;
         cc.Node.prototype.onEnter.call(self);
         self.schedule(self._startLoading, 0.3);
-        //click logo to go
-        if(this._logo){
-            var listener = cc.EventListener.create({
-                event: cc.EventListener.TOUCH_ONE_BY_ONE,
-                swallowTouches: false,
-                onTouchBegan:function(touch, event)
-                {
-                    lg.goHomeUrl();
-                }
-            })
-            cc.eventManager.addListener(listener, this._logo);
-        }
     },
 
     onExit: function () {
         cc.Node.prototype.onExit.call(this);
-//        var tmpStr = "Loading... 0%";
-        var tmpStr = "Loaded";
-        if(this._label) this._label.setString(tmpStr);
+        if(this._label) this._label.setString("Loaded");
     },
 
     /**
@@ -99,10 +105,10 @@ lg.Preloader = cc.Scene.extend({
         self.unschedule(self._startLoading);
         var res = self.resources;
         self._length = res.length;
-        cc.loader.load(res, function(result, count){ self._count = count; }, function(){
+        cc.loader.load(res, function(result, count){ self._count = count;}, function(){
             self.cb();
         });
-        if(self._label) self.schedule(self._updatePercent);
+        self.schedule(self._updatePercent);
     },
 
     _updatePercent: function () {
@@ -111,6 +117,7 @@ lg.Preloader = cc.Scene.extend({
         var length = self._length;
         var percent = (count / length * 100) | 0;
         percent = Math.min(percent, 100);
+        if(self._label == null) return;
         self._label.setString("Loading... " + percent + "%");
         if(count >= length) self.unschedule(self._updatePercent);
     }
@@ -126,9 +133,9 @@ lg.preload = function(res, callBack)
     var i = -1;
     while(++i < res.length)
     {
-        if(lg._resourcesLoaded.indexOf(res[i]) == -1){
-            lg._resourcesLoaded.push(res[i]);
+        if(cc.loader.getRes(res[i]) == null) {
             hasLoaded = false;
+            break;
         }
     }
     if(hasLoaded){

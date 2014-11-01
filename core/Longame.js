@@ -22,7 +22,6 @@ lg.currentScene = null;
 lg.buttonSound = null;
 lg.frameInterval = 1/60;
 lg._scenesDict = {};
-lg._resourcesLoaded = [];
 lg._soundEnabled = true;
 lg._inited = false;
 lg._orientationTip = null;
