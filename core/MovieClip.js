@@ -4,6 +4,25 @@
 
 var flax = flax || {};
 
+flax.FrameData = cc.Class.extend({
+    x:0,
+    y:0,
+    rotation:0,
+    scaleX:1,
+    scaleY:1,
+    opacity:255,
+
+    ctor:function(data){
+        data = data.split(",");
+        this.x = parseFloat(data[0]);
+        this.y = parseFloat(data[1]);
+        this.rotation = parseFloat(data[2]);
+        this.scaleX = parseFloat(data[3]);
+        this.scaleY = parseFloat(data[4]);
+        this.opacity = Math.round(255*parseFloat(data[5]));
+    }
+});
+
 flax.MovieClip = flax.FlaxSprite.extend({
     autoPlayChildren:false,
     noOpacity:true,
@@ -48,13 +67,13 @@ flax.MovieClip = flax.FlaxSprite.extend({
     {
         var child;
         var childDefine;
-        var frameDefine;
+        var frameData;
         for(var childName in this.define.children)
         {
             childDefine = this.define.children[childName];
-            frameDefine = childDefine.frames[frame];
+            frameData = childDefine.frames[frame];
             child = this._namedChildren[childName];
-            if(frameDefine == null) {
+            if(frameData == null) {
                 if(child) child.visible = false;
             }else {
                 var offsetX = 0;
@@ -78,20 +97,16 @@ flax.MovieClip = flax.FlaxSprite.extend({
                     this[childName] = child;
                     this.onNewChild(child);
                 }
-                var x = frameDefine[0] + offsetX;
-                var y = frameDefine[1] + offsetY;
-                var rotation = frameDefine[2];
-                var scaleX = frameDefine[3];
-                var scaleY = frameDefine[4]
-                var opacity = Math.round(255*frameDefine[5]);
+                var x = frameData.x + offsetX;
+                var y = frameData.y + offsetY;
 
                 if(x != child.x) child.x = x;
                 if(y != child.y) child.y = y;
-                if(rotation != child.rotation) child.rotation = rotation;
-                if(scaleX != child.scaleX) child.scaleX = scaleX;
-                if(scaleY != child.scaleY) child.scaleY = scaleY;
+                if(frameData.rotation != child.rotation) child.rotation = frameData.rotation;
+                if(frameData.scaleX != child.scaleX) child.scaleX = frameData.scaleX;
+                if(frameData.scaleY != child.scaleY) child.scaleY = frameData.scaleY;
                 //todo, movieclip adn progressbar can not set opacity on canvas render mode..., maybe we could override the setOpacity function, but some difficult
-                if(child.noOpacity !== true && child.setOpacity && opacity != child.opacity) child.opacity = opacity;
+                if(child.noOpacity !== true && child.setOpacity && frameData.opacity != child.opacity) child.opacity = frameData.opacity;
                 child.visible = true;
                 child.autoPlayChildren = this.autoPlayChildren;
                 if(this.autoPlayChildren) {

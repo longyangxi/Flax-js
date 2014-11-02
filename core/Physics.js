@@ -21,13 +21,23 @@ flax.Collider = cc.Class.extend({
     _rotation:0,
     _localRect:null,
     _polygons:null,
-    ctor:function(arr, centerAnchor){
-        this.type = arr[0];
-        this._center = cc.p(arr[1], arr[2]);
-        this._width = arr[3];
-        this._height = arr[4];
-        this._rotation = arr[5];
-        this._polygons = arr[6];
+    ctor:function(data, centerAnchor){
+        if(typeof data === "string"){
+            data = data.split(",");
+            for(var i = 1; i < 6; i++){
+                data[i] = parseFloat(data[i]);
+            }
+            //polygon data
+            if(data.length > 6){
+                data[6] = data[6].split("'");
+            }
+        }
+        this.type = data[0];
+        this._center = cc.p(parseFloat(data[1]), data[2]);
+        this._width = data[3];
+        this._height = data[4];
+        this._rotation = data[5];
+        this._polygons = data[6];
         if(this._polygons){
             var arr = [];
             for(var i = 0; i < this._polygons.length - 1; i += 2){

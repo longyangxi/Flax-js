@@ -8,11 +8,12 @@ flax.Anchor = cc.Class.extend({
     y:0,
     zIndex:0,
     rotation:0,
-    ctor:function(arr){
-        this.x = arr[0];
-        this.y = arr[1];
-        if(arr.length > 2) this.zIndex = arr[2];
-        if(arr.length > 3) this.rotation = arr[3];
+    ctor:function(data){
+        data = data.split(",");
+        this.x = parseFloat(data[0]);
+        this.y = parseFloat(data[1]);
+        if(data.length > 2) this.zIndex = parseInt(data[2]);
+        if(data.length > 3) this.rotation = parseFloat(data[3]);
     }
 });
 

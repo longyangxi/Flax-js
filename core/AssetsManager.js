@@ -169,8 +169,8 @@ flax.AssetsManager = cc.Class.extend({
         {
             displayNames.push(dName);
             dDefine = displays[dName];
-            dDefine.anchors = this._parseFrames(dDefine.anchors, flax.Anchor);
-            dDefine.colliders = this._parseFrames(dDefine.colliders, flax.Collider);
+            if(dDefine.anchors) dDefine.anchors = this._parseAnchors(dDefine.anchors);
+            if(dDefine.colliders) dDefine.colliders = this._parseColliders(dDefine.colliders);
             this.displayDefineCache[assetsFile + dName] = dDefine;
             this._parseSubAnims(assetsFile, dName);
         }
@@ -187,8 +187,8 @@ flax.AssetsManager = cc.Class.extend({
             mc.anchorX = mcDefine.anchorX;
             mc.anchorY = mcDefine.anchorY;
             mc.rect = this._strToRect(mcDefine.rect);
-            mc.anchors = this._parseFrames(mcDefine.anchors, flax.Anchor);
-            mc.colliders = this._parseFrames(mcDefine.colliders, flax.Collider);
+            if(mcDefine.anchors) mc.anchors = this._parseAnchors(mcDefine.anchors);
+            if(mcDefine.colliders) mc.colliders = this._parseColliders(mcDefine.colliders);
             mc.children = {};
             var childDefine;
             var childrenDefine = mcDefine.children;
@@ -196,7 +196,7 @@ flax.AssetsManager = cc.Class.extend({
             {
                 childDefine = childrenDefine[childName];
                 var ch = mc.children[childName] = {};
-                ch.frames = this._strToArray(childDefine.frames);
+                ch.frames = this._parseFrames(childDefine.frames);
                 ch["class"] = childDefine["class"];
                 ch.zIndex = parseInt(childDefine.zIndex);
                 if(childDefine.hasOwnProperty("text")) {
@@ -235,18 +235,45 @@ flax.AssetsManager = cc.Class.extend({
             anims.push(aname);
         }
     },
-    _parseFrames:function(frameDict, cls)
-    {
+    _parseAnchors:function(anchors){
         var dict = {};
-        if(frameDict == null) return dict;
-        for(var name in frameDict)
+        for(var name in anchors)
         {
-            dict[name] = this._strToArray(frameDict[name], cls);
+            var frames = anchors[name].split("|");
+            var i = -1;
+            var sArr = [];
+            while(++i < frames.length)
+            {
+                var frame = frames[i];
+                if(frame === "null") sArr.push(null);
+                //"" means the params is the same as prev frame
+                else if(frame === "") sArr.push(sArr[i - 1]);
+                else sArr.push(new flax.Anchor(frame));
+            }
+            dict[name] = sArr;
         }
         return dict;
     },
-    _strToArray:function(str, cls)
-    {
+    _parseColliders:function(colliders){
+        var dict = {};
+        for(var name in colliders)
+        {
+            var frames = colliders[name].split("|");
+            var i = -1;
+            var sArr = [];
+            while(++i < frames.length)
+            {
+                var frame = frames[i];
+                if(frame === "null") sArr.push(null);
+                //"" means the params is the same as prev frame
+                else if(frame === "") sArr.push(sArr[i - 1]);
+                else sArr.push(new flax.Collider(frame));
+            }
+            dict[name] = sArr;
+        }
+        return dict;
+    },
+    _parseFrames:function(str){
         var frames = str.split("|");
         var i = -1;
         var sArr = [];
@@ -255,25 +282,10 @@ flax.AssetsManager = cc.Class.extend({
             var frame = frames[i];
             if(frame === "null") sArr.push(null);
             //"" means the params is the same as prev frame
-            else if(frame === "") sArr.push(sArr[i - 1]);//sArr.push("");
-            else if(cls) sArr.push(new cls(this._strToArray2(frame)));
-            else sArr.push(this._strToArray2(frame));
+            else if(frame === "") sArr.push(sArr[i - 1]);
+            else sArr.push(new flax.FrameData(frame));
         }
         return sArr;
-    },
-    _strToArray2:function(str)
-    {
-        var fs = str.split(",");
-        for(var fi = 0; fi < fs.length; fi++)
-        {
-            if(fs[fi].indexOf("'") > -1){
-                fs[fi] = fs[fi].split("'");
-            }else if(!isNaN(parseInt(fs[fi], 10))){
-                if(fs[fi].indexOf(".") > -1) fs[fi] = parseFloat(fs[fi]);
-                else fs[fi] = parseInt(fs[fi]);
-            }
-        }
-        return fs;
     },
     _strToRect:function(str)
     {
