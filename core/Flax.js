@@ -10,7 +10,7 @@ LANGUAGES = ['en','zh','de','fr','it','es','tr','pt','ru'];
 
 var flax = flax || {};
 
-flax.version = 1.42;
+flax.version = 1.43;
 flax.language = null;
 flax.languageIndex = -1;
 flax.landscape = false;

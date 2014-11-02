@@ -133,8 +133,8 @@ flax.AssetsManager = cc.Class.extend({
         }
         cc.spriteFrameCache.addSpriteFrames(assetsFile1);
 
-        var frames = [];
         //parse the frames
+        var frames = [];
         var frameDict = dict.frames;
         for(var key in frameDict)
         {
@@ -144,135 +144,81 @@ flax.AssetsManager = cc.Class.extend({
         frames.sort();
 
         this.framesCache[assetsFile] = frames;
-    //    cc.log("frames: "+frames.length);
 
         //parse the displays defined in the assets
         if(dict.hasOwnProperty("displays"))
         {
-            var displays = dict.displays;
-            var displayNames = [];
-            var dDefine = null;
-            if(displays){
-                for(var dName in displays)
-                {
-                    displayNames.push(dName);
-                    dDefine = displays[dName];
-                    dDefine.anchors = this._parseFrames(dDefine.anchors, flax.Anchor);
-                    dDefine.colliders = this._parseFrames(dDefine.colliders, flax.Collider);
-                    this.displayDefineCache[assetsFile + dName] = dDefine;
-                    this._parseSubAnims(assetsFile, dName);
-                }
-            }
-            this.displaysCache[assetsFile] = displayNames;
-    //        cc.log("displays: "+displayNames.length);
+            this._parseDisplays(assetsFile, dict.displays);
         }
         //parse the movieClipgs
         if(dict.hasOwnProperty("mcs"))
         {
-            var mcs = dict.mcs;
-            for(var sName in mcs)
-            {
-                var mcDefine = mcs[sName];
-                var mc = {};
-                mc.type = mcDefine.type;
-                mc.totalFrames = mcDefine.totalFrames;
-                mc.labels = mcDefine.labels;
-                mc.anchorX = mcDefine.anchorX;
-                mc.anchorY = mcDefine.anchorY;
-                mc.rect = this._strToRect(mcDefine.rect);
-                mc.anchors = this._parseFrames(mcDefine.anchors, flax.Anchor);
-                mc.colliders = this._parseFrames(mcDefine.colliders, flax.Collider);
-                mc.children = {};
-                var childDefine;
-                var childrenDefine = mcDefine.children;
-                for(var childName in childrenDefine)
-                {
-                    childDefine = childrenDefine[childName];
-                    var ch = mc.children[childName] = {};
-                    ch.frames = this._strToArray(childDefine.frames);
-                    ch["class"] = childDefine["class"];
-                    ch.zIndex = parseInt(childDefine.zIndex);
-                    if(childDefine.hasOwnProperty("text")) {
-                        ch.text = childDefine.text;
-                        if(childDefine.font) ch.font = childDefine.font;
-                        if(childDefine.size) ch.size = childDefine.size;
-                        if(childDefine.color) ch.color = cc.hexToColor(childDefine.color);
-                        ch.align = childDefine.align;
-                        ch.width = childDefine.width;
-                        ch.height = childDefine.height;
-                    }
-                }
-                this.mcsCache[assetsFile + sName] = mc;
-                //see if there is a '$' sign which present sub animation of the mc
-                this._parseSubAnims(assetsFile, sName);
-            }
+            this._parseMovieClips(assetsFile, dict.mcs);
         }
         //parse the fonts
         if(dict.hasOwnProperty("fonts"))
         {
-            var fonts = dict.fonts;
-            for(var fName in fonts)
-            {
-                this.fontsCache[assetsFile + fName] = fonts[fName];
-    //            cc.log("add font: "+fName);
-            }
+            this._parseFonts(assetsFile, dict.fonts);
         }
         return true;
     },
-    getFrameNames:function(assetsFile, startFrame, endFrame)
-    {
-        if(typeof this.framesCache[assetsFile] === "undefined") {
-            this.addassetsFile(assetsFile);
-        }
-        var frames = this.framesCache[assetsFile];
-        if(frames == null) return [];
-        if(startFrame == -1) startFrame = 0;
-        if(endFrame == -1) endFrame = frames.length - 1;
-        return frames.slice(parseInt(startFrame), parseInt(endFrame) + 1);
-    },
-    getDisplayDefine:function(assetsFile, assetID)
-    {
-        var key = assetsFile + assetID;
-        if(!(key in this.displayDefineCache))
+    _parseDisplays:function(assetsFile, displays){
+        var displayNames = [];
+        var dDefine = null;
+        for(var dName in displays)
         {
-            this.addAssets(assetsFile);
+            displayNames.push(dName);
+            dDefine = displays[dName];
+            dDefine.anchors = this._parseFrames(dDefine.anchors, flax.Anchor);
+            dDefine.colliders = this._parseFrames(dDefine.colliders, flax.Collider);
+            this.displayDefineCache[assetsFile + dName] = dDefine;
+            this._parseSubAnims(assetsFile, dName);
         }
-        return this.displayDefineCache[key];
+        this.displaysCache[assetsFile] = displayNames;
     },
-    getDisplayNames:function(assetsFile)
-    {
-        if(typeof this.displaysCache[assetsFile] === "undefined")
+    _parseMovieClips:function(assetsFile, mcs){
+        for(var sName in mcs)
         {
-            this.addAssets(assetsFile);
+            var mcDefine = mcs[sName];
+            var mc = {};
+            mc.type = mcDefine.type;
+            mc.totalFrames = mcDefine.totalFrames;
+            mc.labels = mcDefine.labels;
+            mc.anchorX = mcDefine.anchorX;
+            mc.anchorY = mcDefine.anchorY;
+            mc.rect = this._strToRect(mcDefine.rect);
+            mc.anchors = this._parseFrames(mcDefine.anchors, flax.Anchor);
+            mc.colliders = this._parseFrames(mcDefine.colliders, flax.Collider);
+            mc.children = {};
+            var childDefine;
+            var childrenDefine = mcDefine.children;
+            for(var childName in childrenDefine)
+            {
+                childDefine = childrenDefine[childName];
+                var ch = mc.children[childName] = {};
+                ch.frames = this._strToArray(childDefine.frames);
+                ch["class"] = childDefine["class"];
+                ch.zIndex = parseInt(childDefine.zIndex);
+                if(childDefine.hasOwnProperty("text")) {
+                    ch.text = childDefine.text;
+                    if(childDefine.font) ch.font = childDefine.font;
+                    if(childDefine.size) ch.size = childDefine.size;
+                    if(childDefine.color) ch.color = cc.hexToColor(childDefine.color);
+                    ch.align = childDefine.align;
+                    ch.width = childDefine.width;
+                    ch.height = childDefine.height;
+                }
+            }
+            this.mcsCache[assetsFile + sName] = mc;
+            //see if there is a '$' sign which present sub animation of the mc
+            this._parseSubAnims(assetsFile, sName);
         }
-        return this.displaysCache[assetsFile] || [];
     },
-    getRandomDisplayName:function(assetsFile)
-    {
-        var names = this.getDisplayNames(assetsFile);
-        var i = Math.floor(Math.random()*names.length);
-        return names[i];
-    },
-    getMc:function(assetsFile, assetID)
-    {
-        var key = assetsFile + assetID;
-        if(!(key in this.mcsCache)) {
-            this.addAssets(assetsFile);
+    _parseFonts:function(assetsFile, fonts){
+        for(var fName in fonts)
+        {
+            this.fontsCache[assetsFile + fName] = fonts[fName];
         }
-        return this.mcsCache[key];
-    },
-    getSubAnims:function(assetsFile, theName)
-    {
-        var akey = assetsFile + theName;
-        return this.subAnimsCache[akey] || [];
-    },
-    getFont:function(assetsFile, fontName)
-    {
-        var key = assetsFile + fontName;
-        if(typeof this.fontsCache[key] === "undefined"){
-            this.addAssets(assetsFile);
-        }
-        return this.fontsCache[key];
     },
     _parseSubAnims:function(assetsFile, assetID)
     {
@@ -333,8 +279,65 @@ flax.AssetsManager = cc.Class.extend({
     {
         var arr = str.split(",");
         return cc.rect(parseFloat(arr[0]), parseFloat(arr[1]), parseFloat(arr[2]), parseFloat(arr[3]));
+    },
+    getFrameNames:function(assetsFile, startFrame, endFrame)
+    {
+        if(typeof this.framesCache[assetsFile] === "undefined") {
+            this.addAssets(assetsFile);
+        }
+        var frames = this.framesCache[assetsFile];
+        if(frames == null) return [];
+        if(startFrame == -1) startFrame = 0;
+        if(endFrame == -1) endFrame = frames.length - 1;
+        return frames.slice(parseInt(startFrame), parseInt(endFrame) + 1);
+    },
+    getDisplayDefine:function(assetsFile, assetID)
+    {
+        var key = assetsFile + assetID;
+        if(!(key in this.displayDefineCache))
+        {
+            this.addAssets(assetsFile);
+        }
+        return this.displayDefineCache[key];
+    },
+    getDisplayNames:function(assetsFile)
+    {
+        if(typeof this.displaysCache[assetsFile] === "undefined")
+        {
+            this.addAssets(assetsFile);
+        }
+        return this.displaysCache[assetsFile] || [];
+    },
+    getRandomDisplayName:function(assetsFile)
+    {
+        var names = this.getDisplayNames(assetsFile);
+        var i = Math.floor(Math.random()*names.length);
+        return names[i];
+    },
+    getMc:function(assetsFile, assetID)
+    {
+        var key = assetsFile + assetID;
+        if(!(key in this.mcsCache)) {
+            this.addAssets(assetsFile);
+        }
+        return this.mcsCache[key];
+    },
+    getSubAnims:function(assetsFile, theName)
+    {
+        var akey = assetsFile + theName;
+        return this.subAnimsCache[akey] || [];
+    },
+    getFont:function(assetsFile, fontName)
+    {
+        var key = assetsFile + fontName;
+        if(typeof this.fontsCache[key] === "undefined"){
+            this.addAssets(assetsFile);
+        }
+        return this.fontsCache[key];
     }
 });
+
+
 
 flax.AssetsManager.create = function()
 {
