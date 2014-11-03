@@ -28,6 +28,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
     noOpacity:true,
     _namedChildren:null,
     _theRect:null,
+    _frameDatas:null,
     __isMovieClip:true,
 
     replaceChild:function(childName, assetID)
@@ -45,7 +46,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
             childDefine["class"] = assetID;
         }
     },
-    onNewSheet:function()
+    onNewSource:function()
     {
         for(var childName in this._namedChildren){
             this._namedChildren[childName].destroy();
@@ -53,8 +54,23 @@ flax.MovieClip = flax.FlaxSprite.extend({
         }
         this._namedChildren = {};
         this.totalFrames = this.define.totalFrames;
-        this._theRect = cc.rect(this.define.rect);
+        this._theRect = this._strToRect(this.define.rect);
         this.setContentSize(this._theRect.width, this._theRect.height);
+        this._initFrameDatas();
+    },
+    _initFrameDatas:function()
+    {
+        this._frameDatas = {};
+        for(var childName in this.define.children)
+        {
+            var frames = [];
+            var fs = this.define.children[childName].frames;
+            var i = -1;
+            while(++i < fs.length){
+                if(fs[i]) frames[i] = new flax.FrameData(fs[i]);
+            }
+            this._frameDatas[childName] = frames;
+        }
     },
     onEnter:function()
     {
@@ -71,7 +87,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
         for(var childName in this.define.children)
         {
             childDefine = this.define.children[childName];
-            frameData = childDefine.frames[frame];
+            frameData = this._frameDatas[childName][frame];
             child = this._namedChildren[childName];
             if(frameData == null) {
                 if(child) child.visible = false;
@@ -219,6 +235,11 @@ flax.MovieClip = flax.FlaxSprite.extend({
             }
         }
 
+    },
+    _strToRect:function(str)
+    {
+        var arr = str.split(",");
+        return cc.rect(parseFloat(arr[0]), parseFloat(arr[1]), parseFloat(arr[2]), parseFloat(arr[3]));
     }
 });
 flax.MovieClip.create = function(assetsFile, assetID)

@@ -107,7 +107,7 @@ flax.FlaxSprite = cc.Sprite.extend({
             if(!isNaN(anchorX) && !isNaN(anchorY)) {
                 this.setAnchorPoint(anchorX, anchorY);
             }
-            this.onNewSheet();
+            this.onNewSource();
             this.currentFrame = 0;
             this.renderFrame(this.currentFrame, true);
             this._initColliders();
@@ -217,7 +217,7 @@ flax.FlaxSprite = cc.Sprite.extend({
                         this._colliders[k][frame] = null;
                         continue;
                     }
-                    cd = this._colliders[k][frame] = cArr[frame].clone();
+                    cd = this._colliders[k][frame] = new flax.Collider(cArr[frame]);
                     cd.name = k;
                     cd.owner = this;
                     if(k == "main" || "base") {
@@ -228,7 +228,7 @@ flax.FlaxSprite = cc.Sprite.extend({
         }
         this._definedMainCollider = (this._mainCollider != null);
         if(!this._definedMainCollider){
-            this._mainCollider = new flax.Collider(["Rect", 0, 0, this.width, this.height, 0], false);
+            this._mainCollider = new flax.Collider("Rect,0,0," + this.width + "," + this.height + ",0", false);
             this._mainCollider.name = "main";
             this._mainCollider.owner = this;
         }
@@ -246,8 +246,7 @@ flax.FlaxSprite = cc.Sprite.extend({
         if(this.define.anchors){
             var an = this.define.anchors[name];
             if(an != null) {
-                an = an[this.currentFrame];
-                return an;
+                return new flax.Anchor(an[this.currentFrame]);
             }
         }
         return null;
@@ -725,7 +724,7 @@ flax.FlaxSprite = cc.Sprite.extend({
     {
         return null;
     },
-    onNewSheet:function()
+    onNewSource:function()
     {
 
     }

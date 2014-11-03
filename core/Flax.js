@@ -65,8 +65,8 @@ flax.init = function()
     var height = cc.game.config.height;
     if(!cc.sys.isNative){
         var stg = document.getElementById(cc.game.config.id);
-        stg.width = width;
-        stg.height = height;
+        stg.width = width = width || stg.width;
+        stg.height = height = height || stg.height;
         cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.SHOW_ALL);
         cc.view.resizeWithBrowserSize(true);
     }else{

@@ -5,7 +5,7 @@ var flax = flax || {};
 
 flax.Animator = flax.FlaxSprite.extend({
     frameNames:null,
-    onNewSheet:function()
+    onNewSource:function()
     {
         var startFrame = this.define.start;
         var endFrame = this.define.end;

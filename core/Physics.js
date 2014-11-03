@@ -22,42 +22,27 @@ flax.Collider = cc.Class.extend({
     _localRect:null,
     _polygons:null,
     ctor:function(data, centerAnchor){
-        if(typeof data === "string"){
-            data = data.split(",");
-            for(var i = 1; i < 6; i++){
-                data[i] = parseFloat(data[i]);
-            }
-            //polygon data
-            if(data.length > 6){
-                data[6] = data[6].split("'");
-            }
-        }
+        data = data.split(",");
         this.type = data[0];
-        this._center = cc.p(parseFloat(data[1]), data[2]);
-        this._width = data[3];
-        this._height = data[4];
-        this._rotation = data[5];
-        this._polygons = data[6];
-        if(this._polygons){
-            var arr = [];
-            for(var i = 0; i < this._polygons.length - 1; i += 2){
-                var pos = cc.p(parseFloat(this._polygons[i]), parseFloat(this._polygons[i + 1]));
-                arr.push(pos);
+        this._center = cc.p(parseFloat(data[1]), parseFloat(data[2]));
+        this._width = parseFloat(data[3]);
+        this._height = parseFloat(data[4]);
+        this._rotation = parseFloat(data[5]);
+        //polygon data
+        if(data.length > 6){
+            this._polygons = [];
+            var arr = data[6].split("'");
+            for(var i = 0; i < arr.length - 1; i += 2){
+                var pos = cc.p(parseFloat(arr[i]), parseFloat(arr[i + 1]));
+                this._polygons.push(pos);
             }
-            this._polygons = arr;
         }
+
         if(centerAnchor === false) {
             this._center.x += this._width/2;
             this._center.y += this._height/2;
         }
         this._localRect = cc.rect(this._center.x - this._width/2, this._center.y - this._height/2, this._width, this._height);
-    },
-    clone:function(){
-        var c = new flax.Collider([this.type,this._center.x, this._center.y, this._width, this._height, this._rotation]);
-        if(this._polygons) c._polygons = this._polygons;
-        c.name = this.name;
-        c.owner = this.owner;
-        return c;
     },
     /**
      * Enable the physics with the params

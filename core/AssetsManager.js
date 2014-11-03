@@ -169,8 +169,8 @@ flax.AssetsManager = cc.Class.extend({
         {
             displayNames.push(dName);
             dDefine = displays[dName];
-            if(dDefine.anchors) dDefine.anchors = this._parseAnchors(dDefine.anchors);
-            if(dDefine.colliders) dDefine.colliders = this._parseColliders(dDefine.colliders);
+            if(dDefine.anchors) dDefine.anchors = this._parseFrames(dDefine.anchors);
+            if(dDefine.colliders) dDefine.colliders = this._parseFrames(dDefine.colliders);
             this.displayDefineCache[assetsFile + dName] = dDefine;
             this._parseSubAnims(assetsFile, dName);
         }
@@ -180,36 +180,16 @@ flax.AssetsManager = cc.Class.extend({
         for(var sName in mcs)
         {
             var mcDefine = mcs[sName];
-            var mc = {};
-            mc.type = mcDefine.type;
-            mc.totalFrames = mcDefine.totalFrames;
-            mc.labels = mcDefine.labels;
-            mc.anchorX = mcDefine.anchorX;
-            mc.anchorY = mcDefine.anchorY;
-            mc.rect = this._strToRect(mcDefine.rect);
-            if(mcDefine.anchors) mc.anchors = this._parseAnchors(mcDefine.anchors);
-            if(mcDefine.colliders) mc.colliders = this._parseColliders(mcDefine.colliders);
-            mc.children = {};
+            if(mcDefine.anchors) mcDefine.anchors = this._parseFrames(mcDefine.anchors);
+            if(mcDefine.colliders) mcDefine.colliders = this._parseFrames(mcDefine.colliders);
             var childDefine;
             var childrenDefine = mcDefine.children;
             for(var childName in childrenDefine)
             {
                 childDefine = childrenDefine[childName];
-                var ch = mc.children[childName] = {};
-                ch.frames = this._parseFrames(childDefine.frames);
-                ch["class"] = childDefine["class"];
-                ch.zIndex = parseInt(childDefine.zIndex);
-                if(childDefine.hasOwnProperty("text")) {
-                    ch.text = childDefine.text;
-                    if(childDefine.font) ch.font = childDefine.font;
-                    if(childDefine.size) ch.size = childDefine.size;
-                    if(childDefine.color) ch.color = cc.hexToColor(childDefine.color);
-                    ch.align = childDefine.align;
-                    ch.width = childDefine.width;
-                    ch.height = childDefine.height;
-                }
+                childDefine.frames = this._strToArray(childDefine.frames);
             }
-            this.mcsCache[assetsFile + sName] = mc;
+            this.mcsCache[assetsFile + sName] = mcDefine;
             //see if there is a '$' sign which present sub animation of the mc
             this._parseSubAnims(assetsFile, sName);
         }
@@ -235,62 +215,27 @@ flax.AssetsManager = cc.Class.extend({
             anims.push(aname);
         }
     },
-    _parseAnchors:function(anchors){
+    _parseFrames:function(data){
         var dict = {};
-        for(var name in anchors)
+        for(var name in data)
         {
-            var frames = anchors[name].split("|");
-            var i = -1;
-            var sArr = [];
-            while(++i < frames.length)
-            {
-                var frame = frames[i];
-                if(frame === "null") sArr.push(null);
-                //"" means the params is the same as prev frame
-                else if(frame === "") sArr.push(sArr[i - 1]);
-                else sArr.push(new flax.Anchor(frame));
-            }
-            dict[name] = sArr;
+            dict[name] = this._strToArray(data[name]);
         }
         return dict;
     },
-    _parseColliders:function(colliders){
-        var dict = {};
-        for(var name in colliders)
-        {
-            var frames = colliders[name].split("|");
-            var i = -1;
-            var sArr = [];
-            while(++i < frames.length)
-            {
-                var frame = frames[i];
-                if(frame === "null") sArr.push(null);
-                //"" means the params is the same as prev frame
-                else if(frame === "") sArr.push(sArr[i - 1]);
-                else sArr.push(new flax.Collider(frame));
-            }
-            dict[name] = sArr;
-        }
-        return dict;
-    },
-    _parseFrames:function(str){
+    _strToArray:function(str){
         var frames = str.split("|");
         var i = -1;
-        var sArr = [];
+        var arr = [];
         while(++i < frames.length)
         {
             var frame = frames[i];
-            if(frame === "null") sArr.push(null);
+            if(frame === "null") arr.push(null);
             //"" means the params is the same as prev frame
-            else if(frame === "") sArr.push(sArr[i - 1]);
-            else sArr.push(new flax.FrameData(frame));
+            else if(frame === "") arr.push(arr[i - 1]);
+            else arr.push(frame);
         }
-        return sArr;
-    },
-    _strToRect:function(str)
-    {
-        var arr = str.split(",");
-        return cc.rect(parseFloat(arr[0]), parseFloat(arr[1]), parseFloat(arr[2]), parseFloat(arr[3]));
+        return arr;
     },
     getFrameNames:function(assetsFile, startFrame, endFrame)
     {
