@@ -95,31 +95,25 @@ flax.Preloader = cc.Scene.extend({
      * @param {Function|String} cb
      */
     initWithResources: function (resources, cb) {
-        if(typeof resources == "string") resources = [resources];
+        if(cc.isString(resources))
+            resources = [resources];
         this.resources = resources || [];
         this.cb = cb;
     },
-
     _startLoading: function () {
         var self = this;
         self.unschedule(self._startLoading);
         var res = self.resources;
-        self._length = res.length;
-        cc.loader.load(res, function(result, count){ self._count = count;}, function(){
-            self.cb();
-        });
-        self.schedule(self._updatePercent);
-    },
-
-    _updatePercent: function () {
-        var self = this;
-        var count = self._count;
-        var length = self._length;
-        var percent = (count / length * 100) | 0;
-        percent = Math.min(percent, 100);
-        if(self._label == null) return;
-        self._label.setString("Loading... " + percent + "%");
-        if(count >= length) self.unschedule(self._updatePercent);
+        cc.loader.load(res,
+            function (result, count, loadedCount) {
+                if(self._label == null) return;
+                var percent = (loadedCount / count * 100) | 0;
+                percent = Math.min(percent, 100);
+                self._label.setString("Loading... " + percent + "%");
+            }, function () {
+                if (self.cb)
+                    self.cb();
+            });
     }
 });
 
@@ -130,12 +124,20 @@ flax.preload = function(res, callBack)
         return;
     }
     var hasLoaded = true;
-    var i = -1;
-    while(++i < res.length)
+    var i = res.length;
+    while(i--)
     {
-        if(cc.loader.getRes(res[i]) == null) {
+        var r = res[i];
+        if(hasLoaded && cc.loader.getRes(r) == null) {
             hasLoaded = false;
-            break;
+        }
+        //in mobile web or jsb, .flax is not good now, so replace it  to .plist and .png
+        if(cc.path.extname(r) == ".flax" && cc.sys.isNative){
+            cc.log("***Warning: .flax is not support for JSB now, use .plist + .png instead!");
+            res = res.splice(i, 1);
+            res.push(cc.path.changeBasename(r,".plist"));
+            res.push(cc.path.changeBasename(r,".png"));
+            hasLoaded = false;
         }
     }
     if(hasLoaded){

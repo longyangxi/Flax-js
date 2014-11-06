@@ -294,6 +294,7 @@ flax.FlaxSprite = cc.Sprite.extend({
         this.loopStart = 0;
         this.loopEnd = this.totalFrames - 1;
         this.updatePlaying(true);
+        this.currentAnim = null
     },
     /**
      * Play a sequence animations, for example:
@@ -342,6 +343,7 @@ flax.FlaxSprite = cc.Sprite.extend({
     gotoAndPlay:function(frameOrLabel)
     {
         if(typeof frameOrLabel === "string") {
+            if(this.playing && this.currentAnim == frameOrLabel) return true;
             var lbl = this.getLabels(frameOrLabel);
             if(lbl == null){
                 if(!this.setSubAnim(frameOrLabel, true)) {
@@ -365,6 +367,7 @@ flax.FlaxSprite = cc.Sprite.extend({
             this.loopStart = 0;
             this.loopEnd = this.totalFrames - 1;
             this.currentFrame = frameOrLabel;
+            this.currentAnim = null;
         }
         this.renderFrame(this.currentFrame);
         this.updatePlaying(true);
@@ -374,6 +377,7 @@ flax.FlaxSprite = cc.Sprite.extend({
     stop:function()
     {
         this.updatePlaying(false);
+        this.currentAnim = null
     },
     gotoAndStop:function(frameOrLabel)
     {
@@ -383,11 +387,9 @@ flax.FlaxSprite = cc.Sprite.extend({
             if(lbl == null){
                 return this.setSubAnim(frameOrLabel, false);
             }
-            this.currentAnim = frameOrLabel;
             frameOrLabel = lbl.start;
-        }else{
-            this.currentAnim = null;
         }
+        this.currentAnim = null;
 
         if(!this.isValideFrame(frameOrLabel))
         {

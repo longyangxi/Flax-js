@@ -126,7 +126,7 @@ flax.AssetsManager = cc.Class.extend({
 
         var assetsFile1 = assetsFile;
         var ext = cc.path.extname(assetsFile)
-        if(ext != ".plist" && ext != ".json") assetsFile1 = cc.path.changeBasename(assetsFile, ".json");
+        if(ext == ".flax") assetsFile1 = cc.path.changeBasename(assetsFile, ".plist");
         var dict = cc.loader.getRes(assetsFile1);
         if(dict == null){
             throw "Make sure you have pre-loaded the resource: "+assetsFile;
@@ -146,17 +146,17 @@ flax.AssetsManager = cc.Class.extend({
         this.framesCache[assetsFile] = frames;
 
         //parse the displays defined in the assets
-        if(dict.hasOwnProperty("displays"))
+        if(dict.displays)
         {
             this._parseDisplays(assetsFile, dict.displays);
         }
         //parse the movieClipgs
-        if(dict.hasOwnProperty("mcs"))
+        if(dict.mcs)
         {
             this._parseMovieClips(assetsFile, dict.mcs);
         }
         //parse the fonts
-        if(dict.hasOwnProperty("fonts"))
+        if(dict.fonts)
         {
             this._parseFonts(assetsFile, dict.fonts);
         }
@@ -239,9 +239,7 @@ flax.AssetsManager = cc.Class.extend({
     },
     getFrameNames:function(assetsFile, startFrame, endFrame)
     {
-        if(typeof this.framesCache[assetsFile] === "undefined") {
-            this.addAssets(assetsFile);
-        }
+        this.addAssets(assetsFile);
         var frames = this.framesCache[assetsFile];
         if(frames == null) return [];
         if(startFrame == -1) startFrame = 0;
@@ -250,19 +248,13 @@ flax.AssetsManager = cc.Class.extend({
     },
     getDisplayDefine:function(assetsFile, assetID)
     {
+        this.addAssets(assetsFile);
         var key = assetsFile + assetID;
-        if(!(key in this.displayDefineCache))
-        {
-            this.addAssets(assetsFile);
-        }
         return this.displayDefineCache[key];
     },
     getDisplayNames:function(assetsFile)
     {
-        if(typeof this.displaysCache[assetsFile] === "undefined")
-        {
-            this.addAssets(assetsFile);
-        }
+        this.addAssets(assetsFile);
         return this.displaysCache[assetsFile] || [];
     },
     getRandomDisplayName:function(assetsFile)
@@ -273,23 +265,20 @@ flax.AssetsManager = cc.Class.extend({
     },
     getMc:function(assetsFile, assetID)
     {
+        this.addAssets(assetsFile);
         var key = assetsFile + assetID;
-        if(!(key in this.mcsCache)) {
-            this.addAssets(assetsFile);
-        }
         return this.mcsCache[key];
     },
     getSubAnims:function(assetsFile, theName)
     {
+        this.addAssets(assetsFile);
         var akey = assetsFile + theName;
         return this.subAnimsCache[akey] || [];
     },
     getFont:function(assetsFile, fontName)
     {
+        this.addAssets(assetsFile);
         var key = assetsFile + fontName;
-        if(typeof this.fontsCache[key] === "undefined"){
-            this.addAssets(assetsFile);
-        }
         return this.fontsCache[key];
     }
 });
@@ -317,24 +306,26 @@ flax._flaxLoader = {
             }
             var keyWord = "data:image/gif;base64,";
             data = txt.split(keyWord);
-            var jsonUrl = cc.path.changeBasename(realUrl, ".json");
+            var dataUrl = cc.path.changeBasename(realUrl, ".plist");
             var pngUrl = cc.path.changeBasename(realUrl, ".png");
             //hadle json
-            cc.loader.cache[jsonUrl] = JSON.parse(data[0]);
-            flax.assetsManager.addAssets(realUrl);
+            cc.loader.cache[dataUrl] = JSON.parse(data[0]);
             //handle image
             var image = new Image();
             image.src = keyWord+data[1];
             cc.loader.cache[pngUrl] = image;
             cc.textureCache.handleLoadedTexture(pngUrl);
+            flax.assetsManager.addAssets(realUrl);
 
             err ? cb(err) : cb(null, "Not reachable!");
+            //release the resource
             cc.loader.release(realUrl);
+            //but tell the loader, this resource has been loaded!
+            cc.loader.cache[realUrl] = "loaded!";
         });
     }
 };
-//the uncompression takes too much time to handle, so you'd beter use it in mobile.
-// and in JSB it is not support, not use tow
+//todo: .flax is not supported now
 if(!cc.sys.isNative){
     cc.loader.register(["flax"], flax._flaxLoader);
 }
