@@ -132,6 +132,9 @@ flax.AssetsManager = cc.Class.extend({
             throw "Make sure you have pre-loaded the resource: "+assetsFile;
         }
         cc.spriteFrameCache.addSpriteFrames(assetsFile1);
+        //Note: the plist will be released by cocos when addSpriteFrames
+        //We want it to be there to check the resource if loaded
+        cc.loader.cache[assetsFile1] = "loaded!";
 
         //parse the frames
         var frames = [];

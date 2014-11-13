@@ -2,15 +2,10 @@
  * Created by long on 14-2-3.
  */
 
-SPACE_CHAR_GAP = 10;
-
 var flax = flax || {};
 flax.Label = cc.Sprite.extend({
     mlWidth:0.0,
     mlHeight:0.0,
-    //font gap, 1.0 means the gap between two fonts is zero
-    gapScale:1.0,
-    str:null,
     fontName:null,
     fontSize:20,
     frames:[],
@@ -19,44 +14,43 @@ flax.Label = cc.Sprite.extend({
     name:null,
     params:null,
     noOpacity:true,
+    _str:null,
+    _gap:0,
+    _spaceGap:10,
     _charCanvas:null,
     _fontDefine:null,
 
     getString:function()
     {
-        return this.str;
+        return this._str;
     },
     setString:function(str)
     {
-        this.str = ""+str;
+        if(str == this._str) return;
+        this._str = ""+str;
         this._updateStr();
     },
-    tweenInt:function(from, to, time){
-        this.setString(from);
-        var sign = flax.numberSign(to - from);
-        if(sign == 0) return;
-
-        var num = Math.abs(to - from);
-        var interval = Math.max(time/num, flax.frameInterval);
-        num = Math.round(time/interval);
-        sign *= Math.round(Math.abs(to - from)/num);
-
-        this.schedule(function(delta){
-            var ci = parseInt(this.str) + sign;
-            if(sign > 0 && ci > to) ci = to;
-            else if(sign < 0 && ci < to) ci = to;
-            this.setString(ci);
-        },interval, num + 2);
-    },
-    getGapScale:function()
+    getSpaceGap:function()
     {
-        return this.gapScale;
+       return this._spaceGap;
     },
-    setGapScale:function(gap)
+    setSpaceGap:function(gap)
     {
-        if(gap == this.gapScale) return;
-        this.gapScale = gap;
-        if(this.str)
+        if(this._spaceGap == gap)  return;
+        this._spaceGap = gap;
+        if(this._str && this._str.indexOf(" ") > -1){
+            this._updateStr();
+        }
+    },
+    getGap:function()
+    {
+        return this._gap;
+    },
+    setGap:function(gap)
+    {
+        if(gap == this._gap) return;
+        this._gap = gap;
+        if(this._str)
         {
             this._updateStr();
         }
@@ -74,20 +68,37 @@ flax.Label = cc.Sprite.extend({
         this.chars = this._fontDefine.chars;
         this.fontSize = parseInt(this._fontDefine.size);
     },
+    tweenInt:function(from, to, time){
+        this.setString(from);
+        var sign = flax.numberSign(to - from);
+        if(sign == 0) return;
+
+        var num = Math.abs(to - from);
+        var interval = Math.max(time/num, flax.frameInterval);
+        num = Math.round(time/interval);
+        sign *= Math.round(Math.abs(to - from)/num);
+
+        this.schedule(function(delta){
+            var ci = parseInt(this._str) + sign;
+            if(sign > 0 && ci > to) ci = to;
+            else if(sign < 0 && ci < to) ci = to;
+            this.setString(ci);
+        },interval, num + 2);
+    },
     _updateStr:function()
     {
         if(this._charCanvas == null) {
             var imgFile = cc.path.changeBasename(this.assetsFile, ".png");
-            this._charCanvas = new cc.SpriteBatchNode(imgFile, this.str.length);
+            this._charCanvas = new cc.SpriteBatchNode(imgFile, this._str.length);
             this.addChild(this._charCanvas);
         }
         this._charCanvas.removeAllChildren();
 
         this.mlWidth = 0;
         this.mlHeight = 0;
-        for(i = 0; i < this.str.length ; i++)
+        for(i = 0; i < this._str.length ; i++)
         {
-            var ch = this.str[i];
+            var ch = this._str[i];
             //if it's a break char or other special char, ignore it for now!
             if(ch == "\n")
             {
@@ -95,7 +106,7 @@ flax.Label = cc.Sprite.extend({
             }
             if(ch == " ")
             {
-                this.mlWidth += SPACE_CHAR_GAP;
+                this.mlWidth += this._spaceGap;
                 continue;
             }
             var charIndex = -1;
@@ -120,7 +131,7 @@ flax.Label = cc.Sprite.extend({
             var size = sprite.getContentSize();
             sprite.x = this.mlWidth;
             sprite.y = 0;
-            this.mlWidth += size.width * this.gapScale;
+            this.mlWidth += size.width + this._gap;//size.width * this._gap;
             this.mlHeight = size.height > this.mlHeight ? size.height : this.mlHeight;
             this._charCanvas.addChild(sprite);
         }
@@ -155,7 +166,7 @@ flax.Label = cc.Sprite.extend({
     {
         global = (global !== false);
         var border = 2;
-        var rect = cc.rect(0.5*this.width/this.str.length, -this.params.height, this.width, this.height + border);
+        var rect = cc.rect(0.5*this.width/this._str.length, -this.params.height, this.width, this.height + border);
         rect.y += (this.params.height - this.height)/2 - border/2;
         if(!global) return rect;
         var w = rect.width;
@@ -169,6 +180,19 @@ flax.Label = cc.Sprite.extend({
         this.removeFromParent();
     }
 });
+
+window._p = flax.Label.prototype;
+
+/** @expose */
+_p.gap;
+cc.defineGetterSetter(_p, "gap", _p.getGap, _p.setGap);
+/** @expose */
+_p.spaceGap;
+cc.defineGetterSetter(_p, "spaceGap", _p.getSpaceGap, _p.setSpaceGap);
+/** @expose */
+_p.text;
+cc.defineGetterSetter(_p, "text", _p.getString, _p.setString);
+delete window._p;
 
 flax.LabelTTF = cc.LabelTTF.extend({
     __isTTF:true,

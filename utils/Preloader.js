@@ -116,38 +116,43 @@ flax.Preloader = cc.Scene.extend({
             });
     }
 });
-
 flax.preload = function(res, callBack)
 {
     if(res == null || res.length == 0) {
         callBack();
         return;
     }
-    var hasLoaded = true;
+    var needLoad = false;
+    var res1 = [];
     var i = res.length;
     while(i--)
     {
         var r = res[i];
-        if(hasLoaded && cc.loader.getRes(r) == null) {
-            hasLoaded = false;
-        }
-        //in mobile web or jsb, .flax is not good now, so replace it  to .plist and .png
-        if(cc.path.extname(r) == ".flax" && cc.sys.isNative){
-            cc.log("***Warning: .flax is not support for JSB now, use .plist + .png instead!");
-            res = res.splice(i, 1);
-            res.push(cc.path.changeBasename(r,".plist"));
-            res.push(cc.path.changeBasename(r,".png"));
-            hasLoaded = false;
+        if(cc.loader.getRes(r) == null) {
+            //in mobile web or jsb, .flax is not good now, so replace it  to .plist and .png
+            if(cc.path.extname(r) == ".flax" && (cc.sys.isNative || !cc.game.config.useFlaxRes)){
+                if(cc.sys.isNative) cc.log("***Warning: .flax is not support JSB for now, use .plist + .png insteadly!");
+                var plist = cc.path.changeBasename(r,".plist");
+                var png = cc.path.changeBasename(r,".png");
+                res1.unshift(plist);
+                res1.unshift(png);
+                if(cc.loader.getRes(png) == null) {
+                    needLoad = true;
+                }
+            }else{
+                needLoad = true;
+                res1.unshift(r);
+            }
         }
     }
-    if(hasLoaded){
-        callBack();
-    }else{
+    if(needLoad){
         var loaderScene = new flax.Preloader();
         loaderScene.init();
-        loaderScene.initWithResources(res, callBack);
+        loaderScene.initWithResources(res1, callBack);
 
         cc.director.runScene(loaderScene);
         return loaderScene;
+    }else{
+        callBack();
     }
 }
