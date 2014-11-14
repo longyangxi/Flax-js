@@ -214,7 +214,7 @@ flax.replaceScene = function(sceneName, transition, duration)
     flax.preload(s.res,function(){
         //init language
         if(flax._languageToLoad){
-            flax._languageDict = cc.loader.getRes(flax._getLanguagePath());
+            flax._languageDict = cc.loader.getRes(flax.addResVersion(flax._getLanguagePath()));
             flax._languageToLoad = null;
         }
         flax.currentScene = new s.scene();
