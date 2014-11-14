@@ -45,6 +45,7 @@ flax.AssetsManager = cc.Class.extend({
        if(assetsFile == null || assetID == null){
            throw  "Pleas give me assetsFile and assetID!";
        }
+       assetsFile = flax.addResVersion(assetsFile);
        this.addAssets(assetsFile);
 
        var clsPreDefined = false;
@@ -122,6 +123,7 @@ flax.AssetsManager = cc.Class.extend({
     },
     addAssets:function(assetsFile)
     {
+        assetsFile = flax.addResVersion(assetsFile);
         if(typeof this.framesCache[assetsFile] !== "undefined") return false;
 
         var assetsFile1 = assetsFile;

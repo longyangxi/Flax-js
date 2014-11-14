@@ -134,14 +134,14 @@ flax.preload = function(res, callBack)
                 if(cc.sys.isNative) cc.log("***Warning: .flax is not support JSB for now, use .plist + .png insteadly!");
                 var plist = cc.path.changeBasename(r,".plist");
                 var png = cc.path.changeBasename(r,".png");
-                res1.unshift(plist);
-                res1.unshift(png);
+                res1.unshift(flax.addResVersion(plist));
+                res1.unshift(flax.addResVersion(png));
                 if(cc.loader.getRes(png) == null) {
                     needLoad = true;
                 }
             }else{
                 needLoad = true;
-                res1.unshift(r);
+                res1.unshift(flax.addResVersion(r));
             }
         }
     }

@@ -220,7 +220,7 @@ flax.FlaxSprite = cc.Sprite.extend({
                     cd = this._colliders[k][frame] = new flax.Collider(cArr[frame]);
                     cd.name = k;
                     cd.owner = this;
-                    if(k == "main" || "base") {
+                    if(k == "main" || k == "base") {
                         this._mainCollider = cd;
                     }
                 }

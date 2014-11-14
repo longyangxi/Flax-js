@@ -28,7 +28,19 @@ flax._orientationTip = null;
 flax._languageDict = null;
 flax._languageToLoad = null;
 
+flax.addResVersion = function(url)
+{
+    if(url.indexOf("?v=") > -1) return url;
+    return url + "?v=" + cc.game.config.version;
+}
+
 if(!cc.sys.isNative){
+
+//    var jsList = cc.game.config.jsList;
+//    for(var i = 0; i < jsList.length; i++)
+//    {
+//        jsList[i] = flax.addResVersion(jsList[i]);
+//    }
 //set the game canvas color as html body color
     /************************************************/
     //delay call to override the black color setting in js-boot.js
@@ -87,6 +99,7 @@ flax.init = function()
         flax.updateLanguage(lan);
     }
 }
+
 flax.getLanguageStr = function(key){
     if(flax._languageDict == null) {
         cc.log("Error: there is no language defined: "+flax.language);
