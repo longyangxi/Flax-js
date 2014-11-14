@@ -33,14 +33,27 @@ flax.addResVersion = function(url)
     if(url.indexOf("?v=") > -1) return url;
     return url + "?v=" + cc.game.config.version;
 }
-
+flax.isDomainAllowed = function()
+{
+    var domain = document.domain;
+    var domainAllowed = cc.game.config.domainAllowed;
+    return flax.isLocalDebug() || domainAllowed == null || domainAllowed.length == 0 || domainAllowed.indexOf(domain) > -1;
+}
+flax.isLocalDebug = function()
+{
+    var domain = document.domain;
+    return domain == "localhost" || domain.indexOf("192.168.") > -1;
+}
 if(!cc.sys.isNative){
-
-//    var jsList = cc.game.config.jsList;
-//    for(var i = 0; i < jsList.length; i++)
-//    {
-//        jsList[i] = flax.addResVersion(jsList[i]);
-//    }
+    //if local debug, make the version randomly, so every time debug is refresh
+    if(flax.isLocalDebug()) {
+        cc.game.config.version = 1 + Math.floor(Math.random()*(999999 - 1))
+    }
+    var jsList = cc.game.config.jsList;
+    for(var i = 0; i < jsList.length; i++)
+    {
+        jsList[i] = flax.addResVersion(jsList[i]);
+    }
 //set the game canvas color as html body color
     /************************************************/
     //delay call to override the black color setting in js-boot.js
