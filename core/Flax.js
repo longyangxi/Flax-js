@@ -10,7 +10,7 @@ LANGUAGES = ['en','zh','de','fr','it','es','tr','pt','ru'];
 
 var flax = flax || {};
 
-flax.version = 1.43;
+flax.version = 1.44;
 flax.language = null;
 flax.languageIndex = -1;
 flax.landscape = false;
@@ -50,9 +50,11 @@ if(!cc.sys.isNative){
         cc.game.config.version = 1 + Math.floor(Math.random()*(999999 - 1))
     }
     var jsList = cc.game.config.jsList;
-    for(var i = 0; i < jsList.length; i++)
-    {
-        jsList[i] = flax.addResVersion(jsList[i]);
+    if(jsList){
+        for(var i = 0; i < jsList.length; i++)
+        {
+            jsList[i] = flax.addResVersion(jsList[i]);
+        }
     }
 //set the game canvas color as html body color
     /************************************************/
