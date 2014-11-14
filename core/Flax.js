@@ -42,7 +42,7 @@ flax.isDomainAllowed = function()
 flax.isLocalDebug = function()
 {
     var domain = document.domain;
-    return domain == "localhost" || domain.indexOf("192.168.") > -1;
+    return domain == "localhost" || domain.indexOf("192.168.") == 0;
 }
 if(!cc.sys.isNative){
     //if local debug, make the version randomly, so every time debug is refresh
