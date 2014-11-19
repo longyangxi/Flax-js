@@ -127,21 +127,21 @@ flax.preload = function(res, callBack)
     var i = res.length;
     while(i--)
     {
-        var r = res[i];
+        var r = flax.addResVersion(res[i]);
         if(cc.loader.getRes(r) == null) {
             //in mobile web or jsb, .flax is not good now, so replace it  to .plist and .png
-            if(cc.path.extname(r) == ".flax" && (cc.sys.isNative || !cc.game.config.useFlaxRes)){
+            if(cc.path.extname(r) == ".flax" && (cc.sys.isNative || cc.game.config.useFlaxRes === false)){
                 if(cc.sys.isNative) cc.log("***Warning: .flax is not support JSB for now, use .plist + .png insteadly!");
                 var plist = cc.path.changeBasename(r,".plist");
                 var png = cc.path.changeBasename(r,".png");
-                res1.unshift(flax.addResVersion(plist));
-                res1.unshift(flax.addResVersion(png));
+                res1.unshift(plist);
+                res1.unshift(png);
                 if(cc.loader.getRes(png) == null) {
                     needLoad = true;
                 }
             }else{
                 needLoad = true;
-                res1.unshift(flax.addResVersion(r));
+                res1.unshift(r);
             }
         }
     }

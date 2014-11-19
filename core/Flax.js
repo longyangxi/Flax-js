@@ -6,7 +6,6 @@ RADIAN_TO_DEGREE = 180.0/Math.PI;
 DEGREE_TO_RADIAN = Math.PI/180.0;
 IMAGE_TYPES = [".png", ".jpg", ".bmp",".jpeg",".gif"];
 H_ALIGHS = ["left","center","right"];
-LANGUAGES = ['en','zh','de','fr','it','es','tr','pt','ru'];
 
 var flax = flax || {};
 
@@ -81,11 +80,13 @@ if(!cc.sys.isNative){
     /************************************************/
 }
 
-flax.init = function()
+flax.init = function(initUserData)
 {
     if(flax._inited) return;
     flax._inited = true;
     cc.log("Flax inited, version: "+flax.version);
+
+    flax.fetchUserData(initUserData);
     flax._checkOSVersion();
 
     var width = cc.game.config.width;
@@ -94,6 +95,7 @@ flax.init = function()
         var stg = document.getElementById(cc.game.config.id);
         stg.width = width = width || stg.width;
         stg.height = height = height || stg.height;
+        cc.view.adjustViewPort(true);
         cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.SHOW_ALL);
         cc.view.resizeWithBrowserSize(true);
     }else{
@@ -128,7 +130,7 @@ flax.getLanguageStr = function(key){
 flax.updateLanguage = function(lan){
     if(lan == null || lan == "" || lan == flax.language) return;
     flax.language = lan;
-    flax.languageIndex = LANGUAGES.indexOf(lan);
+    flax.languageIndex = cc.game.config.languages.indexOf(lan);
     if(flax.languageIndex == -1) cc.log("Invalid language: " + lan);
     else flax._languageToLoad = flax._getLanguagePath(lan);
 }
