@@ -8,15 +8,6 @@ ALL_DIRECTONS1 = ["UP","DOWN","LEFT","RIGHT","RIGHT_UP","RIGHT_DOWN"];
 EIGHT_DIRECTIONS_VALUE  = {UP:[0,1],DOWN:[0,-1],LEFT:[-1,0],RIGHT:[1,0],LEFT_UP:[-1,1],RIGHT_UP:[1,1],RIGHT_DOWN:[1,-1],LEFT_DOWN:[-1,-1]};
 MAX_IN_TILE = 10;
 
-var TileValue = TileValue || {
-    WALKABLE:0,
-    BLOCK1:1,
-    BLOCK2:2,
-    BLOCK3:3,
-    BLOCK4:4,
-    BLOCK5:5
-};
-
 flax.TileMap = cc.Class.extend({
     id:"default",
     offsetX:0,

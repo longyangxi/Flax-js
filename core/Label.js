@@ -182,7 +182,6 @@ flax.Label = cc.Sprite.extend({
 });
 
 window._p = flax.Label.prototype;
-
 /** @expose */
 _p.gap;
 cc.defineGetterSetter(_p, "gap", _p.getGap, _p.setGap);
@@ -214,6 +213,12 @@ flax.LabelTTF = cc.LabelTTF.extend({
         },interval, num + 2);
     }
 })
+
+window._p = flax.LabelTTF.prototype;
+/** @expose */
+_p.text;
+cc.defineGetterSetter(_p, "text", _p.getString, _p.setString);
+delete window._p;
 
 flax.Label.create = function(assetsFile, define)
 {

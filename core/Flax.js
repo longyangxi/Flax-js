@@ -7,6 +7,15 @@ DEGREE_TO_RADIAN = Math.PI/180.0;
 IMAGE_TYPES = [".png", ".jpg", ".bmp",".jpeg",".gif"];
 H_ALIGHS = ["left","center","right"];
 
+var TileValue = TileValue || {
+    WALKABLE:0,
+    BLOCK1:1,
+    BLOCK2:2,
+    BLOCK3:3,
+    BLOCK4:4,
+    BLOCK5:5
+};
+
 var flax = flax || {};
 
 flax.version = 1.44;
@@ -209,7 +218,7 @@ flax.replaceScene = function(sceneName, transition, duration)
     if(flax._languageToLoad && s.res.indexOf(flax._languageToLoad) == -1){
         s.res.push(flax._languageToLoad);
     }
-    flax.ObjectPool.release();
+    if(flax.ObjectPool) flax.ObjectPool.release();
     if(flax.BulletCanvas) flax.BulletCanvas.reset();
     cc.director.resume();
     flax.currentSceneName = sceneName;
@@ -400,7 +409,14 @@ flax.getRect = function(sprite, global)
     }
     global = (global !== false);
     var pos = sprite.getPosition();
-    if(global && sprite.parent) pos = sprite.parent.convertToWorldSpace(pos);
+    if(sprite.parent){
+        if(global) {
+            pos = sprite.parent.convertToWorldSpace(pos);
+        }else {
+            pos = sprite.getAnchorPointInPoints();
+            pos = flax.currentScene.convertToNodeSpace(pos);
+        }
+    }
     var size = sprite.getContentSize();
     var anchor = sprite.getAnchorPoint();
     rect = cc.rect(pos.x - size.width * anchor.x,pos.y - size.height * anchor.y,size.width, size.height);
