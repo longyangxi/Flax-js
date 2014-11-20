@@ -237,7 +237,11 @@ flax.Label.create = function(assetsFile, define)
         labelDef.boundingWidth = define.width;
         labelDef.boundingHeight = define.height;
         //todo, outline and shadow effect
-        lbl = new flax.LabelTTF(flax.getLanguageStr(txtCls) || define.text, labelDef);
+        if(txtCls == "null") {
+            lbl = new flax.LabelTTF(define.text, labelDef);
+        }else{
+            lbl = new flax.LabelTTF(flax.getLanguageStr(txtCls) || define.text, labelDef);
+        }
     }else{
         lbl = new flax.Label();
         flax.assetsManager.addAssets(assetsFile);

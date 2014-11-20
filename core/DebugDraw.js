@@ -28,6 +28,7 @@ flax.drawCircle = function(center, radius, lineWidth, lineColor)
 flax.drawDot = function(center, radius, color)
 {
     flax._createDebugNode();
+    if(radius == null) radius = 3;
     if(color == null) color = cc.color(255, 0, 0, 255);
     flax.__drawNode.drawDot(center, radius,color);
 };
