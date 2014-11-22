@@ -151,17 +151,19 @@ flax.preload = function(res, callBack)
         var loaderScene = new flax.Preloader();
         loaderScene.init();
         loaderScene.initWithResources(res1, function(){
-            //replace the resource's key with no version string
-            var i = res1.length;
-            while(i--){
-                var res = res1[i];
-                var data = cc.loader.getRes(res);
-                if(data){
-                    var pureUrl = flax._removeResVersion(res);
-                    cc.loader.cache[pureUrl] = data;
-                    //fixed the bug when opengl
-                    if(flax.isImageFile(pureUrl) && cc.sys.capabilities.opengl) cc.textureCache.handleLoadedTexture(pureUrl);
-                    cc.loader.release(res);
+            //replace the resource's key with no version string when not in JSB
+            if(!cc.sys.isNative) {
+                var i = res1.length;
+                while(i--){
+                    var res = res1[i];
+                    var data = cc.loader.getRes(res);
+                    if(data){
+                        var pureUrl = flax._removeResVersion(res);
+                        cc.loader.cache[pureUrl] = data;
+                        //fixed the bug when opengl
+                        if(flax.isImageFile(pureUrl) && cc.sys.capabilities.opengl) cc.textureCache.handleLoadedTexture(pureUrl);
+                        cc.loader.release(res);
+                    }
                 }
             }
             callBack();

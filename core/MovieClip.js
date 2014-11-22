@@ -95,7 +95,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
                     //hadle the label text
                     if(childDefine.text != null){
                         child = flax.Label.create(this.assetsFile, childDefine);
-                        if(child && child.__isTTF){
+                        if(child instanceof cc.LabelTTF){
                             offsetX = childDefine.width/2;
                             offsetY = -childDefine.height/2;
                         }

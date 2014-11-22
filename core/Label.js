@@ -192,28 +192,7 @@ _p.text;
 cc.defineGetterSetter(_p, "text", _p.getString, _p.setString);
 delete window._p;
 
-flax.LabelTTF = cc.LabelTTF.extend({
-    __isTTF:true,
-    tweenInt:function(from, to, time){
-        this.setString(from);
-        var sign = flax.numberSign(to - from);
-        if(sign == 0) return;
-
-        var num = Math.abs(to - from);
-        var interval = Math.max(time/num, flax.frameInterval);
-        num = Math.round(time/interval);
-        sign *= Math.round(Math.abs(to - from)/num);
-
-        this.schedule(function(delta){
-            var ci = parseInt(this.getString()) + sign;
-            if(sign > 0 && ci > to) ci = to;
-            else if(sign < 0 && ci < to) ci = to;
-            this.setString(ci);
-        },interval, num + 2);
-    }
-})
-
-window._p = flax.LabelTTF.prototype;
+window._p = cc.LabelTTF.prototype;
 /** @expose */
 _p.text;
 cc.defineGetterSetter(_p, "text", _p.getString, _p.setString);
@@ -257,9 +236,9 @@ flax.Label.create = function(assetsFile, define)
         labelDef.boundingHeight = define.height;
         //todo, outline and shadow effect
         if(txtCls == "null") {
-            lbl = new flax.LabelTTF(define.text, labelDef);
+            lbl = new cc.LabelTTF(define.text, labelDef);
         }else{
-            lbl = new flax.LabelTTF(flax.getLanguageStr(txtCls) || define.text, labelDef);
+            lbl = new cc.LabelTTF(flax.getLanguageStr(txtCls) || define.text, labelDef);
         }
     }else{
         lbl = new flax.Label();
