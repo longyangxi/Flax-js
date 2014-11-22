@@ -79,7 +79,7 @@ flax.EnemyWaveModule = {
         }
     },
     _doCreateEnemy:function(assetID){
-        if(this.waveAssetJson) flax.assetsManager.createDisplay(this.waveAssetJson, assetID, null, true, this.batchCanvas, {x: this.x, y: this.y});
+        if(this.waveAssetJson) flax.assetsManager.createDisplay(this.waveAssetJson, assetID, {parent: this.batchCanvas, x: this.x, y: this.y}, true);
         //override this function yourself
     }
 }

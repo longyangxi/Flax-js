@@ -116,7 +116,7 @@ flax.Gun = cc.Node.extend({
     _showFireEffect:function(pos, rot)
     {
         if(this.param.fireEffectID == null || this.param.fireEffectID == "") return;
-        var fireEffect = flax.assetsManager.createDisplay(this.param.bulletAssets, this.param.fireEffectID, null, true, this._canvas);
+        var fireEffect = flax.assetsManager.createDisplay(this.param.bulletAssets, this.param.fireEffectID, {parent: this._canvas}, true);
         fireEffect.zIndex = 999;
         fireEffect.autoDestroyWhenOver = true;
         fireEffect.setPosition(pos);
@@ -150,7 +150,7 @@ flax.BulletCanvas = cc.SpriteBatchNode.extend({
             return;
         }
         if(!(param instanceof flax.GunParam)) param = flax.GunParam.create(param);
-        var b = flax.assetsManager.createDisplay(param.bulletAssets, param.bulletID, null, true, this);
+        var b = flax.assetsManager.createDisplay(param.bulletAssets, param.bulletID, {parent: this}, true);
         b.owner = owner;
         b.param = param;
         if(owner && owner.targets) b.targets = owner.targets;
@@ -307,7 +307,7 @@ flax.BulletCanvas = cc.SpriteBatchNode.extend({
     _showHitEffect:function(bullet, rot, pos)
     {
         if(bullet.param.hitEffectID == null || bullet.param.hitEffectID == "") return;
-        var hitEffect = flax.assetsManager.createDisplay(bullet.param.bulletAssets, bullet.param.hitEffectID, null, true, this);
+        var hitEffect = flax.assetsManager.createDisplay(bullet.param.bulletAssets, bullet.param.hitEffectID, {parent: this}, true);
         hitEffect.zIndex = 999;
         hitEffect.autoDestroyWhenOver = true;
         hitEffect.setPosition(pos || bullet.getPosition());

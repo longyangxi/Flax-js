@@ -19,7 +19,7 @@ var TileValue = TileValue || {
 
 var flax = flax || {};
 
-flax.version = 1.44;
+flax.version = 1.45;
 flax.language = null;
 flax.languageIndex = -1;
 flax.landscape = false;

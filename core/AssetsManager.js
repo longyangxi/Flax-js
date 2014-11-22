@@ -35,31 +35,35 @@ flax.AssetsManager = cc.Class.extend({
      * Create a display from a assetsFile with assetID
      * @param {String} assetsFile the assetsFile
      * @param {String} assetID the asset id in the assetsFile
-     * @param {String} clsName the class name to create the display, if null, it'll be automatically set according by the assets file
-     * @param {Boolean} fromPool if the display should fetch from the pool
-     * @param {Node} parent its parent container
      * @param {Object} params params could be set to the target with attr function
+     *                 the special is parent, if set parent, the display will be auto added to it
+     * @param {Boolean} fromPool if the display should fetch from the pool
+     * @param {String} clsName the class name to create the display, if null, it'll be automatically set according by the assets file
+     * Deprecated: createDisplay:function(assetsFile, assetID, clsName, fromPool, parent, params)
      * */
-   createDisplay:function(assetsFile, assetID, clsName, fromPool, parent, params)
-   {
-       if(assetsFile == null || assetID == null){
-           throw  "Pleas give me assetsFile and assetID!";
-       }
-       this.addAssets(assetsFile);
+    createDisplay:function(assetsFile, assetID, params, fromPool, clsName)
+    {
+        if(assetsFile == null || assetID == null){
+            throw  "Pleas give me assetsFile and assetID!";
+        }
+        if((params && typeof params === "string") || (clsName && typeof clsName !== "string")) {
+            throw "Params error: maybe you are using the old api, please use the latest!";
+        }
+        this.addAssets(assetsFile);
 
-       var clsPreDefined = false;
-       if(clsName) clsPreDefined = true;
-       else clsName = assetID;
+        var clsPreDefined = false;
+        if(clsName) clsPreDefined = true;
+        else clsName = assetID;
 
-       var subAnims = this.getSubAnims(assetsFile, assetID);
-       if(subAnims.length) {
-           assetID = assetID + "$" + subAnims[0];
-       }
+        var subAnims = this.getSubAnims(assetsFile, assetID);
+        if(subAnims.length) {
+            assetID = assetID + "$" + subAnims[0];
+        }
 
-       var mcCls = flax.nameToObject(clsName);
-       if(mcCls == null && clsPreDefined){
-           throw "The class: "+clsName+" doesn't exist!"
-       }
+        var mcCls = flax.nameToObject(clsName);
+        if(mcCls == null && clsPreDefined){
+            throw "The class: "+clsName+" doesn't exist!"
+        }
         if(mcCls == null && !clsPreDefined) {
             var define = this.getDisplayDefine(assetsFile, assetID);
             var isMC = false;
@@ -83,19 +87,21 @@ flax.AssetsManager = cc.Class.extend({
                 throw  "There is no display with assetID: "+assetID+" in assets file: "+assetsFile;
             }
         }
-//       this._checkCreateFunc(mcCls, clsName);
-       var mc = null;
-       if(fromPool === true) {
-           mc = flax.ObjectPool.get(assetsFile,clsName,assetID).fetch(assetID, parent, params);
-       }else{
-           if(mcCls.create) mc = mcCls.create(assetsFile, assetID);
-           else mc = new mcCls(assetsFile, assetID);
-           if(params) mc.attr(params);
-           if(parent) parent.addChild(mc);
-           mc.clsName = clsName;
-       }
-       return mc;
-   },
+        if(params == null) params = {};
+        var mc = null;
+        var parent = params.parent;
+        delete params.parent;
+        if(fromPool === true) {
+            mc = flax.ObjectPool.get(assetsFile,clsName,assetID).fetch(assetID, parent, params);
+        }else{
+            if(mcCls.create) mc = mcCls.create(assetsFile, assetID);
+            else mc = new mcCls(assetsFile, assetID);
+            mc.attr(params);
+            if(parent) parent.addChild(mc);
+            mc.clsName = clsName;
+        }
+        return mc;
+    },
     /**
      * Clone a new display from the target, if fromPool = true, it'll be fetched from the pool
      * It only supports flax.FlaxSprite or its sub classes
@@ -105,20 +111,12 @@ flax.AssetsManager = cc.Class.extend({
         if(!(target instanceof flax.FlaxSprite)) {
             throw "cloneDisplay only support flax.FlaxSprite type!"
         }
-        var obj = this.createDisplay(target.assetsFile, target.assetID, target.clsName, fromPool, autoAdd ? target.parent : null);
+        var obj = this.createDisplay(target.assetsFile, target.assetID, {parent: (autoAdd ? target.parent : null)}, fromPool, target.clsName);
         if(autoAdd) obj.setPosition(target.getPosition());
         obj.setScale(target.getScale());
         obj.setRotation(target.rotation);
         obj.zIndex = target.zIndex;
         return obj;
-    },
-    _checkCreateFunc:function(target, clsName)
-    {
-        if(target == null) {
-            throw "The class: "+clsName+" is not found!";
-        }else if(target.create == null){
-            throw "Please implement  a create(assetsFile, assetID) method for the target class: "+clsName;
-        }
     },
     addAssets:function(assetsFile)
     {
