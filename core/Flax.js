@@ -6,6 +6,7 @@ RADIAN_TO_DEGREE = 180.0/Math.PI;
 DEGREE_TO_RADIAN = Math.PI/180.0;
 IMAGE_TYPES = [".png", ".jpg", ".bmp",".jpeg",".gif"];
 H_ALIGHS = ["left","center","right"];
+DEFAULT_LANS = ["en","zh","de","fr","it","es","tr","pt","ru"];
 
 var TileValue = TileValue || {
     WALKABLE:0,
@@ -36,19 +37,29 @@ flax._orientationTip = null;
 flax._languageDict = null;
 flax._languageToLoad = null;
 
-flax.addResVersion = function(url)
+flax._addResVersion = function(url)
 {
+    if(cc.sys.isNative) return url;
     if(url.indexOf("?v=") > -1) return url;
     return url + "?v=" + cc.game.config.version;
 }
+flax._removeResVersion = function(url)
+{
+    if(cc.sys.isNative) return url;
+    var i = url.indexOf("?v=");
+    if(i > -1) url = url.substr(0, i);
+    return url;
+}
 flax.isDomainAllowed = function()
 {
+    if(cc.sys.isNative) return true;
     var domain = document.domain;
     var domainAllowed = cc.game.config.domainAllowed;
     return flax.isLocalDebug() || domainAllowed == null || domainAllowed.length == 0 || domainAllowed.indexOf(domain) > -1;
 }
 flax.isLocalDebug = function()
 {
+    if(cc.sys.isNative) return false;
     var domain = document.domain;
     return domain == "localhost" || domain.indexOf("192.168.") == 0;
 }
@@ -56,13 +67,6 @@ if(!cc.sys.isNative){
     //if local debug, make the version randomly, so every time debug is refresh
     if(flax.isLocalDebug()) {
         cc.game.config.version = 1 + Math.floor(Math.random()*(999999 - 1))
-    }
-    var jsList = cc.game.config.jsList;
-    if(jsList){
-        for(var i = 0; i < jsList.length; i++)
-        {
-            jsList[i] = flax.addResVersion(jsList[i]);
-        }
     }
 //set the game canvas color as html body color
     /************************************************/
@@ -128,7 +132,7 @@ flax.init = function(initUserData)
 
 flax.getLanguageStr = function(key){
     if(flax._languageDict == null) {
-        cc.log("Error: there is no language defined: "+flax.language);
+        cc.log("Warning: there is no language defined: "+flax.language);
         return null;
     }
     var str = flax._languageDict[key];
@@ -139,6 +143,7 @@ flax.getLanguageStr = function(key){
 flax.updateLanguage = function(lan){
     if(lan == null || lan == "" || lan == flax.language) return;
     flax.language = lan;
+    if(!cc.game.config.languages == null || !cc.game.config.languages.length) cc.game.config.languages = DEFAULT_LANS;
     flax.languageIndex = cc.game.config.languages.indexOf(lan);
     if(flax.languageIndex == -1) cc.log("Invalid language: " + lan);
     else flax._languageToLoad = flax._getLanguagePath(lan);
@@ -187,7 +192,6 @@ flax.callModuleOnExit = function(owner){
     }
 }
 
-//todo, now only handle the mobile device
 flax._checkOSVersion = function(){
     if(cc.sys.isNative) return;
     var ua = navigator.userAgent;
@@ -227,7 +231,7 @@ flax.replaceScene = function(sceneName, transition, duration)
     flax.preload(s.res,function(){
         //init language
         if(flax._languageToLoad){
-            flax._languageDict = cc.loader.getRes(flax.addResVersion(flax._getLanguagePath()));
+            flax._languageDict = cc.loader.getRes(flax._getLanguagePath());
             flax._languageToLoad = null;
         }
         flax.currentScene = new s.scene();

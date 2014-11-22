@@ -45,7 +45,6 @@ flax.AssetsManager = cc.Class.extend({
        if(assetsFile == null || assetID == null){
            throw  "Pleas give me assetsFile and assetID!";
        }
-       assetsFile = flax.addResVersion(assetsFile);
        this.addAssets(assetsFile);
 
        var clsPreDefined = false;
@@ -123,12 +122,11 @@ flax.AssetsManager = cc.Class.extend({
     },
     addAssets:function(assetsFile)
     {
-        assetsFile = flax.addResVersion(assetsFile);
         if(typeof this.framesCache[assetsFile] !== "undefined") return false;
 
         var assetsFile1 = assetsFile;
         var ext = cc.path.extname(assetsFile)
-        if(ext == ".flax") assetsFile1 = cc.path.changeBasename(assetsFile, ".plist");
+        if(ext == ".flax") assetsFile1 = cc.path.changeBasename(assetsFile1, ".plist");
         var dict = cc.loader.getRes(assetsFile1);
         if(dict == null){
             throw "Make sure you have pre-loaded the resource: "+assetsFile;
@@ -251,6 +249,12 @@ flax.AssetsManager = cc.Class.extend({
         if(endFrame == -1) endFrame = frames.length - 1;
         return frames.slice(parseInt(startFrame), parseInt(endFrame) + 1);
     },
+    getFrameNamesOfDisplay:function(assetsFile, assetID)
+    {
+        var define = this.getDisplayDefine(assetsFile, assetID);
+        if(define == null) throw "There is no display named: " + assetID + " in assetsFile: " + assetsFile;
+        return this.getFrameNames(assetsFile, define.start, define.end);
+    },
     getDisplayDefine:function(assetsFile, assetID)
     {
         this.addAssets(assetsFile);
@@ -300,6 +304,7 @@ flax.AssetsManager.create = function()
 flax._flaxLoader = {
     load : function(realUrl, url, res, cb){
         cc.loader.loadBinary(realUrl, function(err, data){
+            realUrl = flax._removeResVersion(realUrl);
             var zlib = new Zlib.RawInflate(data);
             var txts = zlib.decompress();
 
@@ -330,7 +335,7 @@ flax._flaxLoader = {
         });
     }
 };
-//todo: .flax is not supported now
+//todo: .flax is not supported now in JSB
 if(!cc.sys.isNative){
     cc.loader.register(["flax"], flax._flaxLoader);
 }

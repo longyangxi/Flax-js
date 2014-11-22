@@ -15,7 +15,7 @@ flax.Collider = cc.Class.extend({
     physicsBody:null,//the physics body if exist
     physicsFixture:null,//the physics fixture
     physicsContact:null,//the contact info if collision happens
-    _center:null,//center point
+    _center:null,//center point in local space
     _width:0,
     _height:0,
     _rotation:0,
@@ -167,8 +167,9 @@ flax.Collider = cc.Class.extend({
         return rect;
     },
     getCenter:function(global){
-        if(global === false) return this._center;
-        return this.owner.convertToWorldSpace(this._center);
+        var center = this.owner.convertToWorldSpace(this._center);
+        if(global === false && this.owner.parent) center = this.owner.parent.convertToNodeSpace(center);
+        return center;
     },
     /**
      * If the owner or its parent has been scaled, the calculate the real size of the collider
@@ -254,7 +255,6 @@ flax.destroyPhysicsWorld = function(){
     if(!flax._physicsWorld) return;
     flax.stopPhysicsWorld();
     for (var b = flax._physicsWorld.GetBodyList(); b; b = b.GetNext()) {
-        //todo
         var sprite = b.GetUserData();
         if(sprite) sprite._physicsBody = null;
         flax._physicsWorld.DestroyBody(b);

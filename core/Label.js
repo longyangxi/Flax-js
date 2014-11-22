@@ -13,7 +13,6 @@ flax.Label = cc.Sprite.extend({
     assetsFile:null,
     name:null,
     params:null,
-    noOpacity:true,
     _str:null,
     _gap:0,
     _spaceGap:10,
@@ -77,13 +76,14 @@ flax.Label = cc.Sprite.extend({
         var interval = Math.max(time/num, flax.frameInterval);
         num = Math.round(time/interval);
         sign *= Math.round(Math.abs(to - from)/num);
-
+        //todo, num + 10 maybe cause bug!
         this.schedule(function(delta){
-            var ci = parseInt(this._str) + sign;
+            var ct = parseInt(this._str);
+            var ci = ct + sign;
             if(sign > 0 && ci > to) ci = to;
             else if(sign < 0 && ci < to) ci = to;
-            this.setString(ci);
-        },interval, num + 2);
+            if(ci != ct) this.setString(ci);
+        },interval, num + 10);
     },
     _updateStr:function()
     {
@@ -160,7 +160,6 @@ flax.Label = cc.Sprite.extend({
         }
         this._charCanvas.setContentSize(this.mlWidth, this.mlHeight);
         this.setContentSize(this.mlWidth, this.mlHeight);
-        this.setOpacity(0);
     },
     getRect:function(global)
     {
@@ -225,8 +224,28 @@ flax.Label.create = function(assetsFile, define)
     var lbl = null;
     var txtCls = define["class"];
     var bmpFontName = flax.assetsManager.getFont(assetsFile, txtCls);
+    if(define.input == true){
+        if(cc.EditBox == null){
+            throw "If you want to use input text, please add module of 'editbox' into project.json!";
+        }
+        var frames = flax.assetsManager.getFrameNamesOfDisplay(assetsFile, txtCls);
+        //todo, the size of the edit box is the background's size, not the text
+        lbl = new cc.EditBox(cc.size(define.width, define.height), new cc.Scale9Sprite(frames[0]),
+            frames[1] ? new cc.Scale9Sprite(frames[1]) : null,
+            frames[2] ? new cc.Scale9Sprite(frames[2]) : null);
+        lbl.setFontColor(cc.hexToColor(define.color));
+        lbl.setFontName(define.font);
+        lbl.setFontSize(define.size);
+        //the text will be cleared when begin to edit
+        lbl.setPlaceHolder(define.text);
+        lbl.setPlaceholderFontName(define.font);
+        lbl.setPlaceholderFontSize(define.size);
+//        lbl.setInputFlag(cc.EDITBOX_INPUT_FLAG_PASSWORD);
+//        lbl.setMaxLength(20);
+//        lbl.setDelegate(this);
+    }
     //If it is ttf label(has font and the bitmap font is null, other wise use bitmap label
-    if(define.font && bmpFontName == null){
+    else if(define.font && bmpFontName == null){
         var labelDef = new cc.FontDefinition();
         labelDef.fontName = define.font;
         labelDef.fontSize = define.size;

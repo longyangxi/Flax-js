@@ -8,7 +8,6 @@ flax.ProgressBarType = {
     RADIAL:"radial"
 };
 flax.ProgressBar = flax.Animator.extend({
-    noOpacity:true,
     pBar:null,
     _type:flax.ProgressBarType.HORIZONTAL,
     _reversed:false,
@@ -16,7 +15,6 @@ flax.ProgressBar = flax.Animator.extend({
     onEnter:function()
     {
         this._super();
-        this.setOpacity(0);
     },
     getPercentage:function()
     {

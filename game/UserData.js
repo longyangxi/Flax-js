@@ -13,7 +13,7 @@ flax.fetchUserData = function(defaultValue) {
     var data = null;
     try{
         data = cc.sys.localStorage.getItem(cc.game.config.gameId);
-        data = JSON.parse(data);
+        if(data) data = JSON.parse(data);
     }catch(e){
         cc.log("Fetch UserData Error: "+ e.name);
     }

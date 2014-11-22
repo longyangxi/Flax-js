@@ -95,7 +95,7 @@ flax.Preloader = cc.Scene.extend({
      * @param {Function|String} cb
      */
     initWithResources: function (resources, cb) {
-        if(cc.isString(resources))
+        if(typeof resources == "string")
             resources = [resources];
         this.resources = resources || [];
         this.cb = cb;
@@ -127,8 +127,10 @@ flax.preload = function(res, callBack)
     var i = res.length;
     while(i--)
     {
-        var r = flax.addResVersion(res[i]);
+        var r = res[i];
+        if(r == null) throw "There is a null resource!"
         if(cc.loader.getRes(r) == null) {
+            r = flax._addResVersion(r);
             //in mobile web or jsb, .flax is not good now, so replace it  to .plist and .png
             if(cc.path.extname(r) == ".flax" && (cc.sys.isNative || cc.game.config.useFlaxRes === false)){
                 if(cc.sys.isNative) cc.log("***Warning: .flax is not support JSB for now, use .plist + .png insteadly!");
@@ -148,7 +150,22 @@ flax.preload = function(res, callBack)
     if(needLoad){
         var loaderScene = new flax.Preloader();
         loaderScene.init();
-        loaderScene.initWithResources(res1, callBack);
+        loaderScene.initWithResources(res1, function(){
+            //replace the resource's key with no version string
+            var i = res1.length;
+            while(i--){
+                var res = res1[i];
+                var data = cc.loader.getRes(res);
+                if(data){
+                    var pureUrl = flax._removeResVersion(res);
+                    cc.loader.cache[pureUrl] = data;
+                    //fixed the bug when opengl
+                    if(flax.isImageFile(pureUrl) && cc.sys.capabilities.opengl) cc.textureCache.handleLoadedTexture(pureUrl);
+                    cc.loader.release(res);
+                }
+            }
+            callBack();
+        });
 
         cc.director.runScene(loaderScene);
         return loaderScene;

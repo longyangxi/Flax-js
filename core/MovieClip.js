@@ -25,7 +25,6 @@ flax.FrameData = cc.Class.extend({
 
 flax.MovieClip = flax.FlaxSprite.extend({
     autoPlayChildren:false,
-    noOpacity:true,
     _namedChildren:null,
     _theRect:null,
     _frameDatas:null,
@@ -76,8 +75,6 @@ flax.MovieClip = flax.FlaxSprite.extend({
     {
         this._super();
         this.setContentSize(this._theRect.width, this._theRect.height);
-        //MovieClip is just a container here, so we don't need a texture for it, and opacity = 0 will not impact the children
-        this.opacity = 0;
     },
     doRenderFrame:function(frame)
     {
@@ -98,7 +95,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
                     //hadle the label text
                     if(childDefine.text != null){
                         child = flax.Label.create(this.assetsFile, childDefine);
-                        if(child.__isTTF){
+                        if(child && child.__isTTF){
                             offsetX = childDefine.width/2;
                             offsetY = -childDefine.height/2;
                         }
@@ -121,8 +118,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
                 if(frameData.rotation != child.rotation) child.rotation = frameData.rotation;
                 if(frameData.scaleX != child.scaleX) child.scaleX = frameData.scaleX;
                 if(frameData.scaleY != child.scaleY) child.scaleY = frameData.scaleY;
-                //todo, movieclip adn progressbar can not set opacity on canvas render mode..., maybe we could override the setOpacity function, but some difficult
-                if(child.noOpacity !== true && child.setOpacity && frameData.opacity != child.opacity) child.opacity = frameData.opacity;
+                if(child.setOpacity && frameData.opacity != child.opacity) child.opacity = frameData.opacity;
                 child.visible = true;
                 child.autoPlayChildren = this.autoPlayChildren;
                 if(this.autoPlayChildren) {
