@@ -224,6 +224,7 @@ flax.replaceScene = function(sceneName, transition, duration)
     }
     if(flax.ObjectPool) flax.ObjectPool.release();
     if(flax.BulletCanvas) flax.BulletCanvas.reset();
+    if(flax.Button) flax.Button.reset();
     cc.director.resume();
     flax.currentSceneName = sceneName;
     if(flax.stopPhysicsWorld) flax.stopPhysicsWorld();

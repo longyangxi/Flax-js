@@ -109,7 +109,8 @@ flax.Preloader = cc.Scene.extend({
                 if(self._label == null) return;
                 var percent = (loadedCount / count * 100) | 0;
                 percent = Math.min(percent, 100);
-                self._label.setString("Loading... " + percent + "%");
+//                self._label.setString("Loading... " + percent + "%");
+                self._label.setString("Loading: " + (loadedCount + 1) + "/" + count);
             }, function () {
                 if (self.cb)
                     self.cb();

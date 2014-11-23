@@ -18,7 +18,6 @@ flax.InputManager = cc.Node.extend({
     justDragDist:0,
     _masks:[],
     _callbacks:{},
-    _radioButtons:{},
 
     onEnter:function()
     {
@@ -59,7 +58,6 @@ flax.InputManager = cc.Node.extend({
         this._masks = [];
         this.inTouching = false;
         this._callbacks = {};
-        this._radioButtons = {};
         cc.eventManager.removeAllListeners();
     },
     /**
@@ -130,10 +128,6 @@ flax.InputManager = cc.Node.extend({
             this._callbacks[target.__instanceId] = arr;
             if(target != this) {
                 this._createListener(target, true);
-                if(flax.isButton(target) && target.radioGroup){
-                    if(this._radioButtons[target.radioGroup] == null) this._radioButtons[target.radioGroup] = [];
-                    this._radioButtons[target.radioGroup].push(target);
-                }
             }
         }
 
@@ -173,23 +167,8 @@ flax.InputManager = cc.Node.extend({
         var pos = touch.getLocation();
 
         //handle the masks
-        var i = this._masks.length;
-        var mask = null;
-        var maskTouchedItem = null;
-        while(i--){
-            mask = this._masks[i];
-            if(target == mask || flax.isChildOf(target, mask) || flax.isChildOf(mask, target)) continue;
-            if(this._ifTargetIgnore(mask)) continue;
-            if(this._compareRealZIndex(mask, target) == 1){
-                maskTouchedItem = this._findRealTarget(mask, pos);
-                if(maskTouchedItem) return false;
-            }
-        }
+        if(!this._ifNotMasked(target, pos)) return false;
 
-        if(flax.isButton(target)) {
-            if(flax.buttonSound) flax.playSound(flax.buttonSound);
-            this._setButtonState(target, ButtonState.DOWN);
-        }
         event.currentTarget = target;
         event.target = this._findRealTarget(target, pos) || target;
         //if currentTarget is cc.Layer or flax.MovieClip and hasn't touch any of it's child, then ignore!
@@ -210,40 +189,11 @@ flax.InputManager = cc.Node.extend({
         this._dispatch(target, touch, event, InputType.up);
 //        cc.log("touch end: "+this.name+", "+this.type+", "+this._itemTouched);
         var onTarget = flax.ifTouched(target, touch.getLocation());
-        if(onTarget && (flax.isButton(target))){
-            if(target.isSelectable())
-            {
-                if (!target.isSelected() || target.radioGroup){
-                    if(!target.isSelected() && target.radioGroup){
-                        var arr = this._radioButtons[target.radioGroup];
-                        if(arr && arr.length > 1){
-                            for(var i = 0; i < arr.length; i++){
-                                if(arr[i] != target){
-                                    arr[i].setState(ButtonState.UP);
-                                }
-                            }
-                        }
-                    }
-                    target.setState(ButtonState.SELECTED);
-                }else {
-                    target.setState(ButtonState.UP);
-                }
-            }else{
-                target.setState(ButtonState.UP);
-            }
-        }
         if(onTarget) this._dispatch(target, touch, event, InputType.click);
     },
     handleTouchMoved:function(touch, event)
     {
         var target = event.getCurrentTarget();
-        if(flax.isButton(target)){
-            if(flax.ifTouched(target, touch.getLocation())){
-                this._setButtonState(target, ButtonState.DOWN);
-            }else{
-                this._setButtonState(target, ButtonState.UP);
-            }
-        }
 //        cc.log("moving: "+target.clsName);
         this._dispatch(target, touch, event, InputType.move);
     },
@@ -270,6 +220,22 @@ flax.InputManager = cc.Node.extend({
             }
         })
         cc.eventManager.addListener(listener, target);
+    },
+    _ifNotMasked:function(target, pos)
+    {
+        var i = this._masks.length;
+        var mask = null;
+        var maskTouchedItem = null;
+        while(i--){
+            mask = this._masks[i];
+            if(target == mask || flax.isChildOf(target, mask) || flax.isChildOf(mask, target)) continue;
+            if(this._ifTargetIgnore(mask)) continue;
+            if(this._compareRealZIndex(mask, target) == 1){
+                maskTouchedItem = this._findRealTarget(mask, pos);
+                if(maskTouchedItem) return false;
+            }
+        }
+        return true;
     },
     /**
      * Find the real target that clicked, the basic element in the targets...
@@ -310,15 +276,6 @@ flax.InputManager = cc.Node.extend({
         }
         return true;
     },
-    _setButtonState:function(button, state)
-    {
-        if(button.isSelectable() && button.isSelected())
-        {
-            if(state == ButtonState.UP) state = ButtonState.SELECTED;
-            else state = "selected_"+state;
-        }
-        button.setState(state);
-    },
     _dispatch:function(target, touch, event, type){
         var p = target;
         //if the child triggered some event, then its parent should also be informed
@@ -335,15 +292,22 @@ flax.InputManager = cc.Node.extend({
     _dispatchOne:function(target, touch, event, type)
     {
         var calls = this._callbacks[target.__instanceId];
-        if(!calls) return;
+        if(!calls || !calls.length) return;
+        event.currentTarget = target;
         var call = null;
+        var dispatches = [];
         var i = calls.length;
         while(i--){
             call = calls[i];
             if(call.type == type) {
-                event.currentTarget = target;
-                call.func.apply(call.context, [touch, event]);
+                dispatches.push(call);
             }
+        }
+        //handle object according by the time it addListener
+        i = dispatches.length;
+        while(i--){
+            call = dispatches[i];
+            call.func.apply(call.context, [touch, event]);
         }
     }
 });
