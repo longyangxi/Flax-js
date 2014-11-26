@@ -24,6 +24,7 @@ flax.FrameData = cc.Class.extend({
 });
 
 flax.MovieClip = flax.FlaxSprite.extend({
+    clsName:"flax.MovieClip",
     autoPlayChildren:false,
     _namedChildren:null,
     _theRect:null,
@@ -86,9 +87,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
             childDefine = this.define.children[childName];
             frameData = this._frameDatas[childName][frame];
             child = this._namedChildren[childName];
-            if(frameData == null) {
-                if(child) child.visible = false;
-            }else {
+            if(frameData) {
                 var offsetX = 0;
                 var offsetY = 0;
                 if(child == null){
@@ -130,6 +129,10 @@ flax.MovieClip = flax.FlaxSprite.extend({
                 }else if(child.zIndex != childDefine.zIndex){
                     child.zIndex = childDefine.zIndex;
                 }
+            }else if(child) {
+                if(child.destroy) child.destroy();
+                else child.removeFromParent(true);
+                delete this._namedChildren[childName];
             }
         }
     },
@@ -164,6 +167,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
     getDefine:function()
     {
         var define = flax.assetsManager.getMc(this.assetsFile, this.assetID);
+        if(define == null) throw "There is no MovieClip named: " + this.assetID + " in assets: " + this.assetsFile+", make sure you are a pro user!";
         return define;
     },
     getChildOfName:function(name, nest)

@@ -25,7 +25,7 @@ flax.Label = cc.Sprite.extend({
     },
     setString:function(str)
     {
-        if(str == this._str) return;
+        if(str === this._str) return;
         this._str = ""+str;
         this._updateStr();
     },

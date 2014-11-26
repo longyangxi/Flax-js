@@ -64,6 +64,7 @@ flax.FlaxSprite = cc.Sprite.extend({
     _physicsColliders:null,
 
     ctor:function(assetsFile, assetID){
+        if(this.clsName == "flax.FlaxSprite") throw  "flax.FlaxSprite is an abstract class, please use flax.Animator or flax.MovieClip!"
         cc.Sprite.prototype.ctor.call(this);
         if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!"
         this.__instanceId = ClassManager.getNewInstanceId();
@@ -100,20 +101,16 @@ flax.FlaxSprite = cc.Sprite.extend({
 
         this.assetID = assetID;
         this.define = this.getDefine();
-        if(this.define) {
-            //set the anchor
-            var anchorX = this.define.anchorX;
-            var anchorY = this.define.anchorY;
-            if(!isNaN(anchorX) && !isNaN(anchorY)) {
-                this.setAnchorPoint(anchorX, anchorY);
-            }
-            this.onNewSource();
-            this.currentFrame = 0;
-            this.renderFrame(this.currentFrame, true);
-            this._initColliders();
-        }else {
-            cc.log("There is no display named: "+assetID+" in assets: "+assetsFile);
+        //set the anchor
+        var anchorX = this.define.anchorX;
+        var anchorY = this.define.anchorY;
+        if(!isNaN(anchorX) && !isNaN(anchorY)) {
+            this.setAnchorPoint(anchorX, anchorY);
         }
+        this.onNewSource();
+        this.currentFrame = 0;
+        this.renderFrame(this.currentFrame, true);
+        this._initColliders();
         if(this.parent){
             this._updateLaguage();
         }
@@ -137,14 +134,15 @@ flax.FlaxSprite = cc.Sprite.extend({
         return this._physicsBody;
     },
     getCollider:function(name){
+        var c = null;
         if(this._colliders){
             var an = this._colliders[name];
             if(an != null) {
-                an = an[this.currentFrame];
-                return an;
+                c = an[this.currentFrame];
             }
         }
-        return null;
+        if(c == null) cc.log("Warning: The collider: " + name + " can't be found at " + this.assetID + "of" + this.assetsFile + ", make sure you are a pro user!");
+        return c;
     },
     createPhysics:function(type, fixedRotation, bullet){
         if(type == null) type = Box2D.Dynamics.b2Body.b2_dynamicBody;

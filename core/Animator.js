@@ -5,6 +5,7 @@ var flax = flax || {};
 
 flax.Animator = flax.FlaxSprite.extend({
     frameNames:null,
+    clsName:"flax.Animator",
     onNewSource:function()
     {
         var startFrame = this.define.start;
@@ -25,7 +26,9 @@ flax.Animator = flax.FlaxSprite.extend({
     },
     getDefine:function()
     {
-       return flax.assetsManager.getDisplayDefine(this.assetsFile, this.assetID);
+       var define = flax.assetsManager.getDisplayDefine(this.assetsFile, this.assetID);
+       if(define == null) throw "There is no Animator named: " + this.assetID + " in assets: " + this.assetsFile;
+       return define;
     }
 });
 

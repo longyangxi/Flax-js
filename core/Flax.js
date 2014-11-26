@@ -70,7 +70,7 @@ if(!cc.sys.isNative){
     }
 //set the game canvas color as html body color
     /************************************************/
-    //delay call to override the black color setting in js-boot.js
+        //delay call to override the black color setting in js-boot.js
     setTimeout(function(){
         var bgColor = document.body.style.backgroundColor;
         var canvasNode = document.getElementById(cc.game.config["id"]);
@@ -99,7 +99,7 @@ flax.init = function(initUserData)
     flax._inited = true;
     cc.log("Flax inited, version: "+flax.version);
 
-    flax.fetchUserData(initUserData);
+    if(flax.fetchUserData) flax.fetchUserData(initUserData);
     flax._checkOSVersion();
 
     var width = cc.game.config.width;
@@ -143,7 +143,7 @@ flax.getLanguageStr = function(key){
 flax.updateLanguage = function(lan){
     if(lan == null || lan == "" || lan == flax.language) return;
     flax.language = lan;
-    if(!cc.game.config.languages == null || !cc.game.config.languages.length) cc.game.config.languages = DEFAULT_LANS;
+    if(cc.game.config.languages == null || !cc.game.config.languages.length) cc.game.config.languages = DEFAULT_LANS;
     flax.languageIndex = cc.game.config.languages.indexOf(lan);
     if(flax.languageIndex == -1) cc.log("Invalid language: " + lan);
     else flax._languageToLoad = flax._getLanguagePath(lan);
@@ -213,6 +213,7 @@ flax.registerScene = function(name, scene, resources)
 }
 flax.replaceScene = function(sceneName, transition, duration)
 {
+    if(!flax.isDomainAllowed()) return;
     var s = flax._scenesDict[sceneName];
     if(s == null){
         throw "Please register the scene: "+sceneName+" firstly!";
@@ -233,6 +234,8 @@ flax.replaceScene = function(sceneName, transition, duration)
         //init language
         if(flax._languageToLoad){
             flax._languageDict = cc.loader.getRes(flax._getLanguagePath());
+            var i = s.res.indexOf(flax._languageToLoad);
+            if(i > -1) s.res.splice(i, 1);
             flax._languageToLoad = null;
         }
         flax.currentScene = new s.scene();
