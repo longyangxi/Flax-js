@@ -294,7 +294,7 @@ flax._lastMusic = null;
 flax.playMusic = function(path, loop)
 {
     var audioEngine = cc.audioEngine;
-    audioEngine.stopMusic(true);
+    audioEngine.stopMusic(false);
     if(flax._soundEnabled){
         audioEngine.playMusic(path, loop);
     }else{
