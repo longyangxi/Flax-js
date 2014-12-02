@@ -131,7 +131,8 @@ flax.Label = cc.Sprite.extend({
             var size = sprite.getContentSize();
             sprite.x = this.mlWidth;
             sprite.y = 0;
-            this.mlWidth += size.width + this._gap;//size.width * this._gap;
+            this.mlWidth += size.width;
+            if(i != this._str.length -1) this.mlWidth += this._gap;
             this.mlHeight = size.height > this.mlHeight ? size.height : this.mlHeight;
             this._charCanvas.addChild(sprite);
         }
@@ -155,6 +156,7 @@ flax.Label = cc.Sprite.extend({
             while(i--){
                 charChild = this._charCanvas.children[i];
                 if(this.params.align == "center") charChild.x += deltaX;
+                else if(this.params.align == "right") charChild.x += 2*deltaX;
                 charChild.y -= deltaY;
             }
         }
