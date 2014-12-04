@@ -129,6 +129,9 @@ flax.AssetsManager = cc.Class.extend({
         if(dict == null){
             throw "Make sure you have pre-loaded the resource: "+assetsFile;
         }
+        if(!dict.metadata.flaxVersion || dict.metadata.flaxVersion < 1.45){
+            throw "Pleas use the Flax tool of version 1.45 or later!";
+        }
         cc.spriteFrameCache.addSpriteFrames(assetsFile1);
         //Note: the plist will be released by cocos when addSpriteFrames
         //We want it to be there to check the resource if loaded
