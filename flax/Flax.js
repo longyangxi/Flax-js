@@ -92,14 +92,18 @@ if(!cc.sys.isNative){
     }
     /************************************************/
 }
-
-flax.init = function(initUserData)
+/**
+ * @param {cc.ResolutionPolicy} resolutionPolicy resolution policy
+ * @param {Object} initialUserData initial user data
+ * */
+flax.init = function(resolutionPolicy, initialUserData)
 {
     if(flax._inited) return;
     flax._inited = true;
     cc.log("Flax inited, version: "+flax.version);
 
-    if(flax.fetchUserData) flax.fetchUserData(initUserData);
+    if(!resolutionPolicy) resolutionPolicy = cc.ResolutionPolicy.SHOW_ALL;
+    if(flax.fetchUserData) flax.fetchUserData(initialUserData);
     flax._checkOSVersion();
 
     var width = cc.game.config.width;
@@ -109,10 +113,10 @@ flax.init = function(initUserData)
         stg.width = width = width || stg.width;
         stg.height = height = height || stg.height;
         cc.view.adjustViewPort(true);
-        cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.SHOW_ALL);
+        cc.view.setDesignResolutionSize(width, height, resolutionPolicy);
         cc.view.resizeWithBrowserSize(true);
     }else{
-        cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.EXACT_FIT);
+        cc.view.setDesignResolutionSize(width, height, resolutionPolicy);
     }
 
     flax.frameInterval = 1/cc.game.config.frameRate;
@@ -209,6 +213,8 @@ flax._checkOSVersion = function(){
 
 flax.registerScene = function(name, scene, resources)
 {
+    if(!resources) resources = [];
+    if(!(resources instanceof Array)) resources = [resources];
     flax._scenesDict[name] = {scene:scene, res:resources};
 }
 flax.replaceScene = function(sceneName, transition, duration)
@@ -219,7 +225,6 @@ flax.replaceScene = function(sceneName, transition, duration)
         throw "Please register the scene: "+sceneName+" firstly!";
         return;
     }
-    if(s.res == null) s.res = [];
     if(flax._languageToLoad && s.res.indexOf(flax._languageToLoad) == -1){
         s.res.push(flax._languageToLoad);
     }

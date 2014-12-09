@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<project name="Javascript compress project" basedir="" default="compile">
+
+    <taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask"
+             classpath="/Users/long/Documents/www/cocos2d-js-v3.1/tools/cocos2d-console/bin/../plugins/project_compile/build_web/bin/compiler-1.7.jar"/>
+
+    <target name="compile">
+        <jscomp compilationLevel="simple" 
+                warning="quiet"
+                debug="false" 
+                output="./bin/flax-lite.min.js"
+                languagein="ECMASCRIPT5"
+                >
+            <sources dir="${basedir}">
+                <!--core begin-->
+                <file name="flax/Flax.js"/>
+                <file name="flax/signal/SignalBinding.js"/>
+                <file name="flax/signal/Signal.js"/>
+                <file name="flax/signal/wrapper.js"/>
+                <file name="flax/core/DebugDraw.js"/>
+                <file name="flax/core/InputManager.js"/>
+                <file name="flax/core/AssetsManager.js"/>
+                <file name="flax/core/Physics.js"/>
+                <file name="flax/core/FlaxSprite.js"/>
+                <file name="flax/core/Animator.js"/>
+                <file name="flax/core/MovieClip.js"/>
+                <file name="flax/core/ProgressBar.js"/>
+                <file name="flax/core/Label.js"/>
+                <file name="flax/core/Button.js"/>
+                <file name="flax/utils/rawinflate.min.js"/>
+                <file name="flax/game/Preloader.js"/>
+                <file name="flax/game/TileMap.js"/>
+                <file name="flax/game/UserData.js"/>
+                <file name="flax/game/ObjectPool.js"/>
+                <!--core end-->
+                <!--<file name="flax/game/Gun.js"/>-->
+                <!--<file name="flax/game/Gunner.js"/>-->
+                <!--<file name="flax/game/ScrollingBG.js"/>-->
+                <!--<file name="flax/game/ScrollPane.js"/>-->
+                <!--<file name="flax/game/TiledImage.js"/>-->
+                <!--<file name="flax/game/LinkFinder.js"/>-->
+                <!--<file name="flax/module/HealthModule.js"/>-->
+                <!--<file name="flax/module/EnemyWaveModule.js"/>-->
+            </sources>
+        </jscomp>
+    </target>
+</project>

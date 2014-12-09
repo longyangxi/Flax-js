@@ -1,0 +1,30 @@
+{
+    "version": 1.0,
+    "gameId": "simple",
+    "width": 600,
+    "height":400,
+    "landscape": false,
+    "language": "zh",
+    "languages": ["en","zh","de","fr","it","es","tr","pt","ru"],
+    "useFlaxRes": true,
+    "loading": "res/logo.png",
+    "rotateImg": "res/rotate.png",
+    "homeUrl": "http://flax.longames.com",
+    "domainAllowed": [
+    ],
+
+    "project_type": "javascript",
+    "debugMode" : 1,
+    "showFPS" : false,
+    "frameRate" : 30,
+    "id" : "gameCanvas",
+    "renderMode" : 1,
+    "engineDir":"frameworks/cocos2d-html5",
+
+    "modules" : [],
+
+    "jsList" : [
+        "src/Resource.js",
+        "src/SimpleScene.js"
+    ]
+}
