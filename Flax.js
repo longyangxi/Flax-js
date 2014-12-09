@@ -117,7 +117,7 @@ flax.init = function(initUserData)
 
     flax.frameInterval = 1/cc.game.config.frameRate;
     flax.assetsManager = flax.AssetsManager.create();
-    if(cc.game.config.timeScale)  cc.director.getScheduler().setTimeScale(cc.game.config.timeScale);
+    //if(cc.game.config.timeScale)  cc.director.getScheduler().setTimeScale(cc.game.config.timeScale);
 
     var lan = cc.game.config.language;
     if(lan == null || lan == "") {
