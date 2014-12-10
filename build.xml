@@ -8,39 +8,39 @@
         <jscomp compilationLevel="simple" 
                 warning="quiet"
                 debug="false" 
-                output="./bin/flax-lite.min.js"
+                output="./bin/flax.min.js"
                 languagein="ECMASCRIPT5"
                 >
             <sources dir="${basedir}">
                 <!--core begin-->
-                <file name="flax/Flax.js"/>
-                <file name="flax/signal/SignalBinding.js"/>
-                <file name="flax/signal/Signal.js"/>
-                <file name="flax/signal/wrapper.js"/>
-                <file name="flax/core/DebugDraw.js"/>
-                <file name="flax/core/InputManager.js"/>
-                <file name="flax/core/AssetsManager.js"/>
-                <file name="flax/core/Physics.js"/>
-                <file name="flax/core/FlaxSprite.js"/>
-                <file name="flax/core/Animator.js"/>
-                <file name="flax/core/MovieClip.js"/>
-                <file name="flax/core/ProgressBar.js"/>
-                <file name="flax/core/Label.js"/>
-                <file name="flax/core/Button.js"/>
-                <file name="flax/utils/rawinflate.min.js"/>
-                <file name="flax/game/Preloader.js"/>
-                <file name="flax/game/TileMap.js"/>
-                <file name="flax/game/UserData.js"/>
-                <file name="flax/game/ObjectPool.js"/>
+                <file name="src/flax/Flax.js"/>
+                <file name="src/flax/signal/SignalBinding.js"/>
+                <file name="src/flax/signal/Signal.js"/>
+                <file name="src/flax/signal/wrapper.js"/>
+                <file name="src/flax/core/DebugDraw.js"/>
+                <file name="src/flax/core/InputManager.js"/>
+                <file name="src/flax/core/AssetsManager.js"/>
+                <file name="src/flax/core/Physics.js"/>
+                <file name="src/flax/core/FlaxSprite.js"/>
+                <file name="src/flax/core/Animator.js"/>
+                <file name="src/flax/core/MovieClip.js"/>
+                <file name="src/flax/core/ProgressBar.js"/>
+                <file name="src/flax/core/Label.js"/>
+                <file name="src/flax/core/Button.js"/>
+                <file name="src/flax/utils/rawinflate.min.js"/>
+                <file name="src/flax/game/Preloader.js"/>
+                <file name="src/flax/game/TileMap.js"/>
+                <file name="src/flax/game/UserData.js"/>
+                <file name="src/flax/game/ObjectPool.js"/>
                 <!--core end-->
-                <!--<file name="flax/game/Gun.js"/>-->
-                <!--<file name="flax/game/Gunner.js"/>-->
-                <!--<file name="flax/game/ScrollingBG.js"/>-->
-                <!--<file name="flax/game/ScrollPane.js"/>-->
-                <!--<file name="flax/game/TiledImage.js"/>-->
-                <!--<file name="flax/game/LinkFinder.js"/>-->
-                <!--<file name="flax/module/HealthModule.js"/>-->
-                <!--<file name="flax/module/EnemyWaveModule.js"/>-->
+                <file name="src/flax/game/Gun.js"/>
+                <file name="src/flax/game/Gunner.js"/>
+                <file name="src/flax/game/ScrollingBG.js"/>
+                <file name="src/flax/game/ScrollPane.js"/>
+                <file name="src/flax/game/TiledImage.js"/>
+                <file name="src/flax/game/LinkFinder.js"/>
+                <file name="src/flax/module/HealthModule.js"/>
+                <file name="src/flax/module/EnemyWaveModule.js"/>
             </sources>
         </jscomp>
     </target>
