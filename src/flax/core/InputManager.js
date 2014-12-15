@@ -7,7 +7,9 @@ var InputType = {
     press:"onPress",
     up:"onUp",//The touch position maybe not within the press target
     click:"onClick",
-    move:"onMouseMove"//The touch position maybe not within the press target
+    move:"onMouseMove",//The touch position maybe not within the press target
+    keyPress:"onKeyPress",
+    keyUp:"onKeyUp"
 };
 
 flax.InputManager = cc.Node.extend({
@@ -18,6 +20,8 @@ flax.InputManager = cc.Node.extend({
     justDragDist:0,
     _masks:[],
     _callbacks:{},
+    _keyboardCallbacks:{},
+    _keyboardListenerCreated:false,
 
     onEnter:function()
     {
@@ -58,6 +62,8 @@ flax.InputManager = cc.Node.extend({
         this._masks = [];
         this.inTouching = false;
         this._callbacks = {};
+        this._keyboardCallbacks = {};
+        this._keyboardListenerCreated = false;
         cc.eventManager.removeAllListeners();
     },
     /**
@@ -106,7 +112,9 @@ flax.InputManager = cc.Node.extend({
     },
     /**
      * @param{cc.Node}target the target want to receive the touch event, if target is null, then global event will be triggered
-     * @param{function}function to call back, func(touch, event),{event.currentTarget, event.target}
+     *                       for keyboard event, the target will be the context if the real context is null
+     * @param{function}function to call back, for touch event: func(touch, event),{event.currentTarget, event.target}
+     *                       for keyboard event: func(key){};
      * @param{string}event type as InputType said
      * @param{cc.Node}context the callback context of "THIS", if null, use target as the context
      * */
@@ -115,9 +123,28 @@ flax.InputManager = cc.Node.extend({
         if(func == null) {
             throw "Event callback can not be null!"
         }
+        var isKeyboardEvent = (type == InputType.keyPress || type == InputType.keyUp);
         if(target == null) {
-            cc.log("target is null, make sure you want to listen to the full screen input!")
             target = this;
+            if(!isKeyboardEvent) {
+                cc.log("Listening target is null, make sure you want to listen to the full screen input!");
+            }
+        }
+
+        if(isKeyboardEvent) {
+            var arr = this._keyboardCallbacks[type];
+            if(arr == null) {
+                arr = [];
+                this._keyboardCallbacks[type] = arr;
+            }
+            //Make sure no duplicated listener
+            var i = arr.length;
+            while(i--){
+                if(arr[i].func == func)  return;
+            }
+            arr.push({func:func, context:context || target});
+            if(!this._keyboardListenerCreated) this._createKeyboardListener();
+            return;
         }
 
         type = (type == null) ? InputType.click : type;
@@ -130,7 +157,7 @@ flax.InputManager = cc.Node.extend({
                 this._createListener(target, true);
             }
         }
-
+        //Make sure no duplicated listener
         var i = arr.length;
         while(i--){
             if(arr[i].type == type && arr[i].func == func)  return;
@@ -142,20 +169,39 @@ flax.InputManager = cc.Node.extend({
     {
         if(target == null) target = this;
         var calls = this._callbacks[target.__instanceId];
-        if(!calls) return;
-        this.scheduleOnce(function(){
-            var call = null;
-            var i = calls.length;
-            if(func || type) {
-                while(i--){
-                    call = calls[i];
-                    if((type && call.type == type) || (func && call.func == func)) calls.splice(i, 1);
+        if(calls && (type == null || (type != InputType.keyPress && type != InputType.keyUp))) {
+            this.scheduleOnce(function(){
+                var call = null;
+                var i = calls.length;
+                if(func || type) {
+                    while(i--){
+                        call = calls[i];
+                        if((type && call.type == type) || (func && call.func == func)) calls.splice(i, 1);
+                    }
                 }
+                if(calls.length == 0 || (!func && !type)){
+                    delete this._callbacks[target.__instanceId];
+                }
+            },0.01);
+        }
+        if(func && (type == null || type == InputType.keyPress || type == InputType.keyUp)){
+            if(type == null) {
+                calls = this._keyboardCallbacks[InputType.keyPress] || [];
+                calls = calls.concat(this._keyboardCallbacks[InputType.keyUp] || []);
+            }else{
+                calls = this._keyboardCallbacks[type];
             }
-            if(calls.length == 0 || (!func && !type)){
-                delete this._callbacks[target.__instanceId];
+            if(calls && calls.length){
+                this.scheduleOnce(function(){
+                    var call = null;
+                    var i = calls.length;
+                    while(i--){
+                        call = calls[i];
+                        if(call.func == func) calls.splice(i, 1);
+                    }
+                },0.01);
             }
-        },0.01);
+        }
     },
     handleTouchBegan:function(touch, event)
     {
@@ -220,6 +266,20 @@ flax.InputManager = cc.Node.extend({
             }
         })
         cc.eventManager.addListener(listener, target);
+    },
+    _createKeyboardListener:function()
+    {
+        var self = this;
+        cc.eventManager.addListener({
+            event: cc.EventListener.KEYBOARD,
+            onKeyPressed:  function(keyCode, event){
+                self._dispatchKeyboardEvent(keyCode, InputType.keyPress);
+            },
+            onKeyReleased: function(keyCode, event){
+                self._dispatchKeyboardEvent(keyCode, InputType.keyUp);
+            }
+        }, this);
+        this._keyboardListenerCreated = true;
     },
     _ifNotMasked:function(target, pos)
     {
@@ -309,6 +369,36 @@ flax.InputManager = cc.Node.extend({
             call = dispatches[i];
             call.func.apply(call.context, [touch, event]);
         }
+    },
+    _dispatchKeyboardEvent:function(keyCode, type)
+    {
+        var calls = this._keyboardCallbacks[type];
+        if(!calls || !calls.length) return;
+        var key = cc.sys.isNative ? self._getNativeKeyName(keyCode) : String.fromCharCode(keyCode);
+        var call = null;
+        var dispatches = [];
+        var i = calls.length;
+        while(i--){
+            call = calls[i];
+            dispatches.push(call);
+        }
+        //handle object according by the time it addListener
+        i = dispatches.length;
+        while(i--){
+            call = dispatches[i];
+            call.func.apply(call.context, [key]);
+        }
+    },
+    _getNativeKeyName:function(keyCode) {
+        var allCode = Object.getOwnPropertyNames(cc.KEY);
+        var keyName = "";
+        for(var x in allCode){
+            if(cc.KEY[allCode[x]] == keyCode){
+                keyName = allCode[x];
+                break;
+            }
+        }
+        return keyName;
     }
 });
 
