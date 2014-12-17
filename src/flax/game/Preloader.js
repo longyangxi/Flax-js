@@ -117,6 +117,7 @@ flax.Preloader = cc.Scene.extend({
             });
     }
 });
+flax._fontResources = {};
 flax.preload = function(res, callBack)
 {
     if(res == null || res.length == 0) {
@@ -144,7 +145,12 @@ flax.preload = function(res, callBack)
                 }
             }else{
                 needLoad = true;
-                res1.unshift(r);
+                //it is a font resoruce
+                if(typeof r == "object" && r.type && r.name && r.srcs){
+                    needLoad = (flax._fontResources[r.name] == null);
+                    flax._fontResources[r.name] = r;
+                }
+                if(needLoad) res1.unshift(r);
             }
         }
     }

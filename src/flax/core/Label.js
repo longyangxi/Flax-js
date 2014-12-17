@@ -228,6 +228,8 @@ flax.Label.create = function(assetsFile, define)
     //If it is ttf label(has font and the bitmap font is null, other wise use bitmap label
     else if(define.font && bmpFontName == null){
         var labelDef = new cc.FontDefinition();
+        //If you want to embed font, please define and load font resource like this:
+        //{type:"font", name:"Franklin Gothic Heavy", srcs:["res/FRAHV_0.TTF","res/FRAHVIT_0.TTF","res/franklin gothic heavy.ttf"]}
         labelDef.fontName = define.font;
         labelDef.fontSize = define.size;
         labelDef.textAlign = H_ALIGHS.indexOf(define.align);

@@ -39,13 +39,13 @@ flax._languageToLoad = null;
 
 flax._addResVersion = function(url)
 {
-    if(cc.sys.isNative) return url;
+    if(cc.sys.isNative  || typeof url != "string") return url;
     if(url.indexOf("?v=") > -1) return url;
     return url + "?v=" + cc.game.config.version;
 }
 flax._removeResVersion = function(url)
 {
-    if(cc.sys.isNative) return url;
+    if(cc.sys.isNative  || typeof url != "string") return url;
     var i = url.indexOf("?v=");
     if(i > -1) url = url.substr(0, i);
     return url;
