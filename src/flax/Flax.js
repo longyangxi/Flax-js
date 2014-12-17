@@ -225,8 +225,15 @@ flax.replaceScene = function(sceneName, transition, duration)
         throw "Please register the scene: "+sceneName+" firstly!";
         return;
     }
+    //to load the language resource
     if(flax._languageToLoad && s.res.indexOf(flax._languageToLoad) == -1){
         s.res.push(flax._languageToLoad);
+    }
+    //to load the font resources
+    if(flax._fontResources) {
+        for(var fontName in flax._fontResources) {
+            s.res.push({type:"font", name:fontName, srcs:flax._fontResources[fontName]});
+        }
     }
     if(flax.ObjectPool) flax.ObjectPool.release();
     if(flax.BulletCanvas) flax.BulletCanvas.reset();
@@ -242,6 +249,14 @@ flax.replaceScene = function(sceneName, transition, duration)
             var i = s.res.indexOf(flax._languageToLoad);
             if(i > -1) s.res.splice(i, 1);
             flax._languageToLoad = null;
+        }
+        //remove the fontresources
+        if(flax._fontResources){
+            var i = s.res.length;
+            while(i--){
+                if(typeof s.res[i] == "object") s.res.splice(i, 1);
+            }
+            flax._fontResources = null;
         }
         flax.currentScene = new s.scene();
         var transitioned = false;
@@ -260,6 +275,14 @@ flax.replaceScene = function(sceneName, transition, duration)
         flax.currentScene.addChild(flax.inputManager, 999999);
         flax._checkDeviceOrientation();
     });
+}
+flax._fontResources = null;
+flax.registerFont = function(name, urls)
+{
+    if(!name || !url) return;
+    if(typeof url == "string") urls = [urls];
+    if(flax._fontResources == null) flax._fontResources = {};
+    flax._fontResources[name] = urls;
 }
 flax._tileMaps = {};
 flax.getTileMap = function(id)
