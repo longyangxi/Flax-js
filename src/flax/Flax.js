@@ -19,7 +19,7 @@ var TileValue = TileValue || {
 
 var flax = flax || {};
 
-flax.version = 1.45;
+flax.version = 1.46;
 flax.language = null;
 flax.languageIndex = -1;
 flax.landscape = false;
@@ -279,8 +279,8 @@ flax.replaceScene = function(sceneName, transition, duration)
 flax._fontResources = null;
 flax.registerFont = function(name, urls)
 {
-    if(!name || !url) return;
-    if(typeof url == "string") urls = [urls];
+    if(!name || !urls) return;
+    if(typeof urls == "string") urls = [urls];
     if(flax._fontResources == null) flax._fontResources = {};
     flax._fontResources[name] = urls;
 }
