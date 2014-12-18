@@ -236,12 +236,15 @@ flax.Label.create = function(assetsFile, define)
         labelDef.fontDimensions = true;
         labelDef.boundingWidth = define.width;
         labelDef.boundingHeight = define.height;
-        //todo, outline and shadow effect
         if(txtCls == "null") {
             lbl = new cc.LabelTTF(define.text, labelDef);
         }else{
             lbl = new cc.LabelTTF(flax.getLanguageStr(txtCls) || define.text, labelDef);
         }
+        //enable stroke
+        //lbl.enableStroke(cc.color(255, 0, 0, 255), 5);
+        //enable shadow
+        //lbl.enableShadow(cc.color(255,255,255,255),2,5);
     }else{
         lbl = new flax.Label();
         flax.assetsManager.addAssets(assetsFile);
