@@ -319,21 +319,40 @@ flax.getSoundEnabled = function() {
     return flax._soundEnabled;
 }
 flax._lastMusic = null;
-flax.playMusic = function(path, loop)
+flax.playMusic = function(path, loop, releaseOld)
 {
     var audioEngine = cc.audioEngine;
-    audioEngine.stopMusic(false);
+    audioEngine.stopMusic(releaseOld === true);
     if(flax._soundEnabled){
         audioEngine.playMusic(path, loop);
     }else{
         flax._lastMusic = path;
     }
 }
+flax.stopMusic = function(release){
+    cc.audioEngine.stopMusic(release === true);
+}
+flax.pauseMusic = function(){
+    cc.audioEngine.pauseMusic();
+}
+flax.playEffect = function(path)
+{
+    var audioEngine = cc.audioEngine;
+    var id = audioEngine.playEffect(path);
+    if(!flax._soundEnabled){
+        audioEngine.stopEffect(id);
+    }
+    return id;
+}
+flax.stopEffect = function(effectID)
+{
+    var audioEngine = cc.audioEngine;
+    if(effectID != null) audioEngine.stopEffect(effectID);
+    else audioEngine.stopAllEffects();
+}
 flax.playSound = function(path)
 {
-    if(flax._soundEnabled){
-        cc.audioEngine.playEffect(path);
-    }
+    return flax.playEffect(path);
 }
 //----------------------sound about-------------------------------------------------------
 flax._checkDeviceOrientation = function(){
