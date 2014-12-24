@@ -27,7 +27,7 @@ If you or your team member especially the artist are familiar with the Flash, yo
 
 Examples
 ========
-https://github.com/longyangxi/Flax-js-examples#flax-js-examples
+https://github.com/longyangxi/Flax-js-examples
 
 Home
 ====
