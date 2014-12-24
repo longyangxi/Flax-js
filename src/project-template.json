@@ -7,6 +7,7 @@
     "language": "zh",
     "languages": ["en","zh","de","fr","it","es","tr","pt","ru"],
     "useFlaxRes": true,
+    "preloader":"flax.Preloader",
     "loading": "res/logo.png",
     "rotateImg": "res/rotate.png",
     "homeUrl": "http://longames.com",
