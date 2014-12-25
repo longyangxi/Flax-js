@@ -338,15 +338,14 @@ flax.FlaxSprite = cc.Sprite.extend({
         this._animTime = 0;
         return true;
     },
-    gotoAndPlay:function(frameOrLabel)
+    gotoAndPlay:function(frameOrLabel,forcePlay)
     {
         if(typeof frameOrLabel === "string") {
-            if(this.playing && this.currentAnim == frameOrLabel) return true;
+            if(this.playing && this.currentAnim == frameOrLabel && forcePlay !== true) return true;
             var lbl = this.getLabels(frameOrLabel);
             if(lbl == null){
                 if(!this.setSubAnim(frameOrLabel, true)) {
                     this.play();
-//                    cc.log("There is no frame label: "+frameOrLabel+" in the display: "+this._baseAssetID);
                     return false;
                 }else {
                     return true;
@@ -459,6 +458,7 @@ flax.FlaxSprite = cc.Sprite.extend({
         this._sequenceIndex++;
         if(this._sequenceIndex >= this._animSequence.length){
             if(!this._loopSequence) {
+                this.gotoAndPlay(this._animSequence[this._sequenceIndex - 1], true);
                 this._animSequence = [];
                 return;
             }
