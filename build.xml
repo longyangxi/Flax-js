@@ -23,6 +23,7 @@
                 <file name="src/flax/core/Physics.js"/>
                 <file name="src/flax/core/FlaxSprite.js"/>
                 <file name="src/flax/core/Animator.js"/>
+                <file name="src/flax/core/Image.js"/>
                 <file name="src/flax/core/MovieClip.js"/>
                 <file name="src/flax/core/ProgressBar.js"/>
                 <file name="src/flax/core/Label.js"/>

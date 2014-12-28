@@ -35,6 +35,7 @@
         "src/flax/core/Physics.js",
         "src/flax/core/FlaxSprite.js",
         "src/flax/core/Animator.js",
+        "src/flax/core/Image.js",
         "src/flax/core/MovieClip.js",
         "src/flax/core/ProgressBar.js",
         "src/flax/core/Label.js",
