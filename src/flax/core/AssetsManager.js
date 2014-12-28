@@ -8,6 +8,8 @@ F2C_ALIAS = {mc:"flax.MovieClip",
              btn:"flax.SimpleButton",
              button:"flax.Button",
              progress:"flax.ProgressBar",
+             jpg:"flax.Image",
+             png:"flax.Image",
              scrollPane:"flax.ScrollPane",
              scrollPane1:"flax.ScrollPane1",
              gun:"flax.Gunner",
@@ -51,20 +53,19 @@ flax.AssetsManager = cc.Class.extend({
         }
         this.addAssets(assetsFile);
 
-        var clsPreDefined = false;
-        if(clsName) clsPreDefined = true;
-        else clsName = assetID;
-
         var subAnims = this.getSubAnims(assetsFile, assetID);
         if(subAnims.length) {
             assetID = assetID + "$" + subAnims[0];
         }
-
-        var mcCls = flax.nameToObject(clsName);
-        if(mcCls == null && clsPreDefined){
-            throw "The class: "+clsName+" doesn't exist!"
+        var mcCls = null;
+        if(clsName) {
+            mcCls = flax.nameToObject(clsName);
+            if(mcCls == null){
+                throw "The class: "+clsName+" doesn't exist!"
+            }
         }
-        if(mcCls == null && !clsPreDefined) {
+
+        if(mcCls == null) {
             var define = this.getDisplayDefine(assetsFile, assetID);
             var isMC = false;
             if(define == null) {
@@ -73,6 +74,9 @@ flax.AssetsManager = cc.Class.extend({
             }
             if(define){
                 clsName = define.type;
+                if(clsName == "null" && assetID != "jpg" && assetID != "png"){
+                    clsName = assetID;
+                }
                 mcCls = flax.nameToObject(clsName);
                 if(mcCls == null){
                     clsName = F2C_ALIAS[clsName];
@@ -84,7 +88,7 @@ flax.AssetsManager = cc.Class.extend({
                     clsName = isMC ? "flax.MovieClip" : "flax.Animator";
                 }
             }else{
-                throw  "There is no display with assetID: "+assetID+" in assets file: "+assetsFile;
+                throw  "There is no display with assetID: "+assetID+" in assets file: "+assetsFile+", or make sure the display is not a BLANK symbol!";
             }
         }
         if(params == null) params = {};

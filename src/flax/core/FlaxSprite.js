@@ -24,7 +24,6 @@ flax.FlaxSprite = cc.Sprite.extend({
     autoStopWhenOver:false,
     autoHideWhenOver:false,
     autoRecycle:false,
-    assetsFile:null,
     currentFrame:0,
     currentAnim:null,
     prevFrame:-1,
@@ -34,12 +33,12 @@ flax.FlaxSprite = cc.Sprite.extend({
     loopEnd:0,
     define:null,
     name:null,
+    assetsFile:null,
     assetID:null,
     clsName:"flax.FlaxSprite",
     __isFlaxSprite:true,
-    _fps:30,
+    _fps:cc.game.config.frameRate,
     playing:false,
-    inRecycle:false,
     _colliders:null,
     _mainCollider:null,
     _physicsBody:null,
@@ -85,7 +84,6 @@ flax.FlaxSprite = cc.Sprite.extend({
         }
         if(this.assetsFile == assetsFile && (this.assetID == assetID || this._baseAssetID == assetID)) return;
         this.assetsFile = assetsFile;
-        flax.assetsManager.addAssets(assetsFile);
 
         //see if there is a sub animation
         var ns = assetID.split("$");
@@ -425,7 +423,7 @@ flax.FlaxSprite = cc.Sprite.extend({
     _animTime:0,
     onFrame:function(delta)
     {
-        if(!this.visible || this.inRecycle) return;
+        if(!this.visible) return;
         this.renderFrame(this.currentFrame);
         this.currentFrame++;
         this._animTime += delta;
@@ -528,7 +526,6 @@ flax.FlaxSprite = cc.Sprite.extend({
     onEnter:function()
     {
         this._super();
-        this.inRecycle = false;
         this._destroyed = false;
         if(this._tileMap && !this._tileInited) {
             this.updateTile(true);
@@ -643,7 +640,7 @@ flax.FlaxSprite = cc.Sprite.extend({
             dirty = (pos != this.x || yValue != this.y);
             if(dirty) this._super(pos, yValue);
         }
-        if(!dirty || this.inRecycle) return;
+        if(!dirty || !this.parent) return;
         if(this.autoUpdateTileWhenMove && this._tileMap){
             this.updateTile();
         }
@@ -665,7 +662,7 @@ flax.FlaxSprite = cc.Sprite.extend({
             if(this._tileMap && this.parent)
             {
                 this._tileMap.removeObject(this, oldTx, oldTy);
-                if(!this.inRecycle) {
+                if(this.parent) {
                     this._tileMap.addObject(this);
                     this._tileInited = true;
                 }
@@ -681,10 +678,8 @@ flax.FlaxSprite = cc.Sprite.extend({
         if(this._destroyed) return;
         this._destroyed = true;
         if(this.autoRecycle) {
-            if(!this.inRecycle) {
-                var pool = flax.ObjectPool.get(this.assetsFile, this.clsName, this.__pool__id__ || "");
-                pool.recycle(this);
-            }
+            var pool = flax.ObjectPool.get(this.assetsFile, this.clsName, this.__pool__id__ || "");
+            pool.recycle(this);
         }
 
         this.removeFromParent();
@@ -694,7 +689,6 @@ flax.FlaxSprite = cc.Sprite.extend({
      * */
     onRecycle:function()
     {
-        this.inRecycle = true;
         //when recycled, reset all the prarams as default
         this.autoRecycle = false;
         //todo, if reset zIndex to 0, when it is reused, the zIndex is not correct!

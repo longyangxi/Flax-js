@@ -11,6 +11,7 @@ flax.FrameData = cc.Class.extend({
     scaleX:1,
     scaleY:1,
     opacity:255,
+    zIndex:-1,
 
     ctor:function(data){
         data = data.split(",");
@@ -20,6 +21,7 @@ flax.FrameData = cc.Class.extend({
         this.scaleX = parseFloat(data[3]);
         this.scaleY = parseFloat(data[4]);
         this.opacity = Math.round(255*parseFloat(data[5]));
+        if(data.length > 6) this.zIndex = parseInt(data[6]);
     }
 });
 
@@ -101,6 +103,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
                     }else{
                         child = flax.assetsManager.createDisplay(this.assetsFile, childDefine["class"], null, true);
                     }
+
                     child.name = childName;
                     this._namedChildren[childName] = child;
                     if(this.autoPlayChildren) {
@@ -123,11 +126,13 @@ flax.MovieClip = flax.FlaxSprite.extend({
                 if(this.autoPlayChildren) {
                     this.playing ? child.play() : child.stop();
                 }
+                //To fix the zIndex bug when use the old version tool
+                var zIndex = (frameData.zIndex == -1) ? childDefine.zIndex : frameData.zIndex;
                 if(child.parent != this){
                     child.removeFromParent(false);
-                    this.addChild(child, childDefine.zIndex);
-                }else if(child.zIndex != childDefine.zIndex){
-                    child.zIndex = childDefine.zIndex;
+                    this.addChild(child, zIndex);
+                }else if(child.zIndex != zIndex){
+                    child.zIndex = zIndex;
                 }
             }else if(child) {
                 if(child.destroy) child.destroy();
