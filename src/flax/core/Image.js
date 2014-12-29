@@ -34,8 +34,9 @@ flax.Image = cc.Sprite.extend({
         this.assetsFile = assetsFile;
         this.assetID = assetID;
         this.define = flax.assetsManager.getDisplayDefine(this.assetsFile, this.assetID);
-        //todo
-        this.initWithFile("res/" + this.define.url);
+        //get the resource folder
+        var dir = this.assetsFile.slice(0, this.assetsFile.lastIndexOf("/"));
+        this.initWithFile(dir + "/" + this.define.url);
         //set the anchor
         var anchorX = this.define.anchorX;
         var anchorY = this.define.anchorY;
@@ -86,7 +87,6 @@ flax.Image = cc.Sprite.extend({
     {
         //when recycled, reset all the prarams as default
         this.autoRecycle = false;
-        //todo, if reset zIndex to 0, when it is reused, the zIndex is not correct!
         this.setScale(1);
         this.opacity = 255;
         this.rotation = 0;

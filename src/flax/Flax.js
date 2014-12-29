@@ -150,7 +150,7 @@ flax.updateLanguage = function(lan){
     if(cc.game.config.languages == null || !cc.game.config.languages.length) cc.game.config.languages = DEFAULT_LANS;
     flax.languageIndex = cc.game.config.languages.indexOf(lan);
     if(flax.languageIndex == -1) cc.log("Invalid language: " + lan);
-    else flax._languageToLoad = flax._getLanguagePath(lan);
+    else if(cc.game.config.languageJson) flax._languageToLoad = flax._getLanguagePath(lan);
 }
 flax._getLanguagePath = function(lan){
     return  "res/locale/"+(lan || flax.language)+".json";
@@ -311,7 +311,6 @@ flax.preload = function(res, callBack)
     if(needLoad){
         var loaderScene =  flax.nameToObject(cc.game.config.preloader || "flax.Preloader");
         loaderScene = new loaderScene();
-        loaderScene.init();
         loaderScene.initWithResources(res1, function(){
             //replace the resource's key with no version string when not in JSB
             if(!cc.sys.isNative) {
@@ -696,9 +695,11 @@ flax.createDInts = function(count, centerInt)
     return ds;
 };
 
+flax.homeUrl = "http://flax.longames.com";
 flax.goHomeUrl = function()
 {
-    if(!cc.sys.isNative && cc.game.config.homeUrl){
-        window.open(cc.game.config.homeUrl);
+    var homeUrl = cc.game.config.homeUrl || flax.homeUrl;
+    if(!cc.sys.isNative && homeUrl){
+        window.open(homeUrl);
     }
 }

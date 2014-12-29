@@ -19,6 +19,7 @@
                 <file name="src/flax/signal/wrapper.js"/>
                 <file name="src/flax/core/DebugDraw.js"/>
                 <file name="src/flax/core/InputManager.js"/>
+                <file name="src/flax/core/FlaxLoader.js"/>
                 <file name="src/flax/core/AssetsManager.js"/>
                 <file name="src/flax/core/Physics.js"/>
                 <file name="src/flax/core/FlaxSprite.js"/>
@@ -28,7 +29,6 @@
                 <file name="src/flax/core/ProgressBar.js"/>
                 <file name="src/flax/core/Label.js"/>
                 <file name="src/flax/core/Button.js"/>
-                <file name="src/flax/utils/rawinflate.min.js"/>
                 <file name="src/flax/game/Preloader.js"/>
                 <file name="src/flax/game/TileMap.js"/>
                 <file name="src/flax/game/UserData.js"/>

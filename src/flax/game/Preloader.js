@@ -32,7 +32,11 @@ flax.Preloader = cc.Scene.extend({
     _label : null,
     _className:"flax.Preloader",
     _logo:null,
+    _inited:false,
     init : function(){
+        if(this._inited) return;
+        this._inited = true;
+
         var self = this;
         var winSize = cc.director.getWinSize();
 
@@ -95,6 +99,7 @@ flax.Preloader = cc.Scene.extend({
      * @param {Function|String} cb
      */
     initWithResources: function (resources, cb) {
+        this.init();
         if(typeof resources == "string")
             resources = [resources];
         this.resources = resources || [];
