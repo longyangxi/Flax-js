@@ -285,6 +285,12 @@ flax.FlaxSprite = cc.Sprite.extend({
         }
         return null;
     },
+    nextFrame:function(){
+        this.gotoAndStop(Math.min(++this.currentFrame , this.totalFrames - 1));
+    },
+    prevFrame:function(){
+        this.gotoAndStop(Math.max(--this.currentFrame , 0));
+    },
     play:function()
     {
         this.loopStart = 0;
@@ -325,7 +331,7 @@ flax.FlaxSprite = cc.Sprite.extend({
     {
         if(!anim || anim.length == 0) return false;
         if(this._subAnims == null || this._subAnims.indexOf(anim) == -1){
-//            cc.log("There is no animation named: "+anim);
+            cc.log("There is no animation named: " + anim);
             return false;
         }
 //        if(this._currentSubAnim == anim) return false;
@@ -342,12 +348,12 @@ flax.FlaxSprite = cc.Sprite.extend({
             if(this.playing && this.currentAnim == frameOrLabel && forcePlay !== true) return true;
             var lbl = this.getLabels(frameOrLabel);
             if(lbl == null){
-                if(!this.setSubAnim(frameOrLabel, true)) {
+                var has = this.setSubAnim(frameOrLabel, true);
+                if(!has) {
+                    cc.log("There is no animation named: " + frameOrLabel);
                     this.play();
-                    return false;
-                }else {
-                    return true;
                 }
+                return has;
             }
             this.loopStart = lbl.start;
             this.loopEnd = lbl.end;
@@ -380,7 +386,9 @@ flax.FlaxSprite = cc.Sprite.extend({
         if(isNaN(frameOrLabel)) {
             var lbl = this.getLabels(frameOrLabel);
             if(lbl == null){
-                return this.setSubAnim(frameOrLabel, false);
+                var has = this.setSubAnim(frameOrLabel, false);
+                if(!has) cc.log("There is no animation named: " + frameOrLabel);
+                return has;
             }
             frameOrLabel = lbl.start;
         }
@@ -424,11 +432,13 @@ flax.FlaxSprite = cc.Sprite.extend({
     onFrame:function(delta)
     {
         if(!this.visible) return;
-        this.renderFrame(this.currentFrame);
         this.currentFrame++;
+        if(this.currentFrame > this.totalFrames - 1) this.currentFrame = this.totalFrames - 1;
+        this.renderFrame(this.currentFrame);
         this._animTime += delta;
-        if(this.currentFrame > this.loopEnd)
+        if(this.currentFrame >= this.loopEnd)
         {
+            this.currentFrame = this.loopEnd;
             if(this.onAnimationOver.getNumListeners())
             {
                 this.onAnimationOver.dispatch(this);
@@ -438,10 +448,8 @@ flax.FlaxSprite = cc.Sprite.extend({
                 this.updatePlaying(false);
                 this.destroy();
             }else if(this.autoStopWhenOver){
-                this.currentFrame = this.loopEnd;
                 this.updatePlaying(false);
             }else if(this.autoHideWhenOver) {
-                this.currentFrame = this.loopEnd;
                 this.updatePlaying(false);
                 this.visible = false;
             }else if(this._animSequence.length) {

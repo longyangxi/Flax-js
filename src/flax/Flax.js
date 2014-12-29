@@ -102,7 +102,7 @@ flax.init = function(resolutionPolicy, initialUserData)
     flax._inited = true;
     cc.log("Flax inited, version: "+flax.version);
 
-    if(!resolutionPolicy) resolutionPolicy = cc.ResolutionPolicy.SHOW_ALL;
+    if(resolutionPolicy == null) resolutionPolicy = cc.ResolutionPolicy.SHOW_ALL;
     if(flax.fetchUserData) flax.fetchUserData(initialUserData);
     flax._checkOSVersion();
 
