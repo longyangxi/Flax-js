@@ -22,6 +22,7 @@ flax._buttonDefine = {
     _radioGroup:"",//All the button with the same _radioGroup will only have only one button selected!
     _state:null,
     _initScale:null,
+    __isButton:true,
 
     onEnter:function(){
         this._super();

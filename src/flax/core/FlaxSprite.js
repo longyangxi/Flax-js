@@ -331,7 +331,7 @@ flax.FlaxSprite = cc.Sprite.extend({
     {
         if(!anim || anim.length == 0) return false;
         if(this._subAnims == null || this._subAnims.indexOf(anim) == -1){
-            cc.log("There is no animation named: " + anim);
+            if(!this.__isButton) cc.log("There is no animation named: " + anim);
             return false;
         }
 //        if(this._currentSubAnim == anim) return false;
@@ -387,7 +387,7 @@ flax.FlaxSprite = cc.Sprite.extend({
             var lbl = this.getLabels(frameOrLabel);
             if(lbl == null){
                 var has = this.setSubAnim(frameOrLabel, false);
-                if(!has) cc.log("There is no animation named: " + frameOrLabel);
+                if(!has && !this.__isButton) cc.log("There is no animation named: " + frameOrLabel);
                 return has;
             }
             frameOrLabel = lbl.start;
