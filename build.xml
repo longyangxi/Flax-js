@@ -11,8 +11,8 @@
                 output="./bin/flax.min.js"
                 languagein="ECMASCRIPT5"
                 >
+            <!--core -->
             <sources dir="${basedir}">
-                <!--core begin-->
                 <file name="src/flax/Flax.js"/>
                 <file name="src/flax/signal/SignalBinding.js"/>
                 <file name="src/flax/signal/Signal.js"/>
@@ -33,15 +33,17 @@
                 <file name="src/flax/game/TileMap.js"/>
                 <file name="src/flax/game/UserData.js"/>
                 <file name="src/flax/game/ObjectPool.js"/>
-                <!--core end-->
+            </sources>
+            <!--others-->
+            <sources dir="${basedir}">
+                <file name="src/flax/module/HealthModule.js"/>
+                <file name="src/flax/module/EnemyWaveModule.js"/>
                 <file name="src/flax/game/Gun.js"/>
                 <file name="src/flax/game/Gunner.js"/>
                 <file name="src/flax/game/ScrollingBG.js"/>
                 <file name="src/flax/game/ScrollPane.js"/>
                 <file name="src/flax/game/TiledImage.js"/>
                 <file name="src/flax/game/LinkFinder.js"/>
-                <file name="src/flax/module/HealthModule.js"/>
-                <file name="src/flax/module/EnemyWaveModule.js"/>
             </sources>
         </jscomp>
     </target>
