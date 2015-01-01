@@ -7,7 +7,6 @@
     "rotateImg": "res/rotate.png",
     "language": "zh",
     "languageJson":false,
-    "languages": ["en","zh","de","fr","it","es","tr","pt","ru"],
     "useFlaxRes": false,
     "loading": "res/logo.png",
     "preloader":"flax.Preloader",

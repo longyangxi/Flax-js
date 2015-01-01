@@ -6,7 +6,6 @@ RADIAN_TO_DEGREE = 180.0/Math.PI;
 DEGREE_TO_RADIAN = Math.PI/180.0;
 IMAGE_TYPES = [".png", ".jpg", ".bmp",".jpeg",".gif"];
 H_ALIGHS = ["left","center","right"];
-DEFAULT_LANS = ["en","zh","de","fr","it","es","tr","pt","ru"];
 
 var TileValue = TileValue || {
     WALKABLE:0,
@@ -22,6 +21,7 @@ var flax = flax || {};
 flax.version = 1.47;
 flax.language = null;
 flax.languageIndex = -1;
+flax.languages = ["en","zh","de","fr","it","es","tr","pt","ru"];
 flax.landscape = false;
 flax.osVersion = "unknown";
 flax.assetsManager = null;
@@ -147,8 +147,8 @@ flax.getLanguageStr = function(key){
 flax.updateLanguage = function(lan){
     if(lan == null || lan == "" || lan == flax.language) return;
     flax.language = lan;
-    if(cc.game.config.languages == null || !cc.game.config.languages.length) cc.game.config.languages = DEFAULT_LANS;
-    flax.languageIndex = cc.game.config.languages.indexOf(lan);
+    if(cc.game.config.languages && cc.game.config.languages.length) flax.languages = cc.game.config.languages;
+    flax.languageIndex = flax.languages.indexOf(lan);
     if(flax.languageIndex == -1) cc.log("Invalid language: " + lan);
     else if(cc.game.config.languageJson) flax._languageToLoad = flax._getLanguagePath(lan);
 }
