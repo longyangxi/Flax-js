@@ -223,6 +223,10 @@ flax._physicsFixtureToRemove = null;
 flax.physicsTypeStatic = 0;
 flax.physicsTypeKinematic = 1;
 flax.physicsTypeDynamic = 2;
+/**
+ * The position of the whole physics world
+ * */
+flax.physicsWorldPos = cc.p();
 
 flax.createPhysicsWorld = function(gravity, doSleep){
     if(flax._physicsWorld) flax.destroyPhysicsWorld();
@@ -480,6 +484,8 @@ flax._updatePhysicsWorld = function(dt){
             var pos = cc.p(b.GetPosition());
             pos.x *= PTM_RATIO;
             pos.y *= PTM_RATIO;
+            //cal the whole physics world position
+            pos = cc.pAdd(pos, flax.physicsWorldPos);
             pos = sprite.parent.convertToNodeSpace(pos);
             sprite.x = pos.x;
             sprite.y = pos.y;

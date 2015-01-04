@@ -433,10 +433,8 @@ flax.FlaxSprite = cc.Sprite.extend({
     {
         if(!this.visible) return;
         this.currentFrame++;
-        if(this.currentFrame > this.totalFrames - 1) this.currentFrame = this.totalFrames - 1;
-        this.renderFrame(this.currentFrame);
         this._animTime += delta;
-        if(this.currentFrame >= this.loopEnd)
+        if(this.currentFrame > this.loopEnd)
         {
             this.currentFrame = this.loopEnd;
             if(this.onAnimationOver.getNumListeners())
@@ -459,6 +457,9 @@ flax.FlaxSprite = cc.Sprite.extend({
             }
             this._animTime = 0;
         }
+        if(this.currentFrame > this.loopEnd || this.currentFrame > this.totalFrames - 1) this.currentFrame = this.loopStart;
+        this.renderFrame(this.currentFrame);
+
     },
     _playNext:function(){
         this._sequenceIndex++;
