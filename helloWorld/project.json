@@ -1,8 +1,8 @@
 {
   "version":1.0,
   "gameId":"helloWorld",
-  "width":550,
-  "height":400,
+  "width":640,
+  "height":960,
   "landscape":false,
   "rotateImg":"res/rotate.png",
   "language":"zh",
@@ -52,7 +52,7 @@
     "src/flax/game/LinkFinder.js",
     "src/flax/module/HealthModule.js",
     "src/flax/module/EnemyWaveModule.js",
-    "src/Resource.js",
+    "src/resource.js",
     "src/HelloWorld.js"
   ]
   
