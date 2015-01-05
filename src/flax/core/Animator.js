@@ -21,8 +21,7 @@ flax.Animator = flax.FlaxSprite.extend({
     },
     doRenderFrame:function(frame)
     {
-        var sFrame = cc.spriteFrameCache.getSpriteFrame(this.frameNames[frame]);
-        if(sFrame) this.setSpriteFrame(sFrame);
+        this.setSpriteFrame(this.frameNames[frame]);
     },
     getDefine:function()
     {
