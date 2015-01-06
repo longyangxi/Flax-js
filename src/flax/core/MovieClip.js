@@ -232,6 +232,18 @@ flax.MovieClip = flax.FlaxSprite.extend({
             child.removePhysics(name);
         }
     },
+    setFPS:function(f)
+    {
+        if(this._fps == f)  return;
+        this._fps = f;
+        this.updateSchedule();
+        if(!this.sameFpsForChildren) return;
+        var child = null;
+        for(var key in this._namedChildren) {
+            child = this._namedChildren[key];
+            child.fps = this._fps;
+        }
+    },
     onRecycle:function()
     {
         this._super();
