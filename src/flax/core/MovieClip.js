@@ -27,7 +27,8 @@ flax.FrameData = cc.Class.extend({
 
 flax.MovieClip = flax.FlaxSprite.extend({
     clsName:"flax.MovieClip",
-    autoPlayChildren:false,
+    autoPlayChildren:false,//auto play children when play
+    sameFpsForChildren:true,//all children use the same fps with this
     _namedChildren:null,
     _theRect:null,
     _frameDatas:null,
@@ -121,6 +122,8 @@ flax.MovieClip = flax.FlaxSprite.extend({
                 if(frameData.scaleX != child.scaleX) child.scaleX = frameData.scaleX;
                 if(frameData.scaleY != child.scaleY) child.scaleY = frameData.scaleY;
                 if(child.setOpacity && frameData.opacity != child.opacity) child.opacity = frameData.opacity;
+                //all children use the same fps with this
+                if(this.sameFpsForChildren) child.fps = this.fps;
                 child.visible = true;
                 child.autoPlayChildren = this.autoPlayChildren;
                 if(this.autoPlayChildren) {
