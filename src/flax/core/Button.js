@@ -60,7 +60,10 @@ flax._buttonDefine = {
         var i = this.childrenCount;
         while(i--){
             var child = this.children[i];
-            if(child.play) child.play();
+            if(child.play) {
+                child.autoPlayChildren = true;
+                child.play();
+            }
         }
     },
     getState:function()
