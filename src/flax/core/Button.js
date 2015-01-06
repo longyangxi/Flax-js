@@ -56,6 +56,12 @@ flax._buttonDefine = {
                 this.gotoAndStop(0);
             }
         }
+        //auto play the children's animation on new state
+        var i = this.childrenCount;
+        while(i--){
+            var child = this.children[i];
+            if(child.play) child.play();
+        }
     },
     getState:function()
     {
