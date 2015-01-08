@@ -16,7 +16,7 @@
   "project_type":"javascript",
   "debugMode":1,
   "showFPS":false,
-  "frameRate":30,
+  "frameRate":60,
   "id":"gameCanvas",
   "renderMode":1,
   "engineDir":"frameworks/cocos2d-html5",
@@ -52,7 +52,7 @@
     "src/flax/game/LinkFinder.js",
     "src/flax/module/HealthModule.js",
     "src/flax/module/EnemyWaveModule.js",
-    "src/resource.js",
+    "src/Resource.js",
     "src/HelloWorld.js"
   ]
   
