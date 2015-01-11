@@ -37,7 +37,7 @@ flax.FlaxSprite = cc.Sprite.extend({
     assetID:null,
     clsName:"flax.FlaxSprite",
     __isFlaxSprite:true,
-    _fps:cc.game.config.frameRate,
+    _fps:0,
     playing:false,
     _colliders:null,
     _mainCollider:null,
@@ -84,27 +84,24 @@ flax.FlaxSprite = cc.Sprite.extend({
         }
         if(this.assetsFile == assetsFile && (this.assetID == assetID || this._baseAssetID == assetID)) return;
         this.assetsFile = assetsFile;
-
         //see if there is a sub animation
-        var ns = assetID.split("$");
-        this._baseAssetID = ns[0];
-        this._subAnims = flax.assetsManager.getSubAnims(assetsFile, this._baseAssetID);
-        var anim = ns[1];
-        if(anim == null && this._subAnims) anim = this._subAnims[0];
-        assetID = this._baseAssetID;
-        if(anim) {
-            assetID = this._baseAssetID+"$"+anim;
-            this._currentSubAnim = anim;
-        }
-
-        this.assetID = assetID;
+        this.assetID = this._handleSumAnims(assetID);
         this.define = this.getDefine();
+        //if it's a shared object, then fetch its source assetsFile
+        if(this.define.type == "share"){
+            //get the resource folder
+            var dir = assetsFile.slice(0, assetsFile.lastIndexOf("/"));
+            this.assetsFile = dir + "/" + this.define.url + ".flax";
+            this.define = this.getDefine();
+        }
         //set the anchor
         var anchorX = this.define.anchorX;
         var anchorY = this.define.anchorY;
         if(!isNaN(anchorX) && !isNaN(anchorY)) {
             this.setAnchorPoint(anchorX, anchorY);
         }
+        //set the fps from flash
+        if(this.fps == 0) this.fps = this.define.fps;
         this.onNewSource();
         this.currentFrame = 0;
         this.renderFrame(this.currentFrame, true);
@@ -113,6 +110,20 @@ flax.FlaxSprite = cc.Sprite.extend({
             this._updateLaguage();
         }
         if(this.__pool__id__ == null) this.__pool__id__ = this.assetID;
+    },
+    _handleSumAnims:function(assetID)
+    {
+        var ns = assetID.split("$");
+        this._baseAssetID = ns[0];
+        this._subAnims = flax.assetsManager.getSubAnims(this.assetsFile, this._baseAssetID);
+        var anim = ns[1];
+        if(anim == null && this._subAnims) anim = this._subAnims[0];
+        assetID = this._baseAssetID;
+        if(anim) {
+            assetID = this._baseAssetID+"$"+anim;
+            this._currentSubAnim = anim;
+        }
+        return assetID;
     },
     getLabels:function(label)
     {
