@@ -89,8 +89,8 @@ flax.FlaxSprite = cc.Sprite.extend({
         this.define = this.getDefine();
         //if it's a shared object, then fetch its source assetsFile
         if(this.define.type == "share"){
-            //get the resource folder
-            var dir = assetsFile.slice(0, assetsFile.lastIndexOf("/"));
+            //get the resource root folder, the share library must be in the root folder
+            var dir = assetsFile.slice(0, assetsFile.indexOf("/"));
             this.assetsFile = dir + "/" + this.define.url + ".flax";
             this.define = this.getDefine();
         }
