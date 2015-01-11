@@ -57,6 +57,14 @@ flax.AssetsManager = cc.Class.extend({
         if(subAnims.length) {
             assetID = assetID + "$" + subAnims[0];
         }
+        var define = this.getDisplayDefine(assetsFile, assetID);
+        //if it's a shared object, then fetch its source assetsFile
+        if(define && define.type == "share"){
+            //get the resource root folder, the share library must be in the root folder
+            var dir = assetsFile.slice(0, assetsFile.indexOf("/"));
+            return this.createDisplay(dir + "/" + define.url + ".flax", assetID, params, fromPool, clsName);
+        }
+
         var mcCls = null;
         if(clsName) {
             mcCls = flax.nameToObject(clsName);
@@ -66,7 +74,6 @@ flax.AssetsManager = cc.Class.extend({
         }
 
         if(mcCls == null) {
-            var define = this.getDisplayDefine(assetsFile, assetID);
             var isMC = false;
             if(define == null) {
                 define = this.getMc(assetsFile, assetID);
