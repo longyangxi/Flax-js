@@ -5,6 +5,7 @@ PTM_RATIO = 32;
 RADIAN_TO_DEGREE = 180.0/Math.PI;
 DEGREE_TO_RADIAN = Math.PI/180.0;
 IMAGE_TYPES = [".png", ".jpg", ".bmp",".jpeg",".gif"];
+SOUND_TYPES = [".mp3", ".ogg", ".wav", ".mp4", ".m4a"];
 H_ALIGHS = ["left","center","right"];
 
 var TileValue = TileValue || {
@@ -39,13 +40,13 @@ flax._languageToLoad = null;
 
 flax._addResVersion = function(url)
 {
-    if(cc.sys.isNative  || typeof url != "string") return url;
+    if(cc.sys.isNative  || typeof url != "string" || flax.isSoundFile(url)) return url;
     if(url.indexOf("?v=") > -1) return url;
     return url + "?v=" + cc.game.config.version;
 }
 flax._removeResVersion = function(url)
 {
-    if(cc.sys.isNative  || typeof url != "string") return url;
+    if(cc.sys.isNative  || typeof url != "string" || flax.isSoundFile(url)) return url;
     var i = url.indexOf("?v=");
     if(i > -1) url = url.substr(0, i);
     return url;
@@ -397,11 +398,9 @@ flax.pauseMusic = function(){
 }
 flax.playEffect = function(path)
 {
+    if(!flax._soundEnabled) return;
     var audioEngine = cc.audioEngine;
     var id = audioEngine.playEffect(path);
-    if(!flax._soundEnabled){
-        audioEngine.stopEffect(id);
-    }
     return id;
 }
 flax.stopEffect = function(effectID)
@@ -659,6 +658,11 @@ flax.isImageFile = function(path)
     var ext = cc.path.extname(path);
     return IMAGE_TYPES.indexOf(ext) > -1;
 };
+flax.isSoundFile = function(path)
+{
+    var ext = cc.path.extname(path);
+    return SOUND_TYPES.indexOf(ext) > -1;
+}
 /**
  * Copy all the properties of params to target if it own the property
  * */
