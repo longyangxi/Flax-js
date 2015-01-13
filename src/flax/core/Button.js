@@ -19,6 +19,7 @@ flax._radioButtons = {};
 
 flax._buttonDefine = {
     clickSound:null,//The sound will play when click
+    playChildrenOnState:false,//If auto paly children's animation when change state
     _radioGroup:"",//All the button with the same _radioGroup will only have only one button selected!
     _state:null,
     _initScale:null,
@@ -57,12 +58,14 @@ flax._buttonDefine = {
             }
         }
         //auto play the children's animation on new state
-        var i = this.childrenCount;
-        while(i--){
-            var child = this.children[i];
-            if(child.play) {
-                child.autoPlayChildren = true;
-                child.play();
+        if(this.playChildrenOnState){
+            var i = this.childrenCount;
+            while(i--){
+                var child = this.children[i];
+                if(child.play) {
+                    child.autoPlayChildren = true;
+                    child.play();
+                }
             }
         }
     },
