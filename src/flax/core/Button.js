@@ -36,6 +36,12 @@ flax._buttonDefine = {
         this._removeRadioGroup();
         this._super();
     },
+    onRecycle:function(){
+        this._super();
+        this.playChildrenOnState = false;
+        this._radioGroup = "";
+        this._state = null;
+    },
     setState:function(state)
     {
         if(this._state == state) return;
