@@ -4,17 +4,36 @@
 
 var flax = flax || {};
 
-F2C_ALIAS = {mc:"flax.MovieClip",
-             btn:"flax.SimpleButton",
-             button:"flax.Button",
-             progress:"flax.ProgressBar",
-             jpg:"flax.Image",
-             png:"flax.Image",
-             scrollPane:"flax.ScrollPane",
-             scrollPane1:"flax.ScrollPane1",
-             gun:"flax.Gunner",
-             gun1:"flax.MCGunner"
-            };
+flax._assetsClassMap =
+{
+    btn:"flax.SimpleButton",
+    button:"flax.SimpleButton",
+    progress:"flax.ProgressBar",
+    jpg:"flax.Image",
+    png:"flax.Image",
+    scrollPane:"flax.ScrollPane",
+    gun:"flax.Gunner"
+};
+
+flax._assetsMcClassMap =
+{
+    button:"flax.Button",
+    scrollPane:"flax.MCScrollPane",
+    gun:"flax.MCGunner",
+    gun1:"flax.MCGunner"
+};
+/**
+ * Register a className for Animator
+ * */
+flax.registerClass = function(key, className){
+    flax._assetsClassMap[key] = className;
+}
+/**
+ * Register a className for MovieClip
+ * */
+flax.registerMcClass = function(key, className){
+    flax._assetsMcClassMap[key] = className;
+}
 
 flax.AssetsManager = cc.Class.extend({
     framesCache:null,
@@ -88,7 +107,7 @@ flax.AssetsManager = cc.Class.extend({
                 }
                 mcCls = flax.nameToObject(clsName);
                 if(mcCls == null){
-                    clsName = F2C_ALIAS[clsName];
+                    clsName = isMC ? flax._assetsMcClassMap[clsName] : flax._assetsClassMap[clsName];
                     mcCls = flax.nameToObject(clsName);
                 }
                 if(mcCls == null)

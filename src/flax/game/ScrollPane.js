@@ -76,14 +76,15 @@ flax._scrollPaneDefine = {
         return cc.p(x, y);
     }
 };
-flax.ScrollPane = flax.MovieClip.extend(flax._scrollPaneDefine);
+
+flax.ScrollPane = flax.Animator.extend(flax._scrollPaneDefine);
 flax.ScrollPane.create = function(assetsFile, assetID){
     var s = new flax.ScrollPane(assetsFile, assetID);
     return s;
 }
 
-flax.ScrollPane1 = flax.Animator.extend(flax._scrollPaneDefine);
-flax.ScrollPane1.create = function(assetsFile, assetID){
-    var s = new flax.ScrollPane1(assetsFile, assetID);
+flax.MCScrollPane = flax.MovieClip.extend(flax._scrollPaneDefine);
+flax.MCScrollPane.create = function(assetsFile, assetID){
+    var s = new flax.MCScrollPane(assetsFile, assetID);
     return s;
 }
