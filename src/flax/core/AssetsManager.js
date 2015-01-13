@@ -39,6 +39,7 @@ flax.AssetsManager = cc.Class.extend({
      * @param {String} assetID the asset id in the assetsFile
      * @param {Object} params params could be set to the target with attr function
      *                 the special is parent, if set parent, the display will be auto added to it
+     *                 and the class, if set class, the display will be created with the class
      * @param {Boolean} fromPool if the display should fetch from the pool
      * @param {String} clsName the class name to create the display, if null, it'll be automatically set according by the assets file
      * Deprecated: createDisplay:function(assetsFile, assetID, clsName, fromPool, parent, params)
@@ -48,6 +49,7 @@ flax.AssetsManager = cc.Class.extend({
         if(assetsFile == null || assetID == null){
             throw  "Pleas give me assetsFile and assetID!";
         }
+        if(clsName == null && params) clsName = params["class"];
         if((params && typeof params === "string") || (clsName && typeof clsName !== "string")) {
             throw "Params error: maybe you are using the old api, please use the latest!";
         }

@@ -256,3 +256,12 @@ flax.Label.create = function(assetsFile, define)
     }
     return lbl;
 };
+
+flax._fontResources = null;
+flax.registerFont = function(name, urls)
+{
+    if(!name || !urls) return;
+    if(typeof urls == "string") urls = [urls];
+    if(flax._fontResources == null) flax._fontResources = {};
+    flax._fontResources[name] = urls;
+}

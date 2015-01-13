@@ -337,25 +337,6 @@ flax.preload = function(res, callBack)
     }
 }
 
-flax._fontResources = null;
-flax.registerFont = function(name, urls)
-{
-    if(!name || !urls) return;
-    if(typeof urls == "string") urls = [urls];
-    if(flax._fontResources == null) flax._fontResources = {};
-    flax._fontResources[name] = urls;
-}
-flax._tileMaps = {};
-flax.getTileMap = function(id)
-{
-    if(typeof flax._tileMaps[id] !== "undefined") return flax._tileMaps[id];
-    cc.log("The tileMap: "+id+" hasn't been defined, pls use flax.registerTileMap to define it firstly!");
-    return null;
-}
-flax.registerTileMap = function(tileMap)
-{
-    flax._tileMaps[tileMap.id] = tileMap;
-}
 //----------------------scene about-------------------------------------------------------
 
 //----------------------sound about-------------------------------------------------------

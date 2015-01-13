@@ -232,6 +232,7 @@ flax.createPhysicsWorld = function(gravity, doSleep){
     if(flax._physicsWorld) flax.destroyPhysicsWorld();
     var world = new Box2D.Dynamics.b2World(new Box2D.Common.Math.b2Vec2(gravity.x, gravity.y), doSleep === true);
     world.SetContinuousPhysics(true);
+    flax.physicsWorldPos = cc.p();
     flax._physicsWorld = world;
     flax._physicsBodyToRemove = [];
     flax._physicsFixtureToRemove = [];

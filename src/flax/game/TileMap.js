@@ -567,3 +567,15 @@ cc.defineGetterSetter(_p, "tileSize", _p.getTileSize);
 _p.mapSize;
 cc.defineGetterSetter(_p, "mapSize", _p.getMapSize);
 delete window._p;
+
+flax._tileMaps = {};
+flax.getTileMap = function(id)
+{
+    if(typeof flax._tileMaps[id] !== "undefined") return flax._tileMaps[id];
+    cc.log("The tileMap: "+id+" hasn't been defined, pls use flax.registerTileMap to define it firstly!");
+    return null;
+}
+flax.registerTileMap = function(tileMap)
+{
+    flax._tileMaps[tileMap.id] = tileMap;
+}
