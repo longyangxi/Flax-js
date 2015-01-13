@@ -374,7 +374,7 @@ flax.InputManager = cc.Node.extend({
     {
         var calls = this._keyboardCallbacks[type];
         if(!calls || !calls.length) return;
-        var key = cc.sys.isNative ? self._getNativeKeyName(keyCode) : String.fromCharCode(keyCode);
+        var key = this._getNativeKeyName(keyCode);
         var call = null;
         var dispatches = [];
         var i = calls.length;
