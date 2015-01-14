@@ -414,17 +414,18 @@ flax._checkDeviceOrientation = function(){
 }
 flax._oldGamePauseState = false;
 flax._showOrientaionTip = function(){
-    flax.landscape = (Math.abs(window.orientation) == 90);
-    flax._orientationTip.visible = (cc.game.config.landscape != flax.landscape);
-    flax._orientationTip.__icon.rotation = (flax.landscape ? -90 : 0);
+    var newLandscape = (Math.abs(window.orientation) == 90);
+    flax._orientationTip.visible = (cc.game.config.landscape != newLandscape);
+    flax._orientationTip.__icon.rotation = (newLandscape ? -90 : 0);
     document.body.scrollTop = 0;
     if(flax._orientationTip.visible) {
-        flax._oldGamePauseState = cc.director.isPaused();
+        if(flax.landscape != newLandscape) flax._oldGamePauseState = cc.director.isPaused();
         cc.director.pause();
     }else if(!flax._oldGamePauseState){
         cc.director.resume();
     }
     flax.inputManager.enabled = !flax._orientationTip.visible;
+    flax.landscape = newLandscape;
 }
 
 ///---------------------utils-------------------------------------------------------------
