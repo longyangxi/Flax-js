@@ -203,6 +203,14 @@ flax.InputManager = cc.Node.extend({
             }
         }
     },
+    removeAllTouchListeners:function()
+    {
+        this._callbacks = {};
+    },
+    removeAllKeyboardListeners:function()
+    {
+        this._keyboardCallbacks = {};
+    },
     handleTouchBegan:function(touch, event)
     {
         if (!this.enabled) return false;
