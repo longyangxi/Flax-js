@@ -20,6 +20,7 @@ flax.Anchor = cc.Class.extend({
 flax.FlaxSprite = cc.Sprite.extend({
     __instanceId:null,
     onAnimationOver:null,
+    onFrameChanged:null,
     autoDestroyWhenOver:false,
     autoStopWhenOver:false,
     autoHideWhenOver:false,
@@ -70,6 +71,7 @@ flax.FlaxSprite = cc.Sprite.extend({
         this._anchorBindings = [];
         this._animSequence = [];
         this.onAnimationOver = new signals.Signal();
+        this.onFrameChanged = new signals.Signal();
         this.setSource(assetsFile, assetID);
     },
     /**
@@ -509,6 +511,7 @@ flax.FlaxSprite = cc.Sprite.extend({
         this._handleAnchorBindings();
         this._updateCollider();
         this.doRenderFrame(frame);
+        if(this.onFrameChanged.getNumListeners()) this.onFrameChanged.dispatch(this.currentFrame);
     },
     doRenderFrame:function(frame)
     {
@@ -570,6 +573,7 @@ flax.FlaxSprite = cc.Sprite.extend({
         this._super();
 
         this.onAnimationOver.removeAll();
+        this.onFrameChanged.removeAll();
         flax.inputManager.removeListener(this);
 
         //remove tilemap
