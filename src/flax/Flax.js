@@ -151,7 +151,7 @@ flax.updateLanguage = function(lan){
     if(cc.game.config.languages && cc.game.config.languages.length) flax.languages = cc.game.config.languages;
     flax.languageIndex = flax.languages.indexOf(lan);
     if(flax.languageIndex == -1) cc.log("Invalid language: " + lan);
-    else if(cc.game.config.languageJson) flax._languageToLoad = flax._getLanguagePath(lan);
+    if(cc.game.config.languageJson) flax._languageToLoad = flax._getLanguagePath(lan);
 }
 flax._getLanguagePath = function(lan){
     return  "res/locale/"+(lan || flax.language)+".json";
