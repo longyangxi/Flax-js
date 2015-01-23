@@ -12,6 +12,8 @@ flax.FrameData = cc.Class.extend({
     scaleY:1,
     opacity:255,
     zIndex:-1,
+    skewX:0,
+    skewY:0,
 
     ctor:function(data){
         data = data.split(",");
@@ -22,6 +24,8 @@ flax.FrameData = cc.Class.extend({
         this.scaleY = parseFloat(data[4]);
         this.opacity = Math.round(255*parseFloat(data[5]));
         if(data.length > 6) this.zIndex = parseInt(data[6]);
+        if(data.length > 7) this.skewX = parseFloat(data[7]);
+        if(data.length > 8) this.skewY = parseFloat(data[8]);
     }
 });
 
@@ -121,6 +125,9 @@ flax.MovieClip = flax.FlaxSprite.extend({
                 if(frameData.rotation != child.rotation) child.rotation = frameData.rotation;
                 if(frameData.scaleX != child.scaleX) child.scaleX = frameData.scaleX;
                 if(frameData.scaleY != child.scaleY) child.scaleY = frameData.scaleY;
+                //todo, there are still some issues
+                if(frameData.skewX != child.skewX) child.skewX = frameData.skewX;
+                if(frameData.skewY != child.skewY) child.skewY = frameData.skewY;
                 if(child.setOpacity && frameData.opacity != child.opacity) child.opacity = frameData.opacity;
                 //all children use the same fps with this
                 if(this.sameFpsForChildren) child.fps = this.fps;
