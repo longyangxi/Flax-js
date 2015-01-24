@@ -38,6 +38,7 @@ flax.FlaxSprite = cc.Sprite.extend({
     assetID:null,
     clsName:"flax.FlaxSprite",
     __isFlaxSprite:true,
+    __isInputMask:false,
     _fps:0,
     playing:false,
     _colliders:null,
@@ -575,6 +576,7 @@ flax.FlaxSprite = cc.Sprite.extend({
         this.onAnimationOver.removeAll();
         this.onFrameChanged.removeAll();
         flax.inputManager.removeListener(this);
+        if(this.__isInputMask) flax.inputManager.removeMask(this);
 
         //remove tilemap
         if(this._tileMap) this._tileMap.removeObject(this);
@@ -721,6 +723,7 @@ flax.FlaxSprite = cc.Sprite.extend({
         this._animSequence.length = 0;
         this._loopSequence = false;
         this._sequenceIndex = 0;
+        this.__isInputMask = false;
     },
     isMouseEnabled:function()
     {

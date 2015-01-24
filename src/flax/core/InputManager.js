@@ -23,6 +23,15 @@ flax.InputManager = cc.Node.extend({
     _keyboardCallbacks:{},
     _keyboardListenerCreated:false,
 
+    ctor:function()
+    {
+        cc.Node.prototype.ctor.call(this);
+        this._masks = [];
+        this.inTouching = false;
+        this._callbacks = {};
+        this._keyboardCallbacks = {};
+        this._keyboardListenerCreated = false;
+    },
     onEnter:function()
     {
         this._super();
@@ -59,11 +68,6 @@ flax.InputManager = cc.Node.extend({
     },
     onExit:function(){
         this._super();
-        this._masks = [];
-        this.inTouching = false;
-        this._callbacks = {};
-        this._keyboardCallbacks = {};
-        this._keyboardListenerCreated = false;
         cc.eventManager.removeAllListeners();
     },
     /**
@@ -72,10 +76,14 @@ flax.InputManager = cc.Node.extend({
     addMask:function(mask){
         if(this._masks.indexOf(mask) > -1) return;
         this._masks.push(mask);
+        mask.__isInputMask = true;
     },
     removeMask:function(mask){
         var i = this._masks.indexOf(mask);
-        if(i > -1) this._masks.splice(i, 1);
+        if(i > -1) {
+            this._masks.splice(i, 1);
+            mask.__isInputMask = false;
+        }
     },
     _compareRealZIndex:function(node0, node1){
         if(!node0.parent || !node1.parent) return 1;
@@ -409,8 +417,3 @@ flax.InputManager = cc.Node.extend({
         return keyName;
     }
 });
-
-flax.InputManager.create = function(){
-    var im = new flax.InputManager();
-    return im;
-}

@@ -19,7 +19,7 @@ var TileValue = TileValue || {
 
 var flax = flax || {};
 
-flax.version = 1.47;
+flax.version = 1.5;
 flax.language = null;
 flax.languageIndex = -1;
 flax.languages = ["en","zh","de","fr","it","es","tr","pt","ru"];
@@ -272,7 +272,7 @@ flax.replaceScene = function(sceneName, transition, duration)
         if(!transitioned){
             cc.director.runScene(flax.currentScene);
         }
-        flax.inputManager = flax.InputManager.create();
+        flax.inputManager = new flax.InputManager();
         flax.currentScene.addChild(flax.inputManager, 999999);
         flax._checkDeviceOrientation();
     });
