@@ -44,7 +44,7 @@ flax.FrameData = cc.Class.extend({
 
         if(this._hasSkew){
             child.rotationX = this.skewX;
-            child.rotationY = -this.skewY;
+            child.rotationY = this.skewY;
         }
 
         if(child.setOpacity && this.opacity != child.opacity) child.opacity = this.opacity;
