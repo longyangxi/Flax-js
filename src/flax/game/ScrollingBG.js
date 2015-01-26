@@ -38,7 +38,7 @@ flax.ScrollingBG = cc.Node.extend({
                 }
             }else if(this.source){
                 //if it's a FlaxSprite
-                if(this.source instanceof flax.FlaxSprite){
+                if(this.source instanceof flax.FlaxSprite || this.source instanceof flax.Image){
                     if(this.source.parent) this.source.parent.addChild(this, this.source.zIndex);
                     this.name = this.source.name;
                     if(this.parent) this.parent[this.name] = this;
@@ -116,6 +116,9 @@ flax.ScrollingBG = cc.Node.extend({
     },
     _doScroll:function(dist)
     {
+        if(this._size.width*this._size.height == 0){
+            this._size = this.bg0.getContentSize();
+        }
         if(dist === 0) return;
         var xDirect = (this._speedX != 0);
         if(dist == null) dist = xDirect ? this._size.width : this._size.height;

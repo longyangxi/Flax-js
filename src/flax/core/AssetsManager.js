@@ -140,7 +140,7 @@ flax.AssetsManager = cc.Class.extend({
      * */
     cloneDisplay:function(target, fromPool, autoAdd)
     {
-        if(!(target instanceof flax.FlaxSprite)) {
+        if(!(target instanceof flax.FlaxSprite) && !(target instanceof flax.Image)) {
             throw "cloneDisplay only support flax.FlaxSprite type!"
         }
         var obj = this.createDisplay(target.assetsFile, target.assetID, {parent: (autoAdd ? target.parent : null)}, fromPool, target.clsName);
