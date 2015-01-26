@@ -444,20 +444,18 @@ flax.FlaxSprite = cc.Sprite.extend({
         if(this.currentFrame > this.loopEnd)
         {
             this.currentFrame = this.loopEnd;
+            if(this.autoDestroyWhenOver || this.autoStopWhenOver || this.autoHideWhenOver){
+                this.updatePlaying(false);
+            }
             if(this.onAnimationOver.getNumListeners())
             {
                 this.onAnimationOver.dispatch(this);
             }
-            if(this.autoDestroyWhenOver)
-            {
-                this.updatePlaying(false);
+            if(this.autoDestroyWhenOver){
                 this.destroy();
-            }else if(this.autoStopWhenOver){
-                this.updatePlaying(false);
-            }else if(this.autoHideWhenOver) {
-                this.updatePlaying(false);
+            }else if(this.autoHideWhenOver){
                 this.visible = false;
-            }else if(this._animSequence.length) {
+            }else if(this._animSequence.length){
                 this._playNext();
             }else{
                 this.currentFrame = this.loopStart;
@@ -466,7 +464,6 @@ flax.FlaxSprite = cc.Sprite.extend({
         }
         if(this.currentFrame > this.loopEnd || this.currentFrame > this.totalFrames - 1) this.currentFrame = this.loopStart;
         this.renderFrame(this.currentFrame);
-
     },
     _playNext:function(){
         this._sequenceIndex++;
