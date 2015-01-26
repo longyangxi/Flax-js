@@ -14,9 +14,11 @@ flax.FrameData = cc.Class.extend({
     zIndex:-1,
     skewX:0,
     skewY:0,
+    _data:null,
+    _hasSkew:false,
 
     ctor:function(data){
-        data = data.split(",");
+        this._data = data;
         this.x = parseFloat(data[0]);
         this.y = parseFloat(data[1]);
         this.rotation = parseFloat(data[2]);
@@ -26,6 +28,68 @@ flax.FrameData = cc.Class.extend({
         if(data.length > 6) this.zIndex = parseInt(data[6]);
         if(data.length > 7) this.skewX = parseFloat(data[7]);
         if(data.length > 8) this.skewY = parseFloat(data[8]);
+        this._hasSkew = (data.length > 7);
+    },
+    setForNode:function(child, offsetX, offsetY)
+    {
+        var x = this.x + offsetX;
+        var y = this.y + offsetY;
+
+        if(x != child.x) child.x = x;
+        if(y != child.y) child.y = y;
+
+        if(!this._hasSkew && this.rotation != child.rotation) child.rotation = this.rotation;
+        if(this.scaleX != child.scaleX) child.scaleX = this.scaleX;
+        if(this.scaleY != child.scaleY) child.scaleY = this.scaleY;
+
+        if(this._hasSkew){
+            child.rotationX = this.skewX;
+            child.rotationY = -this.skewY;
+        }
+
+        if(child.setOpacity && this.opacity != child.opacity) child.opacity = this.opacity;
+    },
+    clone:function(){
+        return new flax.FrameData(this._data);
+    }
+});
+
+flax.FrameData_mat = cc.Class.extend({
+    a:1,
+    b:0,
+    c:0,
+    d:1,
+    tx:0,
+    ty:0,
+    opacity:255,
+    zIndex:-1,
+    _data:null,
+
+    ctor:function(data){
+        this._data = data;
+        this.a = parseFloat(data[0]);
+        this.b = parseFloat(data[1]);
+        this.c = parseFloat(data[2]);
+        this.d = parseFloat(data[3]);
+        this.tx = parseFloat(data[4]);
+        this.ty = parseFloat(data[5]);
+        this.opacity = Math.round(255*parseFloat(data[6]));
+        this.zIndex = parseInt(data[7]);
+    },
+    setForNode:function(child, offsetX, offsetY)
+    {
+        this.tx += offsetX;
+        this.ty += offsetY;
+
+        ccs.TransformHelp.matrixToNode(this, child);
+
+        this.tx -= offsetX;
+        this.ty -= offsetY;
+
+        if(child.setOpacity && this.opacity != child.opacity) child.opacity = this.opacity;
+    },
+    clone:function(){
+        return new flax.FrameData_mat(this._data);
     }
 });
 
@@ -74,7 +138,14 @@ flax.MovieClip = flax.FlaxSprite.extend({
             var fs = this.define.children[childName].frames;
             var i = -1;
             while(++i < fs.length){
-                if(fs[i]) frames[i] = new flax.FrameData(fs[i]);
+                var fd = fs[i];
+                if(fd){
+                    fd = fd.split(",");
+                    //mat format
+                    if(fd.length == 8) frames[i] = new flax.FrameData_mat(fd);
+                    //common format
+                    else frames[i] = new flax.FrameData(fd);
+                }
             }
             this._frameDatas[childName] = frames;
         }
@@ -117,18 +188,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
                     this[childName] = child;
                     this.onNewChild(child);
                 }
-                var x = frameData.x + offsetX;
-                var y = frameData.y + offsetY;
-
-                if(x != child.x) child.x = x;
-                if(y != child.y) child.y = y;
-                if(frameData.rotation != child.rotation) child.rotation = frameData.rotation;
-                if(frameData.scaleX != child.scaleX) child.scaleX = frameData.scaleX;
-                if(frameData.scaleY != child.scaleY) child.scaleY = frameData.scaleY;
-                //todo, there are still some issues
-                if(frameData.skewX != child.skewX) child.skewX = frameData.skewX;
-                if(frameData.skewY != child.skewY) child.skewY = frameData.skewY;
-                if(child.setOpacity && frameData.opacity != child.opacity) child.opacity = frameData.opacity;
+                frameData.setForNode(child, offsetX, offsetY);
                 //all children use the same fps with this
                 if(this.sameFpsForChildren) child.fps = this.fps;
                 child.visible = true;
