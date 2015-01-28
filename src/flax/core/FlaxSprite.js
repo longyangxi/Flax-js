@@ -457,7 +457,7 @@ flax.FlaxSprite = cc.Sprite.extend({
                 this.visible = false;
             }else if(this._animSequence.length){
                 this._playNext();
-            }else{
+            }else if(!this.autoStopWhenOver){
                 this.currentFrame = this.loopStart;
             }
             this._animTime = 0;
