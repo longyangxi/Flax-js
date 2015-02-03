@@ -93,7 +93,7 @@ flax.FrameData_mat = cc.Class.extend({
     }
 });
 
-flax.MovieClip = flax.FlaxSprite.extend({
+flax._movieClip = {
     clsName:"flax.MovieClip",
     autoPlayChildren:false,//auto play children when play
     sameFpsForChildren:true,//all children use the same fps with this
@@ -128,6 +128,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
         this._theRect = this._strToRect(this.define.rect);
         this.setContentSize(this._theRect.width, this._theRect.height);
         this._initFrameDatas();
+//        this.increaseAtlasCapacity();
     },
     _initFrameDatas:function()
     {
@@ -217,7 +218,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
         if(this.autoPlayChildren) {
             for(var key in this._namedChildren) {
                 var child = this._namedChildren[key];
-                if(child instanceof flax.FlaxSprite) {
+                if(flax.isFlaxSprite(child)) {
                     child.stop();
                 }
             }
@@ -229,7 +230,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
         if(this.autoPlayChildren) {
             for(var key in this._namedChildren) {
                 var child = this._namedChildren[key];
-                if(child instanceof flax.FlaxSprite) {
+                if(flax.isFlaxSprite(child)) {
                     child.play();
                 }
             }
@@ -317,7 +318,7 @@ flax.MovieClip = flax.FlaxSprite.extend({
         this.autoPlayChildren = false;
         for(var key in this._namedChildren) {
             var child = this._namedChildren[key];
-            if(child instanceof flax.FlaxSprite) {
+            if(flax.isFlaxSprite(child)) {
                 child.gotoAndStop(0);
             }
         }
@@ -328,10 +329,23 @@ flax.MovieClip = flax.FlaxSprite.extend({
         var arr = str.split(",");
         return cc.rect(parseFloat(arr[0]), parseFloat(arr[1]), parseFloat(arr[2]), parseFloat(arr[3]));
     }
-});
+}
+
+flax.MovieClip = flax.FlaxSpriteBatch.extend(flax._movieClip);
 flax.MovieClip.create = function(assetsFile, assetID)
 {
     var mc = new flax.MovieClip(assetsFile, assetID);
     mc.clsName = "flax.MovieClip";
+    return mc;
+};
+/**
+ * No Batch MovieClip is ready for the MovieClip has a shared asset
+ * todo, how to auto generate that
+ * */
+flax.MovieClipNoBatch = flax.FlaxSprite.extend(flax._movieClip);
+flax.MovieClipNoBatch.create = function(assetsFile, assetID)
+{
+    var mc = new flax.MovieClipNoBatch(assetsFile, assetID);
+    mc.clsName = "flax.MovieClipNoBatch";
     return mc;
 };

@@ -38,7 +38,7 @@ flax.ScrollingBG = cc.Node.extend({
                 }
             }else if(this.source){
                 //if it's a FlaxSprite
-                if(this.source instanceof flax.FlaxSprite || this.source instanceof flax.Image){
+                if(flax.isFlaxDisplay(this.source)){
                     if(this.source.parent) this.source.parent.addChild(this, this.source.zIndex);
                     this.name = this.source.name;
                     if(this.parent) this.parent[this.name] = this;

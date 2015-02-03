@@ -535,6 +535,18 @@ flax.ifCollide = function(sprite1, sprite2)
 {
     return sprite1.mainCollider.checkCollision(sprite2.mainCollider);
 };
+flax.isFlaxDisplay = function(target)
+{
+    return target instanceof flax.FlaxSprite || target instanceof flax.FlaxSpriteBatch || target instanceof flax.Image;
+}
+flax.isFlaxSprite = function(target)
+{
+    return target instanceof flax.FlaxSprite || target instanceof flax.FlaxSpriteBatch
+}
+flax.isMovieClip = function(target)
+{
+    return target instanceof flax.MovieClip|| target instanceof flax.MovieClipNoBatch;
+}
 flax.isChildOf = function(child, parent)
 {
     if(child == null || parent == null) return false;

@@ -17,9 +17,10 @@ flax.Anchor = cc.Class.extend({
     }
 });
 
-flax.FlaxSprite = cc.Sprite.extend({
+flax._sprite = {
     __instanceId:null,
     onAnimationOver:null,
+    onSequenceOver:null,
     onFrameChanged:null,
     autoDestroyWhenOver:false,
     autoStopWhenOver:false,
@@ -39,7 +40,7 @@ flax.FlaxSprite = cc.Sprite.extend({
     clsName:"flax.FlaxSprite",
     __isFlaxSprite:true,
     __isInputMask:false,
-    _fps:0,
+    _fps:24,
     playing:false,
     _colliders:null,
     _mainCollider:null,
@@ -65,13 +66,15 @@ flax.FlaxSprite = cc.Sprite.extend({
     _physicsColliders:null,
 
     ctor:function(assetsFile, assetID){
-        if(this.clsName == "flax.FlaxSprite") throw  "flax.FlaxSprite is an abstract class, please use flax.Animator or flax.MovieClip!"
-        cc.Sprite.prototype.ctor.call(this);
+        if(this instanceof flax.FlaxSprite || this instanceof flax.FlaxSpriteBatch) throw  "flax.FlaxSprite is an abstract class, please use flax.Animator or flax.MovieClip!";
+        if(this instanceof cc.SpriteBatchNode) cc.SpriteBatchNode.prototype.ctor.call(this, cc.path.changeExtname(assetsFile, ".png"));
+        else cc.Sprite.prototype.ctor.call(this);
         if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!"
         this.__instanceId = ClassManager.getNewInstanceId();
         this._anchorBindings = [];
         this._animSequence = [];
         this.onAnimationOver = new signals.Signal();
+        this.onSequenceOver = new signals.Signal();
         this.onFrameChanged = new signals.Signal();
         this.setSource(assetsFile, assetID);
     },
@@ -468,6 +471,9 @@ flax.FlaxSprite = cc.Sprite.extend({
     _playNext:function(){
         this._sequenceIndex++;
         if(this._sequenceIndex >= this._animSequence.length){
+            if(this.onSequenceOver.getNumListeners()){
+                this.onSequenceOver.dispatch(this);
+            }
             if(!this._loopSequence) {
                 this.gotoAndPlay(this._animSequence[this._sequenceIndex - 1], true);
                 this._animSequence = [];
@@ -571,6 +577,7 @@ flax.FlaxSprite = cc.Sprite.extend({
         this._super();
 
         this.onAnimationOver.removeAll();
+        this.onSequenceOver.removeAll();
         this.onFrameChanged.removeAll();
         flax.inputManager.removeListener(this);
         if(this.__isInputMask) flax.inputManager.removeMask(this);
@@ -738,16 +745,55 @@ flax.FlaxSprite = cc.Sprite.extend({
     {
 
     }
-});
-
+}
+/////////////////////////////////////////////////////////////
+flax.FlaxSprite = cc.Sprite.extend(flax._sprite);
 flax.FlaxSprite.create = function(assetsFile, assetID)
 {
     var tl = new flax.FlaxSprite(assetsFile, assetID);
     tl.clsName = "flax.FlaxSprite";
     return tl;
 };
+/////////////////////////////////////////////////////////////
+flax.FlaxSpriteBatch = cc.SpriteBatchNode.extend(flax._sprite);
+flax.FlaxSpriteBatch.create = function(assetsFile, assetID)
+{
+    var tl = new flax.FlaxSpriteBatch(assetsFile, assetID);
+    tl.clsName = "flax.FlaxSpriteBatch";
+    return tl;
+}
 
+/////////////////////////////////////////////////////////////
 window._p = flax.FlaxSprite.prototype;
+/** @expose */
+_p.mainCollider;
+cc.defineGetterSetter(_p, "mainCollider", _p.getMainCollider);
+/** @expose */
+_p.physicsBody;
+cc.defineGetterSetter(_p, "physicsBody", _p.getPhysicsBody);
+/** @expose */
+_p.center;
+cc.defineGetterSetter(_p, "center", _p.getCenter);
+/** @expose */
+_p.fps;
+cc.defineGetterSetter(_p, "fps", _p.getFPS, _p.setFPS);
+/** @expose */
+_p.tileMap;
+cc.defineGetterSetter(_p, "tileMap", _p.getTileMap, _p.setTileMap);
+//fix the .x, .y bug no invoking setPosition mehtod
+try{
+    /** @expose */
+    _p.x;
+    cc.defineGetterSetter(_p, "x", _p.getPositionX, _p.setPositionX);
+    /** @expose */
+    _p.y;
+    cc.defineGetterSetter(_p, "y", _p.getPositionY, _p.setPositionY);
+}catch (e){
+
+}
+//////////////////////////////////////////////////////////////////////
+
+window._p = flax.FlaxSpriteBatch.prototype;
 
 /** @expose */
 _p.mainCollider;

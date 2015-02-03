@@ -97,7 +97,7 @@ flax.TiledImage.create = function(assetsFile, assetID, minWidth, minHeight)
 {
     var ts = new flax.TiledImage();
     var imgFile = cc.path.changeBasename(assetsFile, ".png");
-    if(ts.init(imgFile, 10))
+    if(ts.init(imgFile, cc.SpriteBatchNode.DEFAULT_CAPACITY))
     {
         ts.setTileSource(assetsFile, assetID);
         if(!isNaN(minWidth)) minWidth = cc.visibleRect.width;
