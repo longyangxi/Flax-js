@@ -338,14 +338,11 @@ flax.MovieClip.create = function(assetsFile, assetID)
     mc.clsName = "flax.MovieClip";
     return mc;
 };
-/**
- * No Batch MovieClip is ready for the MovieClip has a shared asset
- * todo, how to auto generate that
- * */
-flax.MovieClipNoBatch = flax.FlaxSprite.extend(flax._movieClip);
-flax.MovieClipNoBatch.create = function(assetsFile, assetID)
+
+flax.MovieClipBatch = flax.FlaxSpriteBatch.extend(flax._movieClip);
+flax.MovieClipBatch.create = function(assetsFile, assetID)
 {
-    var mc = new flax.MovieClipNoBatch(assetsFile, assetID);
-    mc.clsName = "flax.MovieClipNoBatch";
+    var mc = new flax.MovieClipBatch(assetsFile, assetID);
+    mc.clsName = "flax.MovieClipBatch";
     return mc;
 };
