@@ -331,7 +331,7 @@ flax._movieClip = {
     }
 }
 
-flax.MovieClip = flax.FlaxSpriteBatch.extend(flax._movieClip);
+flax.MovieClip = flax.FlaxSprite.extend(flax._movieClip);
 flax.MovieClip.create = function(assetsFile, assetID)
 {
     var mc = new flax.MovieClip(assetsFile, assetID);
