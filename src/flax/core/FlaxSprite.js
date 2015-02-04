@@ -66,7 +66,7 @@ flax._sprite = {
     _physicsColliders:null,
 
     ctor:function(assetsFile, assetID){
-        if(this instanceof flax.FlaxSprite || this instanceof flax.FlaxSpriteBatch) throw  "flax.FlaxSprite is an abstract class, please use flax.Animator or flax.MovieClip!";
+        if(this.clsName == "flax.FlaxSprite") throw  "flax.FlaxSprite is an abstract class, please use flax.Animator or flax.MovieClip!";
         if(this instanceof cc.SpriteBatchNode) cc.SpriteBatchNode.prototype.ctor.call(this, cc.path.changeExtname(assetsFile, ".png"));
         else cc.Sprite.prototype.ctor.call(this);
         if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!"

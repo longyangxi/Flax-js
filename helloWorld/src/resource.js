@@ -1,5 +1,6 @@
 var res = {
-   anim:"res/flaxAnim.flax"
+    anim:"res/flaxAnim.plist",
+    anim_png:"res/flaxAnim.png"
 };
 
 var res_helloWorld = [

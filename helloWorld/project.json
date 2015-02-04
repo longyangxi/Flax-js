@@ -18,9 +18,9 @@
   "frameRate":60,
   "id":"gameCanvas",
   "renderMode":1,
-  "engineDir":"frameworks/cocos2d-html5",
+  "engineDir":"../../cocos2d-js-v3.2/frameworks/cocos2d-html5",
   "modules":[
-    
+    "cocos2d"
   ],
   "jsList":[
     "src/flax/Flax.js",
