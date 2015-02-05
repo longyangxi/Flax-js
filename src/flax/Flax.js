@@ -545,7 +545,7 @@ flax.isFlaxSprite = function(target)
 }
 flax.isMovieClip = function(target)
 {
-    return target instanceof flax.MovieClip|| target instanceof flax.MovieClipNoBatch;
+    return target instanceof flax.MovieClip|| target instanceof flax.MovieClipBatch;
 }
 flax.isChildOf = function(child, parent)
 {
