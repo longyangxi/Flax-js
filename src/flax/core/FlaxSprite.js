@@ -38,6 +38,7 @@ flax._sprite = {
     assetsFile:null,
     assetID:null,
     clsName:"flax.FlaxSprite",
+    _isLanguageElement:false,
     __isFlaxSprite:true,
     __isInputMask:false,
     _fps:24,
@@ -303,6 +304,8 @@ flax._sprite = {
     },
     play:function()
     {
+        //disable the language element and button to play
+        if(this._isLanguageElement || this.__isButton) return;
         this.loopStart = 0;
         this.loopEnd = this.totalFrames - 1;
         this.updatePlaying(true);
@@ -354,6 +357,8 @@ flax._sprite = {
     },
     gotoAndPlay:function(frameOrLabel,forcePlay)
     {
+        //disable the language element and button to play
+        if(this._isLanguageElement || this.__isButton) return false;
         if(typeof frameOrLabel === "string") {
             if(this.playing && this.currentAnim == frameOrLabel && forcePlay !== true) return true;
             var lbl = this.getLabels(frameOrLabel);
@@ -613,7 +618,8 @@ flax._sprite = {
         flax.callModuleOnExit(this);
     },
     _updateLaguage:function(){
-        if(flax.languageIndex > -1 && this.name && this.name.indexOf("label__") > -1){
+        this._isLanguageElement = (flax.languageIndex > -1 && this.name && this.name.indexOf("label__") == 0);
+        if(this._isLanguageElement){
             if(!this.gotoAndStop(flax.languageIndex)){
                 this.gotoAndStop(0);
             }

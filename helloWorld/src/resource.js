@@ -4,5 +4,6 @@ var res = {
 };
 
 var res_helloWorld = [
-    res.anim
+    res.anim,
+    res.anim_png
 ];
