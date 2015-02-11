@@ -583,7 +583,19 @@ flax.findChildWithClass = function(sprite, cls)
     }
     return null;
 }
-
+/**
+ * Fetch URL GET variables
+ * */
+flax.getUrlVars = function() {
+    var vars = {};
+    var query = window.location.search.substring(1);
+    var varsArr = query.split("&");
+    for (var i = 0; i < varsArr.length; i++) {
+        var pair = varsArr[i].split("=");
+        vars[pair[0]] = decodeURIComponent(pair[1]);
+    }
+    return vars;
+}
 /**
  * Convert a name to a Object or a Function
  * @param {String}name cc.Sprite
