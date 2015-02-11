@@ -183,7 +183,7 @@ flax._movieClip = {
 
                     child.name = childName;
                     this._namedChildren[childName] = child;
-                    if(this.autoPlayChildren) {
+                    if(this.autoPlayChildren && flax.isFlaxSprite(child)) {
                         this.playing ? child.gotoAndPlay(0) : child.gotoAndStop(0);
                     }
                     this[childName] = child;
@@ -194,7 +194,7 @@ flax._movieClip = {
                 if(this.sameFpsForChildren) child.fps = this.fps;
                 child.visible = true;
                 child.autoPlayChildren = this.autoPlayChildren;
-                if(this.autoPlayChildren) {
+                if(this.autoPlayChildren && flax.isFlaxSprite(child)) {
                     this.playing ? child.play() : child.stop();
                 }
                 //To fix the zIndex bug when use the old version tool
