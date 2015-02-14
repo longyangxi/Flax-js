@@ -15,12 +15,10 @@ var ButtonState = {
 
 MOUSE_DOWN_SCALE = 0.95;
 
-flax._radioButtons = {};
-
 flax._buttonDefine = {
     clickSound:null,//The sound will play when click
-    playChildrenOnState:false,//If auto paly children's animation when change state
-    _radioGroup:"",//All the button with the same _radioGroup will only have only one button selected!
+    group:null,//the button group it belongs to
+    _playChildrenOnState:false,//If auto paly children's animation when change state
     _state:null,
     _initScale:null,
     __isButton:true,
@@ -33,18 +31,21 @@ flax._buttonDefine = {
         flax.inputManager.addListener(this, this._onMove, InputType.move);
     },
     onExit:function(){
-        this._removeRadioGroup();
+        if(this.group){
+            this.group.removeButton(this);
+            this.group = null;
+        }
         this._super();
     },
     onRecycle:function(){
         this._super();
-        this.playChildrenOnState = false;
-        this._radioGroup = "";
+        this._playChildrenOnState = false;
         this._state = null;
     },
     setState:function(state)
     {
         if(this._state == state) return;
+        var oldSelected = this.isSelected();
         this._state = state;
         if(!this.gotoAndStop(this._state))
         {
@@ -63,40 +64,23 @@ flax._buttonDefine = {
                 this.gotoAndStop(0);
             }
         }
-        //auto play the children's animation on new state
-        if(this.playChildrenOnState){
-            var i = this.childrenCount;
-            while(i--){
-                var child = this.children[i];
-                if(child.play) {
-                    child.autoPlayChildren = true;
-                    child.play();
-                }
-            }
+        this._playOrPauseChildren();
+        if(this.isSelected() && !oldSelected && this.group){
+            this.group.updateButtons(this);
         }
     },
     getState:function()
     {
         return this._state;
     },
-    setRadioGroup:function(radioGroup)
-    {
-        if(!radioGroup || radioGroup == this._radioGroup) return;
-        if(this._radioGroup) {
-            cc.log("Button's radioGroup could be set only once!");
-            return;
-        }
-        this._radioGroup = radioGroup;
-        if(flax._radioButtons[this._radioGroup] == null) flax._radioButtons[this._radioGroup] = [];
-        flax._radioButtons[this._radioGroup].push(this);
-    },
-    getRadioGroup:function()
-    {
-        return this._radioGroup;
-    },
     isSelected:function()
     {
-        return this._state == ButtonState.SELECTED || this._state == ButtonState.SELECTED_OVER || this._state == ButtonState.SELECTED_DOWN;
+        return this._state && (this._state.indexOf("selected") == 0);
+    },
+    setSelected:function(value)
+    {
+        if(this.isSelected() == value || !this.isSelectable() || !this.isMouseEnabled()) return;
+        this.setState(value ? ButtonState.SELECTED : ButtonState.UP);
     },
     isSelectable:function()
     {
@@ -112,14 +96,15 @@ flax._buttonDefine = {
     {
         return this._state != ButtonState.DISABLED;
     },
-    _removeRadioGroup:function()
+    setPlayChildrenOnState:function(play)
     {
-        if(this._radioGroup){
-            var arr = flax._radioButtons[this._radioGroup];
-            if(arr == null) return;
-            var i = arr.indexOf(this);
-            if(i > -1) arr.splice(i, 1);
-        }
+        if(this._playChildrenOnState == play) return;
+        this._playChildrenOnState = play;
+        this._playOrPauseChildren();
+    },
+    getPlayChildrenOnState:function()
+    {
+        return this._playChildrenOnState;
     },
     _onPress:function(touch, event)
     {
@@ -131,17 +116,7 @@ flax._buttonDefine = {
     {
         if(this.isSelectable())
         {
-            if (!this.isSelected() || this._radioGroup){
-                if(!this.isSelected() && this._radioGroup){
-                    var arr = flax._radioButtons[this._radioGroup];
-                    if(arr && arr.length > 1){
-                        for(var i = 0; i < arr.length; i++){
-                            if(arr[i] != this){
-                                arr[i].setState(ButtonState.UP);
-                            }
-                        }
-                    }
-                }
+            if (!this.isSelected() || this.group){
                 this.setState(ButtonState.SELECTED);
             }else {
                 this.setState(ButtonState.UP);
@@ -166,6 +141,24 @@ flax._buttonDefine = {
             else state = "selected_"+state;
         }
         this.setState(state);
+    },
+    /**
+     * Auto play the children's animation on new state if _playChildrenOnState = true
+     * */
+    _playOrPauseChildren:function()
+    {
+        var i = this.childrenCount;
+        while(i--){
+            var child = this.children[i];
+            if(!flax.isFlaxSprite(child)) continue;
+            if(this._playChildrenOnState) {
+                child.autoPlayChildren = true;
+                child.play();
+            }else{
+                child.autoPlayChildren = false;
+                child.stop();
+            }
+        }
     }
 }
 
@@ -183,8 +176,11 @@ window._p = flax.SimpleButton.prototype;
 _p.state;
 cc.defineGetterSetter(_p, "state", _p.getState, _p.setState);
 /** @expose */
-_p.radioGroup;
-cc.defineGetterSetter(_p, "radioGroup", _p.getRadioGroup, _p.setRadioGroup);
+_p.playChildrenOnState;
+cc.defineGetterSetter(_p, "playChildrenOnState", _p.getPlayChildrenOnState, _p.setPlayChildrenOnState);
+/** @expose */
+_p.selected;
+cc.defineGetterSetter(_p, "selected", _p.isSelected, _p.setSelected);
 delete window._p;
 
 flax.Button = flax.MovieClip.extend(flax._buttonDefine);
@@ -195,16 +191,66 @@ flax.Button.create = function(assetsFile, assetID)
     btn.setState(ButtonState.UP);
     return btn;
 };
-flax.Button.reset = function()
-{
-    flax._radioButtons = {};
-}
 
 window._p = flax.Button.prototype;
 /** @expose */
 _p.state;
 cc.defineGetterSetter(_p, "state", _p.getState, _p.setState);
 /** @expose */
-_p.radioGroup;
-cc.defineGetterSetter(_p, "radioGroup", _p.getRadioGroup, _p.setRadioGroup);
+_p.playChildrenOnState;
+cc.defineGetterSetter(_p, "playChildrenOnState", _p.getPlayChildrenOnState, _p.setPlayChildrenOnState);
+/** @expose */
+_p.selected;
+cc.defineGetterSetter(_p, "selected", _p.isSelected, _p.setSelected);
 delete window._p;
+
+flax.ButtonGroup = cc.Class.extend({
+    buttons:null,
+    selectedButton:null,
+    onSelected:null,
+    ctor:function(name)
+    {
+        this.buttons = [];
+        this.onSelected = new signals.Signal();
+    },
+    addButton:function(buttons)
+    {
+        if(!(buttons instanceof  Array)) {
+            buttons = Array.prototype.slice.call(arguments);
+        }
+        for(var i = 0; i < buttons.length; i++){
+            var btn = buttons[i];
+            if(!flax.isButton(btn)) continue;
+            if(this.buttons.indexOf(btn) > -1) continue;
+            this.buttons.push(btn);
+            btn.group = this;
+        }
+    },
+    removeButton:function(button)
+    {
+        var i = this.buttons.indexOf(button);
+        if(i > -1){
+            this.buttons.splice(i, 1);
+            button.group = null;
+            if(this.selectedButton == button){
+                this.selectedButton = this.buttons[0];
+                if(this.selectedButton) this.selectedButton.setState(ButtonState.SELECTED);
+            }
+        }
+        if(this.buttons.length == 0){
+            this.onSelected.removeAll();
+            this.onSelected = null;
+        }
+    },
+    updateButtons:function(newSelected)
+    {
+        for(var i = 0; i < this.buttons.length; i++){
+            var btn = this.buttons[i];
+            if(btn != newSelected){
+               btn.setState(ButtonState.UP);
+            }
+        }
+        this.selectedButton = newSelected;
+        this.onSelected.dispatch(newSelected);
+    }
+})

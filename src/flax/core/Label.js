@@ -205,6 +205,7 @@ flax.Label.create = function(assetsFile, define)
     var lbl = null;
     var txtCls = define["class"];
     var bmpFontName = flax.assetsManager.getFont(assetsFile, txtCls);
+    //input text
     if(define.input == true){
         if(cc.EditBox == null){
             throw "If you want to use input text, please add module of 'editbox' into project.json!";
@@ -245,6 +246,7 @@ flax.Label.create = function(assetsFile, define)
         //lbl.enableStroke(cc.color(255, 0, 0, 255), 5);
         //enable shadow
         //lbl.enableShadow(cc.color(255,255,255,255),2,5);
+    //bitmap font text
     }else{
         lbl = new flax.Label();
         flax.assetsManager.addAssets(assetsFile);

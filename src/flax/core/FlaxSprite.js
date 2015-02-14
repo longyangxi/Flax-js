@@ -31,18 +31,18 @@ flax._sprite = {
     prevFrame:-1,
     totalFrames:0,
     frameInterval:0,
-    loopStart:0,
-    loopEnd:0,
     define:null,
     name:null,
     assetsFile:null,
     assetID:null,
     clsName:"flax.FlaxSprite",
+    playing:false,
+    _loopStart:0,
+    _loopEnd:0,
     _isLanguageElement:false,
     __isFlaxSprite:true,
     __isInputMask:false,
     _fps:24,
-    playing:false,
     _colliders:null,
     _mainCollider:null,
     _physicsBody:null,
@@ -57,7 +57,6 @@ flax._sprite = {
     _tileInited:false,
     _mouseEnabled:true,
     _baseAssetID:null,
-    _currentSubAnim:null,
     _subAnims:null,
     _animSequence:null,
     _loopSequence:false,
@@ -121,7 +120,7 @@ flax._sprite = {
         assetID = this._baseAssetID;
         if(anim) {
             assetID = this._baseAssetID+"$"+anim;
-            this._currentSubAnim = anim;
+            this.currentAnim = anim;
         }
         return assetID;
     },
@@ -286,10 +285,9 @@ flax._sprite = {
     {
         if(!this.define.labels) return null;
         var labels = this.define.labels;
-        var label = null;
         for(var name in labels)
         {
-            label = labels[name];
+            var label = labels[name];
             if(this.currentFrame >= label.start && this.currentFrame <= label.end){
                 return name;
             }
@@ -306,8 +304,8 @@ flax._sprite = {
     {
         //disable the language element and button to play
         if(this._isLanguageElement || this.__isButton) return;
-        this.loopStart = 0;
-        this.loopEnd = this.totalFrames - 1;
+        this._loopStart = 0;
+        this._loopEnd = this.totalFrames - 1;
         this.updatePlaying(true);
         this.currentAnim = null
     },
@@ -347,11 +345,10 @@ flax._sprite = {
             if(!this.__isButton) cc.log("There is no animation named: " + anim);
             return false;
         }
-//        if(this._currentSubAnim == anim) return false;
-        this._currentSubAnim = anim;
         this.setSource(this.assetsFile, this._baseAssetID+"$"+anim);
         if(autoPlay === false) this.gotoAndStop(0);
         else this.gotoAndPlay(0);
+        this.currentAnim = anim;
         this._animTime = 0;
         return true;
     },
@@ -370,9 +367,9 @@ flax._sprite = {
                 }
                 return has;
             }
-            this.loopStart = lbl.start;
-            this.loopEnd = lbl.end;
-            this.currentFrame = this.loopStart;
+            this._loopStart = lbl.start;
+            this._loopEnd = lbl.end;
+            this.currentFrame = this._loopStart;
             this.currentAnim = frameOrLabel;
         }else{
             if(!this.isValideFrame(frameOrLabel))
@@ -380,8 +377,8 @@ flax._sprite = {
                 cc.log("The frame: "+frameOrLabel +" is out of range!");
                 return false;
             }
-            this.loopStart = 0;
-            this.loopEnd = this.totalFrames - 1;
+            this._loopStart = 0;
+            this._loopEnd = this.totalFrames - 1;
             this.currentFrame = frameOrLabel;
             this.currentAnim = null;
         }
@@ -449,9 +446,9 @@ flax._sprite = {
         if(!this.visible) return;
         this.currentFrame++;
         this._animTime += delta;
-        if(this.currentFrame > this.loopEnd)
+        if(this.currentFrame > this._loopEnd)
         {
-            this.currentFrame = this.loopEnd;
+            this.currentFrame = this._loopEnd;
             if(this.autoDestroyWhenOver || this.autoStopWhenOver || this.autoHideWhenOver){
                 this.updatePlaying(false);
             }
@@ -466,11 +463,11 @@ flax._sprite = {
             }else if(this._animSequence.length){
                 this._playNext();
             }else if(!this.autoStopWhenOver){
-                this.currentFrame = this.loopStart;
+                this.currentFrame = this._loopStart;
             }
             this._animTime = 0;
         }
-        if(this.currentFrame > this.loopEnd || this.currentFrame > this.totalFrames - 1) this.currentFrame = this.loopStart;
+        if(this.currentFrame > this._loopEnd || this.currentFrame > this.totalFrames - 1) this.currentFrame = this._loopStart;
         this.renderFrame(this.currentFrame);
     },
     _playNext:function(){
@@ -503,7 +500,7 @@ flax._sprite = {
                 this.updatePlaying(false);
             }else{
                 this._animSequence = [];
-                this.currentFrame = this.loopStart;
+                this.currentFrame = this._loopStart;
             }
         }else{
             this.gotoAndPlay(anim);
@@ -733,6 +730,7 @@ flax._sprite = {
         this._animSequence.length = 0;
         this._loopSequence = false;
         this._sequenceIndex = 0;
+        this.currentAnim = null;
         this.__isInputMask = false;
     },
     isMouseEnabled:function()
@@ -786,6 +784,9 @@ cc.defineGetterSetter(_p, "fps", _p.getFPS, _p.setFPS);
 /** @expose */
 _p.tileMap;
 cc.defineGetterSetter(_p, "tileMap", _p.getTileMap, _p.setTileMap);
+/** @expose */
+_p.currentLabel;
+cc.defineGetterSetter(_p, "currentLabel", _p.getCurrentLabel);
 //fix the .x, .y bug no invoking setPosition mehtod
 try{
     /** @expose */
@@ -816,6 +817,9 @@ cc.defineGetterSetter(_p, "fps", _p.getFPS, _p.setFPS);
 /** @expose */
 _p.tileMap;
 cc.defineGetterSetter(_p, "tileMap", _p.getTileMap, _p.setTileMap);
+/** @expose */
+_p.currentLabel;
+cc.defineGetterSetter(_p, "currentLabel", _p.getCurrentLabel);
 //fix the .x, .y bug no invoking setPosition mehtod
 try{
     /** @expose */

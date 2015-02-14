@@ -83,7 +83,7 @@ flax.AssetsManager = cc.Class.extend({
         if(define && define.type == "share"){
             //get the resource root folder, the share library must be in the root folder
             var dir = assetsFile.slice(0, assetsFile.indexOf("/"));
-            return this.createDisplay(dir + "/" + define.url + ".flax", assetID, params, fromPool, clsName);
+            return this.createDisplay(dir + "/" + define.url + ".plist", assetID, params, fromPool, clsName);
         }
 
         var mcCls = null;
@@ -161,8 +161,9 @@ flax.AssetsManager = cc.Class.extend({
         if(dict == null){
             throw "Make sure you have pre-loaded the resource: "+assetsFile;
         }
-        if(!dict.metadata.flaxVersion || dict.metadata.flaxVersion < 1.45){
-            throw "Please use the Flax tool of version 1.45 or later!";
+        //the min tool version this API needed
+        if(!dict.metadata.flaxVersion || dict.metadata.flaxVersion < flax.minToolVersion){
+            throw "The resource: " + assetsFile + " was exported with the old version of Flax, please do it with current version!";
         }
         //get the fps from flash
         var fps = dict.metadata.fps;

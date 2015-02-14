@@ -19,7 +19,8 @@ var TileValue = TileValue || {
 
 var flax = flax || {};
 
-flax.version = 1.6;
+flax.version = 1.7;
+flax.minToolVersion = 2.0;
 flax.language = null;
 flax.languageIndex = -1;
 flax.languages = ["en","zh","de","fr","it","es","tr","pt","ru"];
@@ -238,7 +239,6 @@ flax.replaceScene = function(sceneName, transition, duration)
     }
     if(flax.ObjectPool) flax.ObjectPool.release();
     if(flax.BulletCanvas) flax.BulletCanvas.reset();
-    if(flax.Button) flax.Button.reset();
     cc.director.resume();
     flax.currentSceneName = sceneName;
     if(flax.stopPhysicsWorld) flax.stopPhysicsWorld();
@@ -276,6 +276,15 @@ flax.replaceScene = function(sceneName, transition, duration)
         flax.currentScene.addChild(flax.inputManager, 999999);
         flax._checkDeviceOrientation();
     });
+}
+/**
+ * Refresh current scene
+ * */
+flax.refreshScene = function()
+{
+    if(flax.currentSceneName){
+        flax.replaceScene(flax.currentSceneName);
+    }
 }
 
 flax.preload = function(res, callBack)
@@ -545,7 +554,11 @@ flax.isFlaxSprite = function(target)
 }
 flax.isMovieClip = function(target)
 {
-    return target instanceof flax.MovieClip|| target instanceof flax.MovieClipBatch;
+    return target instanceof flax.MovieClip || target instanceof flax.MovieClipBatch;
+}
+flax.isButton = function(target)
+{
+    return target instanceof flax.Button || target instanceof flax.SimpleButton;
 }
 flax.isChildOf = function(child, parent)
 {

@@ -14,6 +14,14 @@ flax.FrameData = cc.Class.extend({
     zIndex:-1,
     skewX:0,
     skewY:0,
+    //ttf text properties
+    font:null,
+    fontSize:12,
+    fontColor:"",
+    textAlign:"",
+    textWidth:40,
+    textHeight:20,
+
     _data:null,
     _hasSkew:false,
 
@@ -29,15 +37,18 @@ flax.FrameData = cc.Class.extend({
         if(data.length > 7) this.skewX = parseFloat(data[7]);
         if(data.length > 8) this.skewY = parseFloat(data[8]);
         this._hasSkew = (data.length > 7);
+        //the ttf text info
+        if(data.length > 9) {
+            this.font = data[9];
+            this.fontSize = parseInt(data[10]);
+            this.fontColor = cc.hexToColor(data[11]);
+            this.textAlign = H_ALIGHS.indexOf(data[12]);
+            this.textWidth = parseFloat(data[13]);
+            this.textHeight = parseFloat(data[14]);
+        }
     },
-    setForNode:function(child, offsetX, offsetY)
+    setForChild:function(child)
     {
-        var x = this.x + offsetX;
-        var y = this.y + offsetY;
-
-        if(x != child.x) child.x = x;
-        if(y != child.y) child.y = y;
-
         if(!this._hasSkew && this.rotation != child.rotation) child.rotation = this.rotation;
         if(this.scaleX != child.scaleX) child.scaleX = this.scaleX;
         if(this.scaleY != child.scaleY) child.scaleY = this.scaleY;
@@ -48,6 +59,26 @@ flax.FrameData = cc.Class.extend({
         }
 
         if(child.setOpacity && this.opacity != child.opacity) child.opacity = this.opacity;
+
+        var x = this.x;
+        var y = this.y;
+        //set the ttf text properties
+        if(this.font && child instanceof cc.LabelTTF)
+        {
+            child.setFontName(this.font);
+            child.setFontFillColor(this.fontColor);
+            child.setHorizontalAlignment(this.textAlign);
+            child.setDimensions(this.textWidth, this.textHeight);
+            //todo: fix the bug of cocos: no update when the font color changed
+            child.setFontSize(this.fontSize - 1);
+            child.setFontSize(this.fontSize);
+            //ttf position offset
+            x += this.textWidth/2;
+            y -= this.textHeight/2;
+        }
+
+        if(x != child.x) child.x = x;
+        if(y != child.y) child.y = y;
     },
     clone:function(){
         return new flax.FrameData(this._data);
@@ -76,7 +107,7 @@ flax.FrameData_mat = cc.Class.extend({
         this.opacity = Math.round(255*parseFloat(data[6]));
         this.zIndex = parseInt(data[7]);
     },
-    setForNode:function(child, offsetX, offsetY)
+    setForChild:function(child, offsetX, offsetY)
     {
         this.tx += offsetX;
         this.ty += offsetY;
@@ -167,16 +198,10 @@ flax._movieClip = {
             frameData = this._frameDatas[childName][frame];
             child = this._namedChildren[childName];
             if(frameData) {
-                var offsetX = 0;
-                var offsetY = 0;
                 if(child == null){
                     //hadle the label text
                     if(childDefine.text != null){
                         child = flax.Label.create(this.assetsFile, childDefine);
-                        if(child instanceof cc.LabelTTF){
-                            offsetX = childDefine.width/2;
-                            offsetY = -childDefine.height/2;
-                        }
                     }else{
                         child = flax.assetsManager.createDisplay(this.assetsFile, childDefine["class"], null, true);
                     }
@@ -189,7 +214,7 @@ flax._movieClip = {
                     this[childName] = child;
                     this.onNewChild(child);
                 }
-                frameData.setForNode(child, offsetX, offsetY);
+                frameData.setForChild(child);
                 //all children use the same fps with this
                 if(this.sameFpsForChildren) child.fps = this.fps;
                 child.visible = true;
@@ -243,7 +268,7 @@ flax._movieClip = {
     getDefine:function()
     {
         var define = flax.assetsManager.getMc(this.assetsFile, this.assetID);
-        if(define == null) throw "There is no MovieClip named: " + this.assetID + " in assets: " + this.assetsFile+", make sure you are a pro user!";
+        if(define == null) throw "There is no MovieClip named: " + this.assetID + " in assets: " + this.assetsFile + ", or make sure this class extends from the proper class!";
         return define;
     },
     getChildOfName:function(name, nest)
