@@ -22,6 +22,10 @@ flax.TileMap = cc.Class.extend({
     _objectsArr:null,
     _inUpdate:false,
 
+    ctor:function(id)
+    {
+        if(id) this.id = id;
+    },
     //fix the tile update bug when in JSB
     update:function(delta){
         var i = this._objectsArr ? this._objectsArr.length : 0;
@@ -44,6 +48,12 @@ flax.TileMap = cc.Class.extend({
         if(w == null) w = cc.visibleRect.width;
         if(h == null) h = cc.visibleRect.height;
         return this.setMapSize(Math.ceil(w/this._tileWidth), Math.ceil(h/this._tileHeight));
+    },
+    getMapSizePixel:function()
+    {
+        var s = cc.size(this._tileWidth*this._mapWidth, this._tileHeight*this._mapHeight);
+        if(this.isHexagon) s.width += this._tileWidth*0.5;
+        return s;
     },
     setMapSize:function(w, h)
     {
@@ -132,12 +142,6 @@ flax.TileMap = cc.Class.extend({
             }
         }
         this._objectsArr.length = 0;
-    },
-    getPixelSize:function()
-    {
-        var s = cc.size(this._tileWidth*this._mapWidth, this._tileHeight*this._mapHeight);
-        if(this.isHexagon) s.width += this._tileWidth*0.5;
-        return s;
     },
     /**
      * Note: Must be the global position
@@ -556,8 +560,7 @@ flax.TileMap = cc.Class.extend({
 
 flax.TileMap.create = function(id)
 {
-    var map = new flax.TileMap();
-    map.id = id;
+    var map = new flax.TileMap(id);
     return map;
 };
 

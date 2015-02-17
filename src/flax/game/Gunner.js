@@ -3,15 +3,10 @@
  */
 var flax = flax || {};
 
-flax.GunnerCamp = {
-    player:"Player",
-    enemy:"Enemy"
-};
 flax._gunnerDefine = {
     camp:null,//Player or Enemy?
     _gunParam:null,//see flax.GunParam, remember the anchors, ["weapon1","weapon2"]
     targets:null,//the targets array of the enemy
-    aimTarget:null,//the target the guns will aimed to
     alwaysBind:true,//if the gun always bind to the anchor every frame
     _guns:null,
     _autoShooting:false,
@@ -32,21 +27,22 @@ flax._gunnerDefine = {
     getGunParam:function(){
         return this._gunParam;
     },
-    setGunParam:function(param)
+    setGunParam:function(param, gunAnchors)
     {
         this._gunParam = param;
         if(this.parent == null) return;
-        if(param.gunAnchors == null){
+        if(!gunAnchors) gunAnchors = param.gunAnchors;
+        if(gunAnchors == null){
             cc.log("Please set the gunAnchors param!");
             return;
         }
         var i = -1;
-        var n = param.gunAnchors.length;
+        var n = gunAnchors.length;
         var gunAnchor = null;
         var gun = null;
         while(++i < n)
         {
-            gunAnchor = param.gunAnchors[i];
+            gunAnchor = gunAnchors[i];
             gun = flax.Gun.create(this._gunParam);
             if(this.bindAnchor(gunAnchor, gun, this.alwaysBind)) {
                 gun.owner = this;
@@ -61,9 +57,6 @@ flax._gunnerDefine = {
     },
     shoot:function(){
         this._auto = false;
-        if(this.aimTarget) {
-            this._aimToTarget();
-        }
         this._doBeginShoot();
     },
     autoShoot:function(delay)
@@ -73,10 +66,6 @@ flax._gunnerDefine = {
             this._waitingShoot = true;
             return;
         }
-        if(this.aimTarget){
-            this._aimToTarget();
-        }
-
         if(delay > 0){
             this.scheduleOnce(this._doBeginShoot, delay);
         }else{
@@ -85,18 +74,24 @@ flax._gunnerDefine = {
         this._autoShooting = true;
         this._waitingShoot = false;
     },
-    _aimToTarget:function(){
-        if(!this.aimTarget) return;
-        if(this.targets == null) this.targets = [this.aimTarget];
-        else if(this.targets.indexOf(this.aimTarget) == -1) this.targets.push(this.aimTarget);
+    /**
+     * Set a target to aim to
+     * */
+    aimToTarget:function(target){
+        if(!target || !target.parent || !target.visible) return;
+        if(this.targets == null) this.targets = [target];
+        else if(this.targets.indexOf(target) == -1) this.targets.push(target);
         var i = -1;
         var n = this._guns.length;
         var gun = null;
         while(++i < n)
         {
             gun = this._guns[i];
-            gun.aimTarget = this.aimTarget;
+            gun.aimTarget = target;
         }
+    },
+    onAimingTarget:function(angle){
+        //to be override
     },
     _doBeginShoot:function()
     {
@@ -153,7 +148,7 @@ flax._gunnerDefine = {
         }
         return delta;
     },
-    _onDie:function()
+    onDie:function()
     {
         this.stopShoot();
         if(this.ownerBody) this.ownerBody.destroy();

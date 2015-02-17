@@ -23,12 +23,12 @@ flax.HealthModule = {
         if(this.health <= 0) {
             this.dead = true;
             this.health = 0;
-            this._onDie();
+            this.onDie();
             return true;
         }
         return false;
     },
-    _onDie:function()
+    onDie:function()
     {
         if(this.ownerBody) this.ownerBody.destroy();
         else this.destroy();

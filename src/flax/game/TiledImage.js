@@ -3,65 +3,72 @@
  */
 
 var flax = flax || {};
-
+/**
+ * Layer.bake maybe a choice for good performance
+ * */
 flax.TiledImage = cc.SpriteBatchNode.extend({
     tileMap:null,
-    tileWidthOffset: -1,
-    tileHeightOffset:-1,
-    _assetsFile:null,
-    _taID:null,
-    _minWidth:0,
-    _minHeight:0,
-    _pool:null,
+    tileWidthOffset: 0,
+    tileHeightOffset:0,
+    assetsFile:null,
+    assetID:null,
+    _mapWidth:0,
+    _mapHeight:0,
 
-    init:function(fileImage, capacity)
+    ctor:function(assetsFile, assetID, minWidth, minHeight)
     {
-        this._super(fileImage, capacity);
-        this.tileMap = flax.TileMap.create("tile_image_"+flax.randInt(0, 1000));
-        return true;
+        var imgFile = cc.path.changeBasename(assetsFile, ".png");
+        cc.SpriteBatchNode.prototype.ctor.call(this, imgFile);
+        this.tileMap = new flax.TileMap();
+        this.setTileSource(assetsFile, assetID);
+        if(!minWidth) minWidth = cc.visibleRect.width;
+        if(!minHeight) minHeight = cc.visibleRect.height;
+        this.setSize(minWidth, minHeight);
     },
     setTileSource:function(assetsFile, assetID)
     {
-        if(this._assetsFile == assetsFile && this._taID == assetID) return;
-        this._assetsFile = assetsFile;
-        this._taID = assetID;
+        if(this.assetsFile == assetsFile && this.assetID == assetID) return;
+        this.assetsFile = assetsFile;
+        this.assetID = assetID;
 
-        this._pool = flax.ObjectPool.get(assetsFile, "flax.Animator");
-
-        var tile = flax.assetsManager.createDisplay(this._assetsFile, this._taID);
+        var tile = flax.assetsManager.createDisplay(this.assetsFile, this.assetID);
         var size = tile.getContentSize();
         this.tileMap.setTileSize(size.width + this.tileWidthOffset, size.height + this.tileHeightOffset);
 
-        if(this._minWidth * this._minHeight > 0) {
-            if(this._children.length > 0) this._updateTileImg();
-            else this._updateSize();
+        if(this._mapWidth * this._mapHeight > 0) {
+            if(this.getChildrenCount() > 0){
+                this._updateTileImg();
+            }
+            this._updateSize();
         }
     },
-    setMinSize:function(w,h)
+    /**
+     * todo, there is issue when randomly change the size
+     * */
+    setSize:function(w, h)
     {
-        var deltaW = w - this._minWidth;
-        var deltaH = h - this._minHeight;
-        if(deltaW * deltaH == 0) return;
-        this._minWidth = w;
-        this._minHeight = h;
-        if(this._assetsFile) {
+        if(w == this._mapWidth && h == this._mapHeight) return;
+        this._mapWidth = w;
+        this._mapHeight = h;
+        if(this.assetsFile) {
             this._updateSize();
         }
     },
     _updateTileImg:function()
     {
         var child = null;
-        var num = this._children.length;
+        var num = this.getChildrenCount();
         var i = -1;
         while(++i < num)
         {
-            child = this._children[i];
-            child.setSource(this._assetsFile, this._taID);
+            child = this.children[i];
+            child.setSource(this.assetsFile, this.assetID);
+            this.tileMap.snapToTile(child, child.tx, child.ty);
         }
     },
     _updateSize:function()
     {
-        var objs = this.tileMap.setMapSizePixel(this._minWidth, this._minHeight);
+        var objs = this.tileMap.setMapSizePixel(this._mapWidth, this._mapHeight);
         var i;
         var n = objs[0].length;
         if(n > 0) {
@@ -70,7 +77,8 @@ flax.TiledImage = cc.SpriteBatchNode.extend({
             while(++i < n){
                 //remove the tiles
                 tile = objs[0][i];
-                tile.destroy();
+                if(tile.destroy) tile.destroy();
+                else tile.removeFromParent();
             }
         }
         n = objs[1].length;
@@ -80,30 +88,13 @@ flax.TiledImage = cc.SpriteBatchNode.extend({
                 this._createTile(objs[1][i][0], objs[1][i][1]);
             }
         }
-        this.setContentSize(this.tileMap.getPixelSize());
+        this.setContentSize(this.tileMap.getMapSizePixel());
     },
     _createTile:function(i, j)
     {
-        var tile = this._pool.fetch(this._taID, this);
+        var tile = flax.assetsManager.createDisplay(this.assetsFile, this.assetID, {parent: this}, true);
         tile.setAnchorPoint(0.5, 0.5);
-        this.tileMap.addObject(tile, i, j);
-        this.tileMap.snapToTile(tile, i, j);
-//        this.addChild(tile);
+        this.tileMap.snapToTile(tile, i, j, true);
         return tile;
     }
 });
-
-flax.TiledImage.create = function(assetsFile, assetID, minWidth, minHeight)
-{
-    var ts = new flax.TiledImage();
-    var imgFile = cc.path.changeBasename(assetsFile, ".png");
-    if(ts.init(imgFile, cc.SpriteBatchNode.DEFAULT_CAPACITY))
-    {
-        ts.setTileSource(assetsFile, assetID);
-        if(!isNaN(minWidth)) minWidth = cc.visibleRect.width;
-        if(!isNaN(minHeight)) minHeight = cc.visibleRect.height;
-        ts.setMinSize(minWidth, minHeight);
-        return ts;
-    }
-    return null;
-};

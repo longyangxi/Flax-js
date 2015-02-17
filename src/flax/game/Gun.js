@@ -7,7 +7,7 @@ flax.GunParam = cc.Class.extend({
     bulletAssets:null,//the assets file of the bullet
     bulletID:null,//the id of the bullet asset
     targetMap:null,//the TileMap name of the target to shoot
-    selfMap:null,//the TileMap the bullet itself to be added to, the bullet can be shooted on this situation
+    selfMap:null,//the TileMap the bullet itself to be added to
     damage:1,//the damage of the bullet, if it's Array with two elements, set a random value between them
     damageRadius:0,//if damageRadius > 1, bullet will make splash damage to the enemies around it
     speed:600,//the move speed of the bullet per second
@@ -24,7 +24,7 @@ flax.GunParam = cc.Class.extend({
     hitEffectID:null,//the id of hit effect, it must be packed with the bullet assets id together
     alwaysLive:false,//if true, when the bullet hurt target, it'll not disappear, continue to hurt next enemy on the path
     bulletPlayOnce:false,//if true, the bullet will play only once after fire, otherwise always play again and again
-    fps:30,//if the bullet has animation, then set the fps
+    fps:0,//if the bullet has animation, then set the fps, or use the default fps in the fla
     isMissle:false//todo, if it's missile
 });
 
@@ -89,8 +89,9 @@ flax.Gun = cc.Node.extend({
         if(this.parent == null) return;
 
         var pos = this.parent.convertToWorldSpace(this.getPosition());
-        if(this.aimTarget){
+        if(this.aimTarget && this.aimTarget.parent && this.aimTarget.visible){
             var angle = flax.getAngle(flax.getPosition(this, true), this.aimTarget.center);
+            this.owner.onAimingTarget(angle);
             this.rotation = angle - this.param.angleOffset - this.parent.rotation;
         }
         pos = this._canvas.convertToNodeSpace(pos);
@@ -146,7 +147,7 @@ flax.BulletCanvas = cc.SpriteBatchNode.extend({
     },
     addBullet:function(rotation, position, param, owner){
         if(this.parent == null) {
-            cc.log("Please add the bullet canvas to the stage: container.addChild(flax.BulletCanvas.fetch('"+this.assetsFile+"'));");
+//            cc.log("Please init the bullet canvas: flax.BulletCanvas.create('"+this.assetsFile+"', container);");
             return;
         }
         if(!(param instanceof flax.GunParam)) param = flax.GunParam.create(param);
@@ -155,7 +156,7 @@ flax.BulletCanvas = cc.SpriteBatchNode.extend({
         b.param = param;
         if(owner && owner.targets) b.targets = owner.targets;
         if(param.targetMap) b.targetMap = flax.getTileMap(param.targetMap);
-        b.fps = param.fps;
+        if(param.fps) b.fps = param.fps;
         b.__physicalShooted = false;
         //if it's MovieClip
         if(b instanceof flax.MovieClip){
@@ -268,6 +269,7 @@ flax.BulletCanvas = cc.SpriteBatchNode.extend({
         var i = -1;
         while(++i < targets.length) {
             target = targets[i];
+            if(!target || !target.parent || !target.visible) continue;
             if(b.owner && (target == b.owner || flax.isChildOf(b.owner, target) || target.dead === true || (b.owner.camp != null && target.camp == b.owner.camp))) continue;
             //hit the target
             if(b.__isMovieClip){
@@ -315,7 +317,13 @@ flax.BulletCanvas = cc.SpriteBatchNode.extend({
         hitEffect.gotoAndPlay(0);
     }
 });
-
+flax.BulletCanvas.create = function(assetsFile, container, zIndex) {
+    var canvas = flax.BulletCanvas.fetch(assetsFile);
+    if(canvas.parent != container){
+        canvas.removeFromParent();
+        container.addChild(canvas, zIndex || 999);
+    }
+}
 flax.BulletCanvas.fetch = function (assetsFile) {
     if(flax._bulletCanvases[assetsFile]) return flax._bulletCanvases[assetsFile];
     var texturePath = cc.path.changeBasename(assetsFile, ".png");
@@ -325,7 +333,7 @@ flax.BulletCanvas.fetch = function (assetsFile) {
     return c;
 };
 flax._bulletCanvases = {};
-flax.BulletCanvas.reset = function(){
+flax.BulletCanvas.release = function(){
     for(var k in flax._bulletCanvases){
         flax._bulletCanvases[k].removeFromParent(true);
     }

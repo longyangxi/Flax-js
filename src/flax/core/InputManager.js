@@ -178,19 +178,21 @@ flax.InputManager = cc.Node.extend({
         if(target == null) target = this;
         var calls = this._callbacks[target.__instanceId];
         if(calls && (type == null || (type != InputType.keyPress && type != InputType.keyUp))) {
-            this.scheduleOnce(function(){
+//            this.scheduleOnce(function(){
                 var call = null;
                 var i = calls.length;
                 if(func || type) {
                     while(i--){
                         call = calls[i];
-                        if((type && call.type == type) || (func && call.func == func)) calls.splice(i, 1);
+                        if((type && call.type == type) || (func && call.func == func)) {
+                            calls.splice(i, 1);
+                        }
                     }
                 }
                 if(calls.length == 0 || (!func && !type)){
                     delete this._callbacks[target.__instanceId];
                 }
-            },0.01);
+//            },0.01);
         }
         if(func && (type == null || type == InputType.keyPress || type == InputType.keyUp)){
             if(type == null) {
@@ -200,14 +202,14 @@ flax.InputManager = cc.Node.extend({
                 calls = this._keyboardCallbacks[type];
             }
             if(calls && calls.length){
-                this.scheduleOnce(function(){
+//                this.scheduleOnce(function(){
                     var call = null;
                     var i = calls.length;
                     while(i--){
                         call = calls[i];
                         if(call.func == func) calls.splice(i, 1);
                     }
-                },0.01);
+//                },0.01);
             }
         }
     },
