@@ -29,6 +29,10 @@ Examples
 ========
 https://github.com/longyangxi/Flax-js-examples
 
+Online Demo
+===========
+http://longames.com/flax/example/
+
 Home
 ====
 http://flax.longames.com
