@@ -1,7 +1,6 @@
 /**
  * Created by long on 14-7-11.
  */
-var flax = flax || {};
 /**
  * var waves = [{types:["enemy1","enemy2"],count:5,interval:[3,5],gap:5},
  *             {types:["enemy1","enemy2"],count:5,interval:[3,5],gap:5},

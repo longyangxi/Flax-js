@@ -1,7 +1,6 @@
 /**
  * Created by long on 14-2-22.
  */
-var flax = flax || {};
 
 flax.GunParam = cc.Class.extend({
     bulletAssets:null,//the assets file of the bullet

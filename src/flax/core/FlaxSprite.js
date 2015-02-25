@@ -1,8 +1,6 @@
 /**
  * Created by long on 14-2-14.
  */
-var flax = flax || {};
-
 flax.Anchor = cc.Class.extend({
     x:0,
     y:0,

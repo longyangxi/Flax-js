@@ -2,7 +2,6 @@
  * Created by long on 14-8-1.
  * for box2d
  */
-var flax = flax || {};
 flax.ColliderType = {
     rect: "Rect",
     circle: "Circle",
@@ -128,14 +127,40 @@ flax.Collider = cc.Class.extend({
             return this._ifRectCollidCircle(collider.getRect(true), this.getRect(true));
         }
     },
-    //todo, with polygon
     containPoint:function(pos){
+        return this.containsPoint(pos);
+    },
+    containsPoint:function(pos){
         pos = this.owner.convertToNodeSpace(pos);
         if(this.type == flax.ColliderType.rect){
             return cc.rectContainsPoint(this._localRect, pos);
+        }else if(this.type == flax.ColliderType.polygon){
+            return this._polyContainsPoint(pos);
         }
         var dis = cc.pDistance(pos, this._center);
         return dis <= this._width/2;
+    },
+    /**
+     * Checks whether the x and y coordinates passed to this function are contained within this polygon
+     * @method _polyContainsPoint
+     * @param pos {x,y} The X coordinate of the point to test
+     * @return {Boolean} Whether the x/y coordinates are within this polygon
+     */
+    _polyContainsPoint:function(pos)
+    {
+        var inside = false;
+        // use some raycasting to test hits
+        // https://github.com/substack/point-in-polygon/blob/master/index.js
+        var length = this._polygons.length;
+
+        for(var i = 0, j = length - 1; i < length; j = i++)
+        {
+            var pi = this._polygons[i],
+                pj = this._polygons[j]
+            intersect = ((pi.y > pos.y) !== (pj.y > pos.y)) && (pos.x < (pj.x - pi.x) * (pos.y - pi.y) / (pj.y - pi.y) + pi.x);
+            if(intersect) inside = !inside;
+        }
+        return inside;
     },
     /**
      * Check if the rectangle collide with the circle
@@ -284,12 +309,12 @@ flax.removePhysicsFixture = function(fixture){
 }
 /**
  * Cast a ray from point0 to point1, callBack when there is a collid happen
- * @param {function} callBack Callback when collid, function(flax.Collider, point, reflectedPoint, fraction)
+ * @param {function} callBack Callback when collid, function(flax.Collider, reflectedPoint, endPoint, fraction)
  * @param {point} point0 the start point0
  * @param {point} point1 the end point1
- * @param {float} radius if the ray need a size to check collision
+ * @param {float} rayRadius if the ray need a size to check collision
  * */
-flax.physicsRaycast = function(callBack, point0, point1, radius){
+flax.physicsRaycast = function(callBack, point0, point1, rayRadius){
     flax.getPhysicsWorld().RayCast(function(fixture, point, normal, fraction){
         var collider = fixture.GetUserData();
         point = cc.pMult(point, PTM_RATIO);
@@ -297,26 +322,26 @@ flax.physicsRaycast = function(callBack, point0, point1, radius){
         var l0 = cc.pSub(point1, point);
         var pj = cc.pMult(normal, cc.pDot(l0, normal));
         //the new positon of the ray end point after reflected
-        var reflectedPoint = cc.pSub(point1,cc.pMult(pj, 2));
+        var endPoint = cc.pSub(point1,cc.pMult(pj, 2));
         //the angle of the reflected ray
-        var reflectAngle = flax.getAngle(point, reflectedPoint);
+        var reflectAngle = flax.getAngle(point, endPoint);
 
         //if the ray has a size, adjust the collision point
         //todo, not correct for some non-flat surface
-        if(radius && radius > 0) {
+        if(rayRadius && rayRadius > 0) {
             var inAngle = flax.getAngle(point0, point1);
-            radius = radius/Math.sin(Math.abs(reflectAngle/2 - inAngle/2)*Math.PI/180);
-            point = cc.pSub(point, flax.getPointOnCircle(cc.p(), radius, inAngle));
+            rayRadius = rayRadius/Math.sin(Math.abs(reflectAngle/2 - inAngle/2)*Math.PI/180);
+            point = cc.pSub(point, flax.getPointOnCircle(cc.p(), rayRadius, inAngle));
             var dist = cc.pDistance(point0, point1);
             fraction = cc.pDistance(point0, point)/dist;
-            reflectedPoint = flax.getPointOnCircle(point, dist*(1 - fraction), reflectAngle);
+            endPoint = flax.getPointOnCircle(point, dist*(1 - fraction), reflectAngle);
         }
 
-        //collider: the collision target, flax.collider
+        //collider: the target collided by thre ray, flax.Collider
         //point: the collision point
-        //reflectedPoint: the end point after refected
+        //endPoint: the end point after reflected
         //fraction: the distance rate from the start point to the collision point of the total ray length
-        callBack(collider, point, reflectedPoint, fraction);
+        callBack(collider, point, endPoint, fraction);
     }, cc.pMult(point0, 1/PTM_RATIO), cc.pMult(point1, 1/PTM_RATIO));
 }
 
@@ -366,7 +391,7 @@ flax._createPhysicsListener = function(){
 
         ca.physicsContact = cb.physicsContact = contact;
 
-        //tell you how to fetch the collision point
+         //How to fetch the collision point
 //        var mainfold = new Box2D.Collision.b2WorldManifold();
 //        contact.GetWorldManifold(mainfold);
 //        var contactPoint = cc.pMult(mainfold.m_points[0], PTM_RATIO);

@@ -1,7 +1,6 @@
 /**
  * Created by long on 14-6-6.
  */
-var flax = flax || {};
 
 flax._scrollPaneDefine = {
     _viewRect:null,

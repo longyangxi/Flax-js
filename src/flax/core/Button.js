@@ -1,7 +1,6 @@
 /**
  * Created by long on 14-4-25.
  */
-var flax = flax || {};
 
 var ButtonState = {
     UP:"up",

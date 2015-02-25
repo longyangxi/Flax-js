@@ -24,7 +24,6 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-var flax = flax || {};
 flax.Preloader = cc.Scene.extend({
     _interval : null,
     _length : 0,

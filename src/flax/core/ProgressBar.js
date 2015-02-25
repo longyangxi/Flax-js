@@ -1,7 +1,6 @@
 /**
  * Created by long on 14-5-7.
  */
-var flax = flax || {};
 flax.ProgressBarType = {
     HORIZONTAL:"horizontal",
     VERTICAL:"vertical",

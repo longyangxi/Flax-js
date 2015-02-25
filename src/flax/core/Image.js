@@ -1,8 +1,6 @@
 /**
  * Created by long on 14-12-27.
  */
-var flax = flax || {};
-
 flax.Image = cc.Sprite.extend({
     define:null,
     name:null,

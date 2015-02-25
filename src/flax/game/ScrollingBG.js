@@ -2,8 +2,6 @@
  * Created by long on 14-2-27.
  */
 
-var flax = flax || {};
-
 flax.ScrollingBG = cc.Node.extend({
     name:null,
     source:null,

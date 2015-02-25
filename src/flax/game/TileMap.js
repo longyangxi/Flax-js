@@ -1,7 +1,6 @@
 /**
  * Created by long on 14-2-2.
  */
-var flax = flax || {};
 ALL_DIRECTONS  = ["UP","DOWN","LEFT","RIGHT","LEFT_UP","RIGHT_UP","RIGHT_DOWN","LEFT_DOWN"];
 ALL_DIRECTONS0 = ["UP","DOWN","LEFT","RIGHT","LEFT_UP","LEFT_DOWN"];
 ALL_DIRECTONS1 = ["UP","DOWN","LEFT","RIGHT","RIGHT_UP","RIGHT_DOWN"];

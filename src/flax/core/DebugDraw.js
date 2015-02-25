@@ -1,14 +1,22 @@
 /**
  * Created by long on 14-8-19.
  */
-var flax = flax || {};
-
+flax.clearDraw = function()
+{
+    if(flax.__drawNode){
+        flax.__drawNode.clear();
+    }
+}
 flax.drawLine = function(from, to, lineWidth, lineColor)
 {
     flax._createDebugNode();
     if(lineWidth == null) lineWidth = 1;
     if(lineColor == null) lineColor = cc.color(255, 0, 0, 255);
     flax.__drawNode.drawSegment(from, to, lineWidth, lineColor);
+};
+flax.drawRay = function(from, rotation, length, lineWidth, lineColor)
+{
+    flax.drawLine(from, flax.getPointOnCircle(from, length, rotation), lineWidth, lineColor);
 };
 flax.drawRect = function(rect, lineWidth, lineColor, fillColor)
 {

@@ -1,8 +1,6 @@
 /**
  * Created by long on 14-11-19.
  */
-var flax = flax || {};
-
 flax.userData = {
 //    gold:100,
 //    levelStars:[],

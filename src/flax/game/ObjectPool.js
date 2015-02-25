@@ -1,7 +1,6 @@
 /**
  * Created by long on 14-2-22.
  */
-var flax = flax || {};
 
 flax.ObjectPool = cc.Class.extend({
     maxCount:100,

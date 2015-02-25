@@ -1,8 +1,6 @@
 /**
  * Created by long on 14-2-5.
  */
-var flax = flax || {};
-
 var InputType = {
     press:"onPress",
     up:"onUp",//The touch position maybe not within the press target

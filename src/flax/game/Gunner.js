@@ -1,7 +1,6 @@
 /**
  * Created by long on 14-4-24.
  */
-var flax = flax || {};
 
 flax._gunnerDefine = {
     camp:null,//Player or Enemy?

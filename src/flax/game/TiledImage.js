@@ -1,8 +1,6 @@
 /**
  * Created by long on 14-2-21.
  */
-
-var flax = flax || {};
 /**
  * Layer.bake maybe a choice for good performance
  * */

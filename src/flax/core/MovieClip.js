@@ -2,8 +2,6 @@
  * Created by long on 14-2-14.
  */
 
-var flax = flax || {};
-
 flax.FrameData = cc.Class.extend({
     x:0,
     y:0,
@@ -311,20 +309,20 @@ flax._movieClip = {
         }
         return null;
     },
-    addChildrenPhysics:function(name, type, density, friction,restitution, isSensor, fixedRotation, catBits, maskBits, bullet){
-        var child = null;
-        for(var key in this._namedChildren) {
-            child = this._namedChildren[key];
-            child.addPhysics(name, type, density, friction, restitution, isSensor, fixedRotation, catBits, maskBits, bullet);
-        }
-    },
-    removeChildrenPhysics:function(name){
-        var child = null;
-        for(var key in this._namedChildren) {
-            child = this._namedChildren[key];
-            child.removePhysics(name);
-        }
-    },
+//    addChildrenPhysics:function(name, type, density, friction,restitution, isSensor, fixedRotation, catBits, maskBits, bullet){
+//        var child = null;
+//        for(var key in this._namedChildren) {
+//            child = this._namedChildren[key];
+//            child.addPhysics(name, type, density, friction, restitution, isSensor, fixedRotation, catBits, maskBits, bullet);
+//        }
+//    },
+//    removeChildrenPhysics:function(name){
+//        var child = null;
+//        for(var key in this._namedChildren) {
+//            child = this._namedChildren[key];
+//            child.removePhysics(name);
+//        }
+//    },
     setFPS:function(f)
     {
         if(this._fps == f)  return;

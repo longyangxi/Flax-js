@@ -1,7 +1,6 @@
 /**
  * Created by long on 14-2-1.
  */
-var flax = flax || {};
 
 flax.Animator = flax.FlaxSprite.extend({
     frameNames:null,

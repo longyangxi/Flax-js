@@ -2,8 +2,6 @@
  * Created by long on 14-1-31.
  */
 
-var flax = flax || {};
-
 flax._assetsClassMap =
 {
     btn:"flax.SimpleButton",

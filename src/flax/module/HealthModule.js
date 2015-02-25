@@ -1,8 +1,6 @@
 /**
  * Created by long on 14-7-10.
  */
-var flax = flax || {};
-
 flax.HealthModule = {
     maxHealth:100,
     health:100,

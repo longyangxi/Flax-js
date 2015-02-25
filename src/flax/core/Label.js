@@ -2,7 +2,6 @@
  * Created by long on 14-2-3.
  */
 
-var flax = flax || {};
 flax.Label = cc.Sprite.extend({
     mlWidth:0.0,
     mlHeight:0.0,

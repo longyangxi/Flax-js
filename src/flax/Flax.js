@@ -543,7 +543,7 @@ flax.ifTouched = function(target, pos)
     if(!(target instanceof cc.Node)) return false;
     //if its flax.FlaxSprite
     if(target.mainCollider){
-        return target.mainCollider.containPoint(pos);
+        return target.mainCollider.containsPoint(pos);
     }
     var local = target.convertToNodeSpace(pos);
     var r = flax.getRect(target,false);
