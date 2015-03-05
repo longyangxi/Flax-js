@@ -29,6 +29,7 @@ flax._sprite = {
     prevFrame:-1,
     totalFrames:0,
     frameInterval:0,
+    ignoreBodyRotation:false,
     define:null,
     name:null,
     assetsFile:null,
@@ -721,6 +722,7 @@ flax._sprite = {
         this.autoDestroyWhenOver = false;
         this.autoStopWhenOver = false;
         this.autoHideWhenOver = false;
+        this.ignoreBodyRotation = false;
         this.gotoAndStop(0);
 
         this._tileInited = false;

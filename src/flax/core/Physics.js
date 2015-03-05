@@ -515,6 +515,8 @@ flax._updatePhysicsWorld = function(dt){
             pos = sprite.parent.convertToNodeSpace(pos);
             sprite.x = pos.x;
             sprite.y = pos.y;
+            //ignore rotation
+            if(sprite.ignoreBodyRotation === true) continue;
             sprite.rotation = -1 * RADIAN_TO_DEGREE*b.GetAngle();
             //fix the rotation offset
             sprite.rotation += b.__rotationOffset;
