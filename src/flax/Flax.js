@@ -260,7 +260,7 @@ flax.replaceScene = function(sceneName, transition, duration)
             if(i > -1) s.res.splice(i, 1);
             flax._languageToLoad = null;
         }
-        //remove the fontresources
+        //remove the font resources
         if(flax._fontResources){
             var i = s.res.length;
             while(i--){
@@ -295,7 +295,7 @@ flax.refreshScene = function()
         flax.replaceScene(flax.currentSceneName);
     }
 }
-
+flax._soundResources = {};
 flax.preload = function(res, callBack)
 {
     if(res == null || res.length == 0) {
@@ -308,8 +308,8 @@ flax.preload = function(res, callBack)
     while(i--)
     {
         var r = res[i];
-        if(r == null) throw "There is a null resource!"
-        if(cc.loader.getRes(r) == null) {
+        if(r == null) throw "There is a null resource!";
+        if(cc.loader.getRes(r) == null && flax._soundResources[r] == null) {
             //in mobile web or jsb, .flax is not good now, so replace it  to .plist and .png
             if(cc.path.extname(r) == ".flax" && (cc.sys.isNative || cc.game.config.useFlaxRes === false)){
                 if(cc.sys.isNative) cc.log("***Warning: .flax is not support JSB for now, use .plist + .png insteadly!");
@@ -335,6 +335,7 @@ flax.preload = function(res, callBack)
                 var i = res1.length;
                 while(i--){
                     var res = res1[i];
+                    if(flax.isSoundFile(res)) flax._soundResources[res] = "loaded";
                     var data = cc.loader.getRes(res);
                     if(data){
                         var pureUrl = flax._removeResVersion(res);
