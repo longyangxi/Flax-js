@@ -66,7 +66,7 @@ flax.FrameData = cc.Class.extend({
             child.setFontName(this.font);
             child.setFontFillColor(this.fontColor);
             child.setHorizontalAlignment(this.textAlign);
-            child.setDimensions(this.textWidth, this.textHeight);
+            child.setDimensions({width: this.textWidth, height:this.textHeight});
             //todo: fix the bug of cocos: no update when the font color changed
             child.setFontSize(this.fontSize - 1);
             child.setFontSize(this.fontSize);
