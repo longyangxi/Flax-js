@@ -63,12 +63,14 @@ flax.ScrollingBG = cc.Node.extend({
         this.addChild(this.bg0);
         this.addChild(this.bg1);
         this._size = this.bg0.getContentSize();
+        this.setContentSize(this._size);
     },
     reset:function()
     {
         this._paused = false;
         if(!this._scrolling) return;
         this._scrolling = false;
+        this._speedX = this._speedY = 0;
         this.bg0.setPosition(this._x0, this._y0);
         this.bg1.setPosition(this._x0, this._y0);
         this.unscheduleUpdate();
@@ -119,13 +121,13 @@ flax.ScrollingBG = cc.Node.extend({
         if(this._size.width*this._size.height == 0) {
             this._size = this.bg0.getContentSize();
             if(this._size.width*this._size.height != 0){
+                this.setContentSize(this._size);
                 this._resetScroll();
             }
             return;
         }
         var needReset = false;
-        var xDirect = (this._speedX != 0);
-        if(xDirect){
+        if(this._speedX != 0){
             var dx = this._speedX*delta;
             this.bg0.x += dx;
             this.bg1.x += dx;
@@ -135,7 +137,7 @@ flax.ScrollingBG = cc.Node.extend({
                 this.bg1.x += this._d*dist;
                 needReset = true;
             }
-        }else{
+        }else if(this._speedY != 0){
             var dy = this._speedY*delta;
             this.bg0.y += dy;
             this.bg1.y += dy;
@@ -152,6 +154,15 @@ flax.ScrollingBG = cc.Node.extend({
             this.bg1 = temp;
             this._resetScroll();
         }
+    },
+    getRect:function(){
+        if(this._size.width*this._size.height == 0) {
+            this._size = this.bg0.getContentSize();
+            if(this._size.width*this._size.height != 0){
+                this.setContentSize(this._size);
+            }
+        }
+        return cc.rect(0, 0, this._size.width, this._size.height);
     }
 });
 
