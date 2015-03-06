@@ -221,6 +221,10 @@ flax.Label.create = function(assetsFile, define)
         lbl.setPlaceHolder(define.text);
         lbl.setPlaceholderFontName(define.font);
         lbl.setPlaceholderFontSize(define.size);
+        //set the anchor
+        var d = flax.assetsManager.getDisplayDefine(assetsFile, txtCls);
+        lbl.setAnchorPoint(d.anchorX, d.anchorY);
+
 //        lbl.setInputFlag(cc.EDITBOX_INPUT_FLAG_PASSWORD);
 //        lbl.setMaxLength(20);
 //        lbl.setDelegate(this);
