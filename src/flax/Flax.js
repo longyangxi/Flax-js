@@ -651,14 +651,14 @@ flax.createBGLayer = function(scene, color)
     return layer;
 };
 
-Array.prototype.shuffle = function(len)
+flax.shuffleArray = function(arr, len)
 {
-    if(len === undefined || len <= 0 || len > this.length) len = this.length;
+    if(len === undefined || len <= 0 || len > arr.length) len = arr.length;
     for (var i = len - 1; i >= 0; i--) {
         var j = 0 | (cc.rand() % (i + 1));
-        var v = this[i];
-        this[i] = this[j];
-        this[j] = v;
+        var v = arr[i];
+        arr[i] = arr[j];
+        arr[j] = v;
     }
 };
 flax.restrictValue = function(value, min, max)
@@ -727,7 +727,7 @@ flax.createDInts = function(count, centerInt)
     return ds;
 };
 
-flax.homeUrl = "http://flax.longames.com";
+flax.homeUrl = "http://flax.so";
 flax.goHomeUrl = function()
 {
     var homeUrl = cc.game.config.homeUrl || flax.homeUrl;

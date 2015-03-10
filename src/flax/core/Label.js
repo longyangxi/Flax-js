@@ -217,10 +217,11 @@ flax.Label.create = function(assetsFile, define)
         lbl.setFontColor(cc.hexToColor(define.color));
         lbl.setFontName(define.font);
         lbl.setFontSize(define.size);
-        //the text will be cleared when begin to edit
+        //the placeholder text will be cleared when begin to edit
         lbl.setPlaceHolder(define.text);
         lbl.setPlaceholderFontName(define.font);
         lbl.setPlaceholderFontSize(define.size);
+//        lbl.setPlaceholderFontColor(cc.hexToColor(define.color));
         //set the anchor
         var d = flax.assetsManager.getDisplayDefine(assetsFile, txtCls);
         lbl.setAnchorPoint(d.anchorX, d.anchorY);

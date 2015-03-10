@@ -20,6 +20,7 @@ flax._sprite = {
     onAnimationOver:null,
     onSequenceOver:null,
     onFrameChanged:null,
+    onFrameLabel:null,
     autoDestroyWhenOver:false,
     autoStopWhenOver:false,
     autoHideWhenOver:false,
@@ -36,6 +37,7 @@ flax._sprite = {
     assetID:null,
     clsName:"flax.FlaxSprite",
     playing:false,
+    _labelFrames:null,
     _loopStart:0,
     _loopEnd:0,
     _isLanguageElement:false,
@@ -75,6 +77,7 @@ flax._sprite = {
         this.onAnimationOver = new signals.Signal();
         this.onSequenceOver = new signals.Signal();
         this.onFrameChanged = new signals.Signal();
+        this.onFrameLabel = new signals.Signal();
         this.setSource(assetsFile, assetID);
     },
     /**
@@ -90,6 +93,7 @@ flax._sprite = {
         if(this.assetsFile == assetsFile && (this.assetID == assetID || this._baseAssetID == assetID)) return;
         this.assetsFile = assetsFile;
         //see if there is a sub animation
+        this.currentAnim = null;
         this.assetID = this._handleSumAnims(assetID);
         this.define = this.getDefine();
         //set the anchor
@@ -102,12 +106,16 @@ flax._sprite = {
         if(this.fps == 0) this.fps = this.define.fps;
         this.onNewSource();
         this.currentFrame = 0;
+        this._initFrameLabels();
         this.renderFrame(this.currentFrame, true);
         this._initColliders();
         if(this.parent){
             this._updateLaguage();
         }
         if(this.__pool__id__ == null) this.__pool__id__ = this.assetID;
+        if(this.currentAnim){
+            this.onFrameLabel.dispatch(this.currentAnim);
+        }
     },
     _handleSumAnims:function(assetID)
     {
@@ -122,6 +130,17 @@ flax._sprite = {
             this.currentAnim = anim;
         }
         return assetID;
+    },
+    _initFrameLabels:function()
+    {
+        this._labelFrames = [];
+        var labels = this.define.labels;
+        if(!labels) return;
+        for(var name in labels)
+        {
+            var label = labels[name];
+            this._labelFrames.push(label.start);
+        }
     },
     getLabels:function(label)
     {
@@ -282,8 +301,8 @@ flax._sprite = {
     },
     getCurrentLabel:function()
     {
-        if(!this.define.labels) return null;
         var labels = this.define.labels;
+        if(!labels) return null;
         for(var name in labels)
         {
             var label = labels[name];
@@ -517,6 +536,7 @@ flax._sprite = {
         this._updateCollider();
         this.doRenderFrame(frame);
         if(this.onFrameChanged.getNumListeners()) this.onFrameChanged.dispatch(this.currentFrame);
+        if(this._labelFrames.indexOf(frame) > -1) this.onFrameLabel.dispatch(this.getCurrentLabel(frame));
     },
     doRenderFrame:function(frame)
     {
@@ -580,6 +600,7 @@ flax._sprite = {
         this.onAnimationOver.removeAll();
         this.onSequenceOver.removeAll();
         this.onFrameChanged.removeAll();
+        this.onFrameLabel.removeAll();
         flax.inputManager.removeListener(this);
         if(this.__isInputMask) flax.inputManager.removeMask(this);
 

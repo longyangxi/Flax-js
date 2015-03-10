@@ -91,8 +91,13 @@ flax._movieClip = {
     _theRect:null,
     _frameDatas:null,
     __isMovieClip:true,
-
-    replaceChild:function(childName, assetID)
+    /**
+     * Replace a child with name of childName by an asset of assetID in assetsFile
+     * @param {String} childName the child to be replaced
+     * @param {String} assetID the new assetID
+     * @param {String} assetsFile the new asset's assetsFile, if null, use this.assetsFile
+     * */
+    replaceChild:function(childName, assetID, assetsFile)
     {
         var childDefine = this.define.children[childName];
         if(childDefine == null){
@@ -102,9 +107,17 @@ flax._movieClip = {
         var child = this._namedChildren[childName];
         if(child)
         {
-            child.setSource(this.assetsFile, assetID);
+            child.destroy();
+            child = flax.assetsManager.createDisplay(assetsFile || this.assetsFile, assetID, null, true);
+            child.name = childName;
+            this._namedChildren[childName] = child;
+            if(this.autoPlayChildren && flax.isFlaxSprite(child)) {
+                this.playing ? child.gotoAndPlay(0) : child.gotoAndStop(0);
+            }
+            this[childName] = child;
         }else{
             childDefine["class"] = assetID;
+            childDefine.assetsFile = assetsFile;
         }
     },
     onNewSource:function()
@@ -118,7 +131,6 @@ flax._movieClip = {
         this._theRect = this._strToRect(this.define.rect);
         this.setContentSize(this._theRect.width, this._theRect.height);
         this._initFrameDatas();
-//        this.increaseAtlasCapacity();
     },
     _initFrameDatas:function()
     {
@@ -159,7 +171,7 @@ flax._movieClip = {
                     if(childDefine.text != null){
                         child = flax.Label.create(this.assetsFile, childDefine);
                     }else{
-                        child = flax.assetsManager.createDisplay(this.assetsFile, childDefine["class"], null, true);
+                        child = flax.assetsManager.createDisplay(childDefine.assetsFile || this.assetsFile, childDefine["class"], null, true);
                     }
 
                     child.name = childName;
