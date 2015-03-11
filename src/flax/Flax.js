@@ -611,6 +611,7 @@ flax.findChildWithClass = function(sprite, cls)
  * */
 flax.getUrlVars = function() {
     var vars = {};
+    if(cc.sys.isNative) return vars;
     var query = window.location.search.substring(1);
     var varsArr = query.split("&");
     for (var i = 0; i < varsArr.length; i++) {
