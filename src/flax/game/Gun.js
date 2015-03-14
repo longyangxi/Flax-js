@@ -333,9 +333,6 @@ flax.BulletCanvas.fetch = function (assetsFile) {
 };
 flax._bulletCanvases = {};
 flax.BulletCanvas.release = function(){
-    for(var k in flax._bulletCanvases){
-        flax._bulletCanvases[k].removeFromParent(true);
-    }
     flax._bulletCanvases = {};
 }
 
