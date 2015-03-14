@@ -37,7 +37,7 @@ LinkFinder.shuffle = function(useTween){
             }
         }
     }
-    tiles.shuffle();
+    flax.shuffleArray(tiles);
     i = -1;
     var halfCount = tiles.length/2;
     while(++i < halfCount){

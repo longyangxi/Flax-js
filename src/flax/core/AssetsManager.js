@@ -21,6 +21,13 @@ flax._assetsMcClassMap =
     gun1:"flax.MCGunner"
 };
 /**
+ * Asset type in flax
+ * */
+flax.ASSET_NONE = 0;
+flax.ASSET_ANIMATOR = 1;
+flax.ASSET_MOVIE_CLIP = 2;
+flax.ASSET_IMAGE = 3;
+/**
  * Register a className for Animator
  * */
 flax.registerClass = function(key, className){
@@ -50,13 +57,28 @@ flax.AssetsManager = cc.Class.extend({
        this.subAnimsCache = {};
        this.fontsCache = {};
    },
+   getAssetType:function(assetsFile, assetID)
+   {
+       if(this.getMc(assetsFile, assetID)) return flax.ASSET_MOVIE_CLIP;
+       var define = this.getDisplayDefine(assetsFile, assetID);
+       if(define) {
+           if(define.type == "jpg" || define.type == "png") return flax.ASSET_IMAGE;
+           if(define.type == "share"){
+                return this.getAssetType(this._getSharedPlist(assetsFile, define), assetID)
+           }
+           return flax.ASSET_ANIMATOR;
+       }
+       return flax.ASSET_NONE;
+   },
     /**
      * Create a display from a assetsFile with assetID
      * @param {String} assetsFile the assetsFile
      * @param {String} assetID the asset id in the assetsFile
      * @param {Object} params params could be set to the target with attr function
-     *                 the special is parent, if set parent, the display will be auto added to it
-     *                 and the class, if set class, the display will be created with the class
+     *                 the special param is:
+     *                 parent, if set parent, the display will be auto added to it
+     *                 class, if set class, the display will be created with the class
+     *                 batch, if set true and it is MovieClip then create flax.MovieClipBatch instance
      * @param {Boolean} fromPool if the display should fetch from the pool
      * @param {String} clsName the class name to create the display, if null, it'll be automatically set according by the assets file
      * Deprecated: createDisplay:function(assetsFile, assetID, clsName, fromPool, parent, params)
@@ -79,9 +101,7 @@ flax.AssetsManager = cc.Class.extend({
         var define = this.getDisplayDefine(assetsFile, assetID);
         //if it's a shared object, then fetch its source assetsFile
         if(define && define.type == "share"){
-            //get the resource root folder, the share library must be in the root folder
-            var dir = assetsFile.slice(0, assetsFile.indexOf("/"));
-            return this.createDisplay(dir + "/" + define.url + ".plist", assetID, params, fromPool, clsName);
+            return this.createDisplay(this._getSharedPlist(assetsFile, define), assetID, params, fromPool, clsName);
         }
 
         var mcCls = null;
@@ -112,6 +132,10 @@ flax.AssetsManager = cc.Class.extend({
                 {
                     mcCls = isMC ? flax.MovieClip : flax.Animator;
                     clsName = isMC ? "flax.MovieClip" : "flax.Animator";
+                    if(isMC && params && params.batch === true){
+                        mcCls = flax.MovieClipBatch;
+                        clsName = "flax.MovieClipBatch";
+                    }
                 }
             }else{
                 throw  "There is no display with assetID: "+assetID+" in assets file: "+assetsFile+", or make sure the display is not a BLANK symbol!";
@@ -276,6 +300,12 @@ flax.AssetsManager = cc.Class.extend({
             else arr.push(frame);
         }
         return arr;
+    },
+    _getSharedPlist:function(assetsFile, define)
+    {
+        //get the resource root folder, the share library must be in the root folder
+        var dir = assetsFile.slice(0, assetsFile.indexOf("/"));
+        return dir + "/" + define.url + ".plist";
     },
     getFrameNames:function(assetsFile, startFrame, endFrame)
     {

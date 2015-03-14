@@ -6,6 +6,7 @@ RADIAN_TO_DEGREE = 180.0/Math.PI;
 DEGREE_TO_RADIAN = Math.PI/180.0;
 IMAGE_TYPES = [".png", ".jpg", ".bmp",".jpeg",".gif"];
 SOUND_TYPES = [".mp3", ".ogg", ".wav", ".mp4", ".m4a"];
+DEFAULT_SOUNDS_FOLDER = "res/music/";
 H_ALIGHS = ["left","center","right"];
 
 var TileValue = TileValue || {
@@ -311,7 +312,7 @@ flax.preload = function(res, callBack)
         if(r == null) throw "There is a null resource!";
         if(cc.loader.getRes(r) == null && flax._soundResources[r] == null) {
             //in mobile web or jsb, .flax is not good now, so replace it  to .plist and .png
-            if(cc.path.extname(r) == ".flax" && (cc.sys.isNative || cc.game.config.useFlaxRes === false)){
+            if(typeof r == "string" && cc.path.extname(r) == ".flax" && (cc.sys.isNative || cc.game.config.useFlaxRes === false)){
                 if(cc.sys.isNative) cc.log("***Warning: .flax is not support JSB for now, use .plist + .png insteadly!");
                 var plist = cc.path.changeBasename(r,".plist");
                 var png = cc.path.changeBasename(r,".png");
@@ -685,11 +686,13 @@ flax.getRandomInArray = function (arr)
 
 flax.isImageFile = function(path)
 {
+    if(typeof path != "string") return false;
     var ext = cc.path.extname(path);
     return IMAGE_TYPES.indexOf(ext) > -1;
 };
 flax.isSoundFile = function(path)
 {
+    if(typeof path != "string") return false;
     var ext = cc.path.extname(path);
     return SOUND_TYPES.indexOf(ext) > -1;
 }

@@ -107,14 +107,24 @@ flax._movieClip = {
         var child = this._namedChildren[childName];
         if(child)
         {
-            child.destroy();
-            child = flax.assetsManager.createDisplay(assetsFile || this.assetsFile, assetID, null, true);
-            child.name = childName;
-            this._namedChildren[childName] = child;
-            if(this.autoPlayChildren && flax.isFlaxSprite(child)) {
-                this.playing ? child.gotoAndPlay(0) : child.gotoAndStop(0);
+            if(!assetsFile) assetsFile = this.assetsFile;
+            var assetType = flax.assetsManager.getAssetType(assetsFile, assetID);
+            if(!assetType){
+                throw "There is no display with assetID: " + assetID + " in assets: " + assetsFile;
             }
-            this[childName] = child;
+            if(flax.assetsManager.getAssetType(child.assetsFile, child.assetID) == assetType){
+                child.setSource(assetsFile, assetID);
+            } else {
+                child.destroy();
+                child = flax.assetsManager.createDisplay(assetsFile, assetID, null, true);
+                child.name = childName;
+                this._namedChildren[childName] = child;
+                if(this.autoPlayChildren && flax.isFlaxSprite(child)) {
+                    this.playing ? child.gotoAndPlay(0) : child.gotoAndStop(0);
+                }
+                this[childName] = child;
+                this.addChild(child);
+            }
         }else{
             childDefine["class"] = assetID;
             childDefine.assetsFile = assetsFile;

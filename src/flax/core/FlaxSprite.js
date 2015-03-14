@@ -38,6 +38,7 @@ flax._sprite = {
     clsName:"flax.FlaxSprite",
     playing:false,
     _labelFrames:null,
+    _labelSounds:null,
     _loopStart:0,
     _loopEnd:0,
     _isLanguageElement:false,
@@ -134,13 +135,31 @@ flax._sprite = {
     _initFrameLabels:function()
     {
         this._labelFrames = [];
+        this._frameSounds = {};
         var labels = this.define.labels;
         if(!labels) return;
         for(var name in labels)
         {
             var label = labels[name];
-            this._labelFrames.push(label.start);
+            //special labels
+            if(name.indexOf("@") > -1){
+                //todo, add more special labels expect @sound
+                if(this.define.sounds == null) this.define.sounds = {};
+                this.define.sounds["" + label.start] = DEFAULT_SOUNDS_FOLDER + name.slice(0, name.indexOf("@"));
+                delete labels[name];
+            }else{
+                this._labelFrames.push(label.start);
+            }
         }
+        flax.copyProperties(this.define.sounds, this._frameSounds);
+    },
+    addFrameSound:function(frame, sound)
+    {
+        this._frameSounds["" + frame] = sound;
+    },
+    removeFrameSound:function(frame)
+    {
+        delete  this._frameSounds["" + frame];
     },
     getLabels:function(label)
     {
@@ -537,6 +556,8 @@ flax._sprite = {
         this.doRenderFrame(frame);
         if(this.onFrameChanged.getNumListeners()) this.onFrameChanged.dispatch(this.currentFrame);
         if(this._labelFrames.indexOf(frame) > -1) this.onFrameLabel.dispatch(this.getCurrentLabel(frame));
+        var frameSound = this._frameSounds["" + frame];
+        if(frameSound) flax.playSound(frameSound);
     },
     doRenderFrame:function(frame)
     {
@@ -697,6 +718,59 @@ flax._sprite = {
     },
     setPositionY:function (y) {
         this.setPosition(this.x, y);
+    },
+    _moveSpeed:null,
+    _moveSpeedLen:0,
+    _targetPos:null,
+    _inMoving:false,
+    /**
+     * Move to a new position within duration time
+     * Note: If you use cc.moveTo in JSB, the setPosition function in js can not be called, use this instead of
+     * */
+    moveTo:function(pos, duration) {
+        var dis = cc.pSub(pos, this.getPosition());
+        if(cc.pLength(dis) < 1 || !duration || duration <= 0){
+            this.setPosition(pos);
+            return;
+        }
+        this._moveSpeed = cc.pMult(dis, 1.0 / duration);
+        this._moveSpeedLen = cc.pLength(this._moveSpeed);
+        this._targetPos = pos;
+        if(!this._inMoving){
+            this.schedule(this._doMove, flax.frameInterval, cc.REPEAT_FOREVER);
+        }
+    },
+    /**
+     * Move to a new position with speed
+     * Note: If you use cc.moveTo in JSB, the setPosition function in js can not be called, use this instead of
+     * */
+    moveToBySpeed:function(pos, speed) {
+        var dis = cc.pSub(pos, this.getPosition());
+        var len = cc.pLength(dis);
+        if(len < 1){
+            this.setPosition(pos);
+            return;
+        }
+        this._moveSpeed = cc.pMult(dis, speed / len);
+        this._moveSpeedLen = cc.pLength(this._moveSpeed);
+        this._targetPos = pos;
+        if(!this._inMoving){
+            this.schedule(this._doMove, flax.frameInterval, cc.REPEAT_FOREVER);
+        }
+    },
+    _doMove:function(delta)
+    {
+        var pos = this.getPosition();
+        var dis = cc.pDistance(pos, this._targetPos);
+        var deltaDis = this._moveSpeedLen*delta;
+        if(dis < deltaDis){
+            this.setPosition(this._targetPos);
+            this._targetPos = this._moveSpeed = null;
+            this._inMoving = false;
+            this.unschedule(this._doMove);
+        }else{
+            this.setPosition(cc.pAdd(pos, cc.pMult(this._moveSpeed, delta)));
+        }
     },
     setTile:function(tx, ty, forceUpdate)
     {

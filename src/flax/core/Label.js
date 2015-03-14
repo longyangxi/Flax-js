@@ -203,6 +203,8 @@ flax.Label.create = function(assetsFile, define)
 {
     var lbl = null;
     var txtCls = define["class"];
+    //decode the text
+    define.text = decodeURIComponent(define.text);
     var bmpFontName = flax.assetsManager.getFont(assetsFile, txtCls);
     //input text
     if(define.input == true){
