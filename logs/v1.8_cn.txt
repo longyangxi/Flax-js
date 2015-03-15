@@ -1,0 +1,8 @@
+1. flax.FlaxSprite可以播放帧声音了，并且可以自动播放从Flash中导出的帧声音
+2. flax.FlaxSprite添加了MoveTo和MoveToBySpeed方法，替代Cocos的MoveTo来避免JSB中出现bug
+3. flax.AssetsManager增加了获取资源类型的函数getAssetType
+4. flax.AssetsManager.createDisplay现在添加了batch参数来产生MovieClipBatch以提高骨骼动画的效率
+5. 改进了flax.MovieClip.eplaceChild方法，可以从不同的assetsFile中替换child
+6. 修正了Label里的一些特殊符号引起JSB报错
+7. 修正了LinkFinder里没有shuffle的bug
+8. 修正了JSB下flax.Gun中invalid native object的bug

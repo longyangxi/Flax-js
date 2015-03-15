@@ -1,0 +1,8 @@
+1. Add frame sound for flax.FlaxSprite and now can auto play frame sound  exported from Flash
+2. Add MoveTo and MoveToBySpeed functions for flax.FlaxSprite to avoid MoveTo action bug in JSb
+3. Add getAssetType function for flax.AssetsManager
+4. Add batch option to create MovieClipBatch in createDisplay for flax.AssetsManager
+5. Improved the replaceChild in flax.MovieClip
+6. Fixed some special chars bug in Label’s text in JSB
+7. Fixed shuffle bug in LinkFinder
+8. Fixed invalid native object bug of flax.Gun in JSB
