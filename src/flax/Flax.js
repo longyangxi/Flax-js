@@ -20,7 +20,7 @@ var TileValue = TileValue || {
 
 var flax = flax || {};
 
-flax.version = 1.8;
+flax.version = 1.81;
 flax.minToolVersion = 2.0;
 flax.language = null;
 flax.languageIndex = -1;

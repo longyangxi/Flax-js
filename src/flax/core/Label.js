@@ -137,8 +137,8 @@ flax.Label = cc.Sprite.extend({
         }
         if(this.params){
             //restrain the text within the rectangle
-            var rx = this.mlWidth/this.params.width;
-            var ry = this.mlHeight/this.params.height;
+            var rx = this.mlWidth/this.params.textWidth;
+            var ry = this.mlHeight/this.params.textHeight;
             var r = Math.max(rx, ry);
             var deltaY = 0;
             if(r > 1){
@@ -150,12 +150,12 @@ flax.Label = cc.Sprite.extend({
 
             }
             //enable the center align
-            var deltaX = (this.params.width - this.mlWidth)/2;
+            var deltaX = (this.params.textWidth - this.mlWidth)/2;
             i = this._charCanvas.childrenCount;
             while(i--){
                 charChild = this._charCanvas.children[i];
-                if(this.params.align == "center") charChild.x += deltaX;
-                else if(this.params.align == "right") charChild.x += 2*deltaX;
+                if(H_ALIGHS[this.params.textAlign] == "center") charChild.x += deltaX;
+                else if(H_ALIGHS[this.params.textAlign] == "right") charChild.x += 2*deltaX;
                 charChild.y -= deltaY;
             }
         }
@@ -166,8 +166,8 @@ flax.Label = cc.Sprite.extend({
     {
         global = (global !== false);
         var border = 2;
-        var rect = cc.rect(0.5*this.width/this._str.length, -this.params.height, this.width, this.height + border);
-        rect.y += (this.params.height - this.height)/2 - border/2;
+        var rect = cc.rect(0.5*this.width/this._str.length, -this.params.textHeight, this.width, this.height + border);
+        rect.y += (this.params.textHeight - this.height)/2 - border/2;
         if(!global) return rect;
         var w = rect.width;
         var h = rect.height;
@@ -199,8 +199,14 @@ _p.text;
 cc.defineGetterSetter(_p, "text", _p.getString, _p.setString);
 delete window._p;
 
-flax.Label.create = function(assetsFile, define)
+flax.Label.create = function(assetsFile, data, define)
 {
+    //if the plist was exported by the older version, give a tip
+    if(data._isText === false){
+        throw "The assetsFile: " + assetsFile + " was exported with old version of Flax tool, re-export it to fix the Text issue!";
+    }
+    //Remove all the \ chars in the text in Web
+    if(!cc.sys.isNative) define.text = define.text.split("\\").join("");
     var lbl = null;
     var txtCls = define["class"];
     var bmpFontName = flax.assetsManager.getFont(assetsFile, txtCls);
@@ -211,16 +217,16 @@ flax.Label.create = function(assetsFile, define)
         }
         var frames = flax.assetsManager.getFrameNamesOfDisplay(assetsFile, txtCls);
         //todo, the size of the edit box is the background's size, not the text
-        lbl = new cc.EditBox(cc.size(define.width, define.height), new cc.Scale9Sprite(frames[0]),
+        lbl = new cc.EditBox(cc.size(data.textWidth, data.textHeight), new cc.Scale9Sprite(frames[0]),
             frames[1] ? new cc.Scale9Sprite(frames[1]) : null,
             frames[2] ? new cc.Scale9Sprite(frames[2]) : null);
-        lbl.setFontColor(cc.hexToColor(define.color));
-        lbl.setFontName(define.font);
-        lbl.setFontSize(define.size);
+        lbl.setFontColor(data.fontColor);
+        lbl.setFontName(data.font);
+        lbl.setFontSize(data.fontSize);
         //the placeholder text will be cleared when begin to edit
         lbl.setPlaceHolder(define.text);
-        lbl.setPlaceholderFontName(define.font);
-        lbl.setPlaceholderFontSize(define.size);
+        lbl.setPlaceholderFontName(data.font);
+        lbl.setPlaceholderFontSize(data.fontSize);
 //        lbl.setPlaceholderFontColor(cc.hexToColor(define.color));
         //set the anchor
         var d = flax.assetsManager.getDisplayDefine(assetsFile, txtCls);
@@ -231,16 +237,16 @@ flax.Label.create = function(assetsFile, define)
 //        lbl.setDelegate(this);
     }
     //If it is ttf label(has font and the bitmap font is null, other wise use bitmap label
-    else if(define.font && bmpFontName == null){
+    else if(data.font && bmpFontName == null){
         var labelDef = new cc.FontDefinition();
-        labelDef.fontName = define.font;
-        labelDef.fontSize = define.size;
-        labelDef.textAlign = H_ALIGHS.indexOf(define.align);
+        labelDef.fontName = data.font;
+        labelDef.fontSize = data.fontSize;
+        labelDef.textAlign = data.textAlign;
         labelDef.verticalAlign = cc.VERTICAL_TEXT_ALIGNMENT_CENTER;
-        labelDef.fillStyle = cc.hexToColor(define.color);
+        labelDef.fillStyle = data.fontColor;
         labelDef.fontDimensions = true;
-        labelDef.boundingWidth = define.width;
-        labelDef.boundingHeight = define.height;
+        labelDef.boundingWidth = data.textWidth;
+        labelDef.boundingHeight = data.textHeight;
         if(txtCls == "null") {
             lbl = new cc.LabelTTF(define.text, labelDef);
         }else{
@@ -255,7 +261,7 @@ flax.Label.create = function(assetsFile, define)
         lbl = new flax.Label();
         flax.assetsManager.addAssets(assetsFile);
         lbl.assetsFile = assetsFile;
-        lbl.params = define;
+        lbl.params = data;
         lbl.setFontName(txtCls);
         lbl.setAnchorPoint(0, 0);
         lbl.setString(define.text);

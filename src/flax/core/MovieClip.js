@@ -20,6 +20,7 @@ flax.FrameData = cc.Class.extend({
     textWidth:40,
     textHeight:20,
 
+    _isText:false,
     _data:null,
     _hasSkew:false,
 
@@ -37,6 +38,7 @@ flax.FrameData = cc.Class.extend({
         this._hasSkew = (data.length > 7);
         //the ttf text info
         if(data.length > 9) {
+            this._isText = true;
             this.font = data[9];
             this.fontSize = parseInt(data[10]);
             this.fontColor = cc.hexToColor(data[11]);
@@ -179,7 +181,7 @@ flax._movieClip = {
                 if(child == null){
                     //hadle the label text
                     if(childDefine.text != null){
-                        child = flax.Label.create(this.assetsFile, childDefine);
+                        child = flax.Label.create(this.assetsFile, frameData, childDefine);
                     }else{
                         child = flax.assetsManager.createDisplay(childDefine.assetsFile || this.assetsFile, childDefine["class"], null, true);
                     }
