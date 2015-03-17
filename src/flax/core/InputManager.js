@@ -339,7 +339,7 @@ flax.InputManager = cc.Node.extend({
     _ifTargetIgnore:function(target, touch)
     {
         if(target == null) return true;
-        if(!target.parent) return true;
+        if(!(target instanceof cc.Scene) && !target.parent) return true;
         if(!this._ifTargetVisible(target)) return true;
         if(target.isMouseEnabled && target.isMouseEnabled() === false) return true;
         if(touch && !flax.ifTouched(target, touch.getLocation())) return true;
