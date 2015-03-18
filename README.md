@@ -31,7 +31,7 @@ https://github.com/longyangxi/Flax-js-examples
 
 Online Demo
 ===========
-http://longames.com/flax/example/
+http://longames.com/h5/example/
 
 Home
 ====
