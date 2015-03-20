@@ -113,7 +113,10 @@ flax.ProgressBar.create = function(assetsFile, assetID)
     return p;
 };
 
-window._p = flax.ProgressBar.prototype;
+//Avoid to advanced compile mode
+window['flax']['ProgressBar'] = flax.ProgressBar;
+
+var _p = flax.ProgressBar.prototype;
 
 /** @expose */
 _p.percentage;
@@ -124,5 +127,3 @@ cc.defineGetterSetter(_p, "type", _p.getType, _p.setType);
 /** @expose */
 _p.reversed;
 cc.defineGetterSetter(_p, "reversed", _p.getReversed, _p.setReversed);
-
-delete window._p;

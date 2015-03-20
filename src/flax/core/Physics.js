@@ -271,7 +271,7 @@ flax.startPhysicsWorld = function(){
     var world = flax.getPhysicsWorld();
     if(world && flax.currentScene && !flax._physicsRunning){
         flax._createPhysicsListener();
-        flax.currentScene.schedule(flax._updatePhysicsWorld, 1.0/cc.game.config.frameRate);
+        flax.currentScene.schedule(flax._updatePhysicsWorld, 1.0/cc.game.config["frameRate"]);
         flax._physicsRunning = true;
     }
 }

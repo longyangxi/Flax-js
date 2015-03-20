@@ -563,12 +563,13 @@ flax.TileMap.create = function(id)
     return map;
 };
 
-window._p = flax.TileMap.prototype;
+var _p = flax.TileMap.prototype;
+/** @expose */
 _p.tileSize;
 cc.defineGetterSetter(_p, "tileSize", _p.getTileSize);
+/** @expose */
 _p.mapSize;
 cc.defineGetterSetter(_p, "mapSize", _p.getMapSize);
-delete window._p;
 
 flax._tileMaps = {};
 flax.getTileMap = function(id)

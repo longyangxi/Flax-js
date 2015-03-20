@@ -181,7 +181,7 @@ flax.Label = cc.Sprite.extend({
     }
 });
 
-window._p = flax.Label.prototype;
+var _p = flax.Label.prototype;
 /** @expose */
 _p.gap;
 cc.defineGetterSetter(_p, "gap", _p.getGap, _p.setGap);
@@ -191,13 +191,11 @@ cc.defineGetterSetter(_p, "spaceGap", _p.getSpaceGap, _p.setSpaceGap);
 /** @expose */
 _p.text;
 cc.defineGetterSetter(_p, "text", _p.getString, _p.setString);
-delete window._p;
 
-window._p = cc.LabelTTF.prototype;
+_p = cc.LabelTTF.prototype;
 /** @expose */
 _p.text;
 cc.defineGetterSetter(_p, "text", _p.getString, _p.setString);
-delete window._p;
 
 flax.Label.create = function(assetsFile, data, define)
 {

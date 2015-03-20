@@ -43,7 +43,7 @@ flax.Preloader = cc.Scene.extend({
         var centerPos = cc.p(winSize.width / 2, winSize.height / 2);
 
         //logo
-        var loadingImg = cc.game.config.loading;
+        var loadingImg = cc.game.config["loading"];
         if(loadingImg && flax.isImageFile(loadingImg)){
             cc.loader.load(loadingImg, function(){
                 self._logo = cc.Sprite.create(loadingImg);
@@ -121,3 +121,6 @@ flax.Preloader = cc.Scene.extend({
             });
     }
 });
+
+//Avoid to advanced compile mode
+window['flax']['Preloader'] = flax.Preloader;

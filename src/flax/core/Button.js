@@ -170,7 +170,10 @@ flax.SimpleButton.create = function(assetsFile, assetID)
     return btn;
 };
 
-window._p = flax.SimpleButton.prototype;
+//Avoid to advanced compile mode
+window['flax']['SimpleButton'] = flax.SimpleButton;
+
+var _p = flax.SimpleButton.prototype;
 /** @expose */
 _p.state;
 cc.defineGetterSetter(_p, "state", _p.getState, _p.setState);
@@ -180,7 +183,6 @@ cc.defineGetterSetter(_p, "playChildrenOnState", _p.getPlayChildrenOnState, _p.s
 /** @expose */
 _p.selected;
 cc.defineGetterSetter(_p, "selected", _p.isSelected, _p.setSelected);
-delete window._p;
 
 flax.Button = flax.MovieClip.extend(flax._buttonDefine);
 flax.Button.create = function(assetsFile, assetID)
@@ -191,7 +193,10 @@ flax.Button.create = function(assetsFile, assetID)
     return btn;
 };
 
-window._p = flax.Button.prototype;
+//Avoid to advanced compile mode
+window['flax']['Button'] = flax.Button;
+
+_p = flax.Button.prototype;
 /** @expose */
 _p.state;
 cc.defineGetterSetter(_p, "state", _p.getState, _p.setState);
@@ -201,7 +206,6 @@ cc.defineGetterSetter(_p, "playChildrenOnState", _p.getPlayChildrenOnState, _p.s
 /** @expose */
 _p.selected;
 cc.defineGetterSetter(_p, "selected", _p.isSelected, _p.setSelected);
-delete window._p;
 
 flax.ButtonGroup = cc.Class.extend({
     buttons:null,

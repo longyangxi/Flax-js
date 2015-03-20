@@ -156,22 +156,25 @@ flax._gunnerDefine = {
 };
 
 flax.Gunner = flax.Animator.extend(flax._gunnerDefine);
+//Avoid to advanced compile mode
+window['flax']['Gunner'] = flax.Gunner;
+
 flax.MCGunner = flax.MovieClip.extend(flax._gunnerDefine);
+//Avoid to advanced compile mode
+window['flax']['MCGunner'] = flax.MCGunner;
 
 flax.addModule(flax.Gunner, flax.HealthModule, false);
 flax.addModule(flax.MCGunner, flax.HealthModule, false);
 
-window._p = flax.Gunner.prototype;
-
+var _p = flax.Gunner.prototype;
+/** @expose */
 _p.gunParam;
 cc.defineGetterSetter(_p, "gunParam", _p.getGunParam, _p.setGunParam);
 
-window._p = flax.MCGunner.prototype;
-
+_p = flax.MCGunner.prototype;
+/** @expose */
 _p.gunParam;
 cc.defineGetterSetter(_p, "gunParam", _p.getGunParam, _p.setGunParam);
-
-delete window._p;
 
 flax.Gunner.create = function(assetsFile, assetID)
 {

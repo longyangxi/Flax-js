@@ -184,11 +184,11 @@ flax.AssetsManager = cc.Class.extend({
             throw "Make sure you have pre-loaded the resource: "+assetsFile;
         }
         //the min tool version this API needed
-        if(!dict.metadata.flaxVersion || dict.metadata.flaxVersion < flax.minToolVersion){
+        if(!dict["metadata"]["flaxVersion"] || dict["metadata"]["flaxVersion"] < flax.minToolVersion){
             throw "The resource: " + assetsFile + " was exported with the old version of Flax, please do it with current version!";
         }
         //get the fps from flash
-        var fps = dict.metadata.fps;
+        var fps = dict["metadata"]["fps"];
 
         cc.spriteFrameCache.addSpriteFrames(assetsFile1);
         //Note: the plist will be released by cocos when addSpriteFrames
@@ -197,7 +197,7 @@ flax.AssetsManager = cc.Class.extend({
 
         //parse the frames
         var frames = [];
-        var frameDict = dict.frames;
+        var frameDict = dict["frames"];
         for(var key in frameDict)
         {
             frames.push(key);
@@ -208,19 +208,19 @@ flax.AssetsManager = cc.Class.extend({
         this.framesCache[assetsFile] = frames;
 
         //parse the displays defined in the assets
-        if(dict.displays)
+        if(dict["displays"])
         {
-            this._parseDisplays(assetsFile, dict.displays, fps);
+            this._parseDisplays(assetsFile, dict["displays"], fps);
         }
         //parse the movieClipgs
-        if(dict.mcs)
+        if(dict["mcs"])
         {
-            this._parseMovieClips(assetsFile, dict.mcs, fps);
+            this._parseMovieClips(assetsFile, dict["mcs"], fps);
         }
         //parse the fonts
-        if(dict.fonts)
+        if(dict["fonts"])
         {
-            this._parseFonts(assetsFile, dict.fonts);
+            this._parseFonts(assetsFile, dict["fonts"]);
         }
         return true;
     },
@@ -233,7 +233,7 @@ flax.AssetsManager = cc.Class.extend({
             dDefine = displays[dName];
             if(dDefine.anchors) dDefine.anchors = this._parseFrames(dDefine.anchors);
             if(dDefine.colliders) dDefine.colliders = this._parseFrames(dDefine.colliders);
-            dDefine.fps = fps || cc.game.config.frameRate;
+            dDefine.fps = fps || cc.game.config["frameRate"];
             this.displayDefineCache[assetsFile + dName] = dDefine;
             this._parseSubAnims(assetsFile, dName);
         }
@@ -252,7 +252,7 @@ flax.AssetsManager = cc.Class.extend({
                 childDefine = childrenDefine[childName];
                 childDefine.frames = this._strToArray(childDefine.frames);
             }
-            mcDefine.fps = fps || cc.game.config.frameRate;
+            mcDefine.fps = fps || cc.game.config["frameRate"];
             this.mcsCache[assetsFile + sName] = mcDefine;
             //see if there is a '$' sign which present sub animation of the mc
             this._parseSubAnims(assetsFile, sName);

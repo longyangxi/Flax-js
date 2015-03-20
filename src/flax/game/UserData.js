@@ -10,7 +10,7 @@ flax.userData = {
 flax.fetchUserData = function(defaultValue) {
     var data = null;
     try{
-        data = cc.sys.localStorage.getItem(cc.game.config.gameId);
+        data = cc.sys.localStorage.getItem(cc.game.config["gameId"]);
         if(data) data = JSON.parse(data);
     }catch(e){
         cc.log("Fetch UserData Error: "+ e.name);
@@ -23,7 +23,7 @@ flax.fetchUserData = function(defaultValue) {
 flax.saveUserData =  function() {
     if(!flax.userData) flax.userData = {};
     try{
-        cc.sys.localStorage.setItem(cc.game.config.gameId, JSON.stringify(flax.userData));
+        cc.sys.localStorage.setItem(cc.game.config["gameId"], JSON.stringify(flax.userData));
     }catch (e){
         cc.log("Save UserData Error: "+ e.name);
     }

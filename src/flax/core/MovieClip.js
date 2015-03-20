@@ -251,7 +251,7 @@ flax._movieClip = {
         if(define == null) throw "There is no MovieClip named: " + this.assetID + " in assets: " + this.assetsFile + ", or make sure this class extends from the proper class!";
         return define;
     },
-    getChildOfName:function(name, nest)
+    findChildByName:function(name, nest)
     {
         if(nest === undefined) nest = true;
         var child = this._namedChildren[name];
@@ -259,8 +259,8 @@ flax._movieClip = {
         if(!nest) return null;
         for(var key in this._namedChildren) {
             child = this._namedChildren[key];
-            if(child.getChildOfName) {
-                child = child.getChildOfName(name, nest);
+            if(child.findChildByName) {
+                child = child.findChildByName(name, nest);
                 if(child) return child;
             }
         }
@@ -278,13 +278,13 @@ flax._movieClip = {
     },
     getLabelText:function(labelName, ifNest)
     {
-        var label = this.getChildOfName(labelName, ifNest === undefined ? true : ifNest);
+        var label = this.findChildByName(labelName, ifNest === undefined ? true : ifNest);
         if(label && (label instanceof flax.Label)) return label.getString();
         return null;
     },
     setLabelText:function(labelName, text, ifNest)
     {
-        var label = this.getChildOfName(labelName, ifNest === undefined ? true : ifNest);
+        var label = this.findChildByName(labelName, ifNest === undefined ? true : ifNest);
         if(label && (label instanceof flax.Label)) {
             label.setString(text);
             return label;
@@ -344,6 +344,9 @@ flax.MovieClip.create = function(assetsFile, assetID)
     return mc;
 };
 
+//Avoid to advanced compile mode
+window['flax']['MovieClip'] = flax.MovieClip;
+
 flax.MovieClipBatch = flax.FlaxSpriteBatch.extend(flax._movieClip);
 flax.MovieClipBatch.create = function(assetsFile, assetID)
 {
@@ -351,3 +354,6 @@ flax.MovieClipBatch.create = function(assetsFile, assetID)
     mc.clsName = "flax.MovieClipBatch";
     return mc;
 };
+
+//Avoid to advanced compile mode
+window['flax']['MovieClipBatch'] = flax.MovieClipBatch;

@@ -5,7 +5,7 @@
              classpath="/Users/long/Documents/www/cocos2d-js-v3.1/tools/cocos2d-console/bin/../plugins/project_compile/build_web/bin/compiler-1.7.jar"/>
 
     <target name="compile">
-        <jscomp compilationLevel="simple" 
+        <jscomp compilationLevel="advanced"
                 warning="quiet"
                 debug="false" 
                 output="./bin/flax.min.js"

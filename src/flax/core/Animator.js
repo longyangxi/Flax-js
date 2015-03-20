@@ -36,3 +36,6 @@ flax.Animator.create = function(assetsFile, assetID)
     mc.clsName = "flax.Animator";
     return mc;
 };
+
+//Avoid to advanced compile mode
+window['flax']['Animator'] = flax.Animator;

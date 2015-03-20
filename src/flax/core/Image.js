@@ -136,3 +136,6 @@ flax.Image = cc.Sprite.extend({
     {
     }
 });
+
+//Avoid to advanced compile mode
+window['flax']['Image'] = flax.Image;

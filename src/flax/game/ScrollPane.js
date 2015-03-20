@@ -82,8 +82,14 @@ flax.ScrollPane.create = function(assetsFile, assetID){
     return s;
 }
 
+//Avoid to advanced compile mode
+window['flax']['ScrollPane'] = flax.ScrollPane;
+
 flax.MCScrollPane = flax.MovieClip.extend(flax._scrollPaneDefine);
 flax.MCScrollPane.create = function(assetsFile, assetID){
     var s = new flax.MCScrollPane(assetsFile, assetID);
     return s;
 }
+
+//Avoid to advanced compile mode
+window['flax']['MCScrollPane'] = flax.MCScrollPane;

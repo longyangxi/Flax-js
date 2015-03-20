@@ -853,6 +853,10 @@ flax.FlaxSprite.create = function(assetsFile, assetID)
     tl.clsName = "flax.FlaxSprite";
     return tl;
 };
+
+//Avoid to advanced compile mode
+window['flax']['FlaxSprite'] = flax.FlaxSprite;
+
 /////////////////////////////////////////////////////////////
 flax.FlaxSpriteBatch = cc.SpriteBatchNode.extend(flax._sprite);
 flax.FlaxSpriteBatch.create = function(assetsFile, assetID)
@@ -862,8 +866,11 @@ flax.FlaxSpriteBatch.create = function(assetsFile, assetID)
     return tl;
 }
 
+//Avoid to advanced compile mode
+window['flax']['FlaxSpriteBatch'] = flax.FlaxSpriteBatch;
+
 /////////////////////////////////////////////////////////////
-window._p = flax.FlaxSprite.prototype;
+var _p = flax.FlaxSprite.prototype;
 /** @expose */
 _p.mainCollider;
 cc.defineGetterSetter(_p, "mainCollider", _p.getMainCollider);
@@ -887,8 +894,7 @@ cc.defineGetterSetter(_p, "x", _p.getPositionX, _p.setPositionX);
 cc.defineGetterSetter(_p, "y", _p.getPositionY, _p.setPositionY);
 //////////////////////////////////////////////////////////////////////
 
-window._p = flax.FlaxSpriteBatch.prototype;
-
+_p = flax.FlaxSpriteBatch.prototype;
 /** @expose */
 _p.mainCollider;
 cc.defineGetterSetter(_p, "mainCollider", _p.getMainCollider);
@@ -910,4 +916,3 @@ cc.defineGetterSetter(_p, "currentLabel", _p.getCurrentLabel);
 //fix the .x, .y bug no invoking setPosition mehtod
 cc.defineGetterSetter(_p, "x", _p.getPositionX, _p.setPositionX);
 cc.defineGetterSetter(_p, "y", _p.getPositionY, _p.setPositionY);
-delete window._p;
