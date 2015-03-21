@@ -173,7 +173,7 @@ flax._sprite = {
         return this.getLabels(label) != null;
     },
     getMainCollider:function(){
-        return this._mainCollider;
+        return this.getCollider('main') || this._mainCollider;
     },
     getPhysicsBody:function(){
         return this._physicsBody;
@@ -186,7 +186,6 @@ flax._sprite = {
                 c = an[this.currentFrame];
             }
         }
-        if(c == null) cc.log("Warning: The collider: " + name + " can't be found at " + this.assetID + "of" + this.assetsFile + ", make sure you are a pro user!");
         return c;
     },
     createPhysics:function(type, fixedRotation, bullet){
@@ -279,10 +278,10 @@ flax._sprite = {
     },
     getRect:function(global)
     {
-        return this._mainCollider.getRect(global);
+        return this.getMainCollider().getRect(global);
     },
     getCenter:function(global){
-        return this._mainCollider.getCenter(global);
+        return this.getMainCollider().getCenter(global);
     },
     getAnchor:function(name)
     {
