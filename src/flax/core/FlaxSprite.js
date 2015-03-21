@@ -514,7 +514,7 @@ flax._sprite = {
                 this.onSequenceOver.dispatch(this);
             }
             if(!this._loopSequence) {
-                this.gotoAndPlay(this._animSequence[this._sequenceIndex - 1], true);
+                if(!this.autoStopWhenOver) this.gotoAndPlay(this._animSequence[this._sequenceIndex - 1], true);
                 this._animSequence = [];
                 return;
             }

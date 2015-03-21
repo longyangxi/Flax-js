@@ -21,6 +21,11 @@ flax._gunnerDefine = {
     onRecycle:function()
     {
         this._super();
+        this.camp = null;
+        this._gunParam = null;
+        this.targets = null;
+        this._guns = null;
+        this._autoShooting = this._waitingShoot = this._auto = false;
         this.stopShoot();
     },
     getGunParam:function(){
