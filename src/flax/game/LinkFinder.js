@@ -3,6 +3,7 @@
  */
 EIGHT_DIRECT_VALUE = [[0,1],[0,-1],[-1,0],[1,0],[-1,1],[1,1],[1,-1],[-1,-1]];
 var LinkFinder = {};
+window['LinkFinder'] = LinkFinder;
 //the flax.TileMap to manage all the objects to link together
 LinkFinder.map = null;
 //an objects array, the linkage with these objects are unavailable

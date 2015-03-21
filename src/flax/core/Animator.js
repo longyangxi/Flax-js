@@ -7,8 +7,8 @@ flax.Animator = flax.FlaxSprite.extend({
     clsName:"flax.Animator",
     onNewSource:function()
     {
-        var startFrame = this.define.start;
-        var endFrame = this.define.end;
+        var startFrame = this.define['start'];
+        var endFrame = this.define['end'];
 
         this.frameNames = flax.assetsManager.getFrameNames(this.assetsFile, startFrame, endFrame);
         this.totalFrames = this.frameNames.length;

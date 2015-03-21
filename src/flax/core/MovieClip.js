@@ -101,7 +101,7 @@ flax._movieClip = {
      * */
     replaceChild:function(childName, assetID, assetsFile)
     {
-        var childDefine = this.define.children[childName];
+        var childDefine = this.define['children'][childName];
         if(childDefine == null){
             cc.log("There is no child with named: "+childName +"  in MovieClip: "+this.assetID);
             return;
@@ -139,18 +139,18 @@ flax._movieClip = {
             delete  this[childName];
         }
         this._namedChildren = {};
-        this.totalFrames = this.define.totalFrames;
-        this._theRect = this._strToRect(this.define.rect);
+        this.totalFrames = this.define['totalFrames'];
+        this._theRect = this._strToRect(this.define['rect']);
         this.setContentSize(this._theRect.width, this._theRect.height);
         this._initFrameDatas();
     },
     _initFrameDatas:function()
     {
         this._frameDatas = {};
-        for(var childName in this.define.children)
+        for(var childName in this.define['children'])
         {
             var frames = [];
-            var fs = this.define.children[childName].frames;
+            var fs = this.define['children'][childName].frames;
             var i = -1;
             while(++i < fs.length){
                 var fd = fs[i];
@@ -172,9 +172,9 @@ flax._movieClip = {
         var child;
         var childDefine;
         var frameData;
-        for(var childName in this.define.children)
+        for(var childName in this.define['children'])
         {
-            childDefine = this.define.children[childName];
+            childDefine = this.define['children'][childName];
             frameData = this._frameDatas[childName][frame];
             child = this._namedChildren[childName];
             if(frameData) {
@@ -203,7 +203,7 @@ flax._movieClip = {
                     this.playing ? child.play() : child.stop();
                 }
                 //To fix the zIndex bug when use the old version tool
-                var zIndex = (frameData.zIndex == -1) ? childDefine.zIndex : frameData.zIndex;
+                var zIndex = (frameData.zIndex == -1) ? childDefine['zIndex'] : frameData.zIndex;
                 if(child.parent != this){
                     child.removeFromParent(false);
                     this.addChild(child, zIndex);

@@ -278,7 +278,8 @@ flax.BulletCanvas = cc.SpriteBatchNode.extend({
                     var cb = children[num];
                     rot = flax.getRotation(cb, true);
                     if(cb.mainCollider.checkCollision(target.mainCollider)) {
-                        if(target.onHit) target.dead = target.onHit(b);
+//                        if(target.onHit) target.dead = target.onHit(b);
+                        flax.callModuleFunction(target, "onHit", b);
                         if(target.hurtable !== false) this._showHitEffect(b, rot, b.convertToWorldSpace(cb.getPosition()));
                         if(target.__isBullet) {
                             var ii = target.__canvas._bullets.indexOf(target);
@@ -291,7 +292,8 @@ flax.BulletCanvas = cc.SpriteBatchNode.extend({
                 }
             }else{
                 if(b.mainCollider.checkCollision(target.mainCollider)) {
-                    if(target.onHit) target.dead = target.onHit(b);
+//                    if(target.onHit) target.dead = target.onHit(b);
+                    flax.callModuleFuction(target, "onHit", b);
                     if(target.hurtable !== false) this._showHitEffect(b, rot, b.getPosition());
                     if(target.__isBullet) {
                         var ii = target.__canvas._bullets.indexOf(target);

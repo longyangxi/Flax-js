@@ -173,36 +173,44 @@ flax.addModule = function(cls, module, override){
         throw "Module can not be null!"
     }
     for(var k in module){
-        if(k === "onEnter"){
-            if(cls.prototype.__onEnterNum === undefined) cls.prototype.__onEnterNum = 0;
-            else cls.prototype.__onEnterNum++;
-            cls.prototype["__onEnter"+cls.prototype.__onEnterNum] = module.onEnter;
-        }else if(k === "onExit"){
-            if(cls.prototype.__onExitNum === undefined) cls.prototype.__onExitNum = 0;
-            else cls.prototype.__onExitNum++;
-            cls.prototype["__onExit"+cls.prototype.__onExitNum] = module.onExit;
+        if(k.indexOf("on") == 0){
+//        if(k === "onEnter" || k === "onExit"){
+            var nk = "__" + k;
+            var kn = nk + "Num";
+            if(cls.prototype[kn] === undefined) cls.prototype[kn] = 0;
+            else cls.prototype[kn]++;
+            cls.prototype[nk + cls.prototype[kn]] = module[k];
+//        if(k === "onEnter"){
+//            if(cls.prototype.__onEnterNum === undefined) cls.prototype.__onEnterNum = 0;
+//            else cls.prototype.__onEnterNum++;
+//            cls.prototype["__onEnter"+cls.prototype.__onEnterNum] = module.onEnter;
+//        }else if(k === "onExit"){
+//            if(cls.prototype.__onExitNum === undefined) cls.prototype.__onExitNum = 0;
+//            else cls.prototype.__onExitNum++;
+//            cls.prototype["__onExit"+cls.prototype.__onExitNum] = module.onExit;
         }else if(override === true || !cls.prototype[k]){
             cls.prototype[k] = module[k];
         }
     }
 }
-flax.callModuleOnEnter = function(owner){
-    if(owner.__onEnterNum !== undefined){
-        var i = owner.__onEnterNum;
+flax.callModuleFuction = function(owner, funcName, params){
+    funcName = "__" + funcName;
+    var num = owner[funcName + "Num"];
+    if(num !== undefined){
+        var i = num;
         while(i >= 0){
-            owner["__onEnter"+i]();
+            owner[funcName+i](params);
             i--;
         }
+    }else if(owner[funcName]){
+        owner[funcName](params);
     }
 }
+flax.callModuleOnEnter = function(owner){
+    flax.callModuleFuction(owner, "onEnter");
+}
 flax.callModuleOnExit = function(owner){
-    if(owner.__onExitNum !== undefined){
-        var i = owner.__onExitNum;
-        while(i >= 0){
-            owner["__onExit"+i]();
-            i--;
-        }
-    }
+    flax.callModuleFuction(owner, "onExit");
 }
 
 flax._checkOSVersion = function(){

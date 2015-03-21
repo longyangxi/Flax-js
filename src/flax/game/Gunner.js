@@ -135,7 +135,7 @@ flax._gunnerDefine = {
         var delta = {};
         var newValue = 0;
         for(var k in param){
-            newValue = this._guns[0]["param"][k] + param[k];
+            newValue = this._guns[0].param[k] + param[k];
             if(newValue <= 0) {
                 delete param[k];
                 continue;
@@ -155,6 +155,7 @@ flax._gunnerDefine = {
     onDie:function()
     {
         this.stopShoot();
+        flax.callModuleFuction(this, "onDie");
         if(this.ownerBody) this.ownerBody.destroy();
         else this.destroy();
     }
@@ -173,10 +174,18 @@ flax.addModule(flax.MCGunner, flax.HealthModule, false);
 
 var _p = flax.Gunner.prototype;
 /** @expose */
+_p.onHit;
+/** @expose */
+_p.onDie;
+/** @expose */
 _p.gunParam;
 cc.defineGetterSetter(_p, "gunParam", _p.getGunParam, _p.setGunParam);
 
 _p = flax.MCGunner.prototype;
+/** @expose */
+_p.onHit;
+/** @expose */
+_p.onDie;
 /** @expose */
 _p.gunParam;
 cc.defineGetterSetter(_p, "gunParam", _p.getGunParam, _p.setGunParam);

@@ -4,21 +4,21 @@
 
 flax._assetsClassMap =
 {
-    btn:"flax.SimpleButton",
-    button:"flax.SimpleButton",
-    progress:"flax.ProgressBar",
-    jpg:"flax.Image",
-    png:"flax.Image",
-    scrollPane:"flax.ScrollPane",
-    gun:"flax.Gunner"
+    "btn":"flax.SimpleButton",
+    "button":"flax.SimpleButton",
+    "progress":"flax.ProgressBar",
+    "jpg":"flax.Image",
+    "png":"flax.Image",
+    "scrollPane":"flax.ScrollPane",
+    "gun":"flax.Gunner"
 };
 
 flax._assetsMcClassMap =
 {
-    button:"flax.Button",
-    scrollPane:"flax.MCScrollPane",
-    gun:"flax.MCGunner",
-    gun1:"flax.MCGunner"
+    "button":"flax.Button",
+    "scrollPane":"flax.MCScrollPane",
+    "gun":"flax.MCGunner",
+    "gun1":"flax.MCGunner"
 };
 /**
  * Asset type in flax
@@ -231,9 +231,9 @@ flax.AssetsManager = cc.Class.extend({
         {
             displayNames.push(dName);
             dDefine = displays[dName];
-            if(dDefine.anchors) dDefine.anchors = this._parseFrames(dDefine.anchors);
-            if(dDefine.colliders) dDefine.colliders = this._parseFrames(dDefine.colliders);
-            dDefine.fps = fps || cc.game.config["frameRate"];
+            if(dDefine['anchors']) dDefine['anchors'] = this._parseFrames(dDefine['anchors']);
+            if(dDefine['colliders']) dDefine['colliders'] = this._parseFrames(dDefine['colliders']);
+            dDefine['fps'] = fps || cc.game.config["frameRate"];
             this.displayDefineCache[assetsFile + dName] = dDefine;
             this._parseSubAnims(assetsFile, dName);
         }
@@ -243,16 +243,16 @@ flax.AssetsManager = cc.Class.extend({
         for(var sName in mcs)
         {
             var mcDefine = mcs[sName];
-            if(mcDefine.anchors) mcDefine.anchors = this._parseFrames(mcDefine.anchors);
-            if(mcDefine.colliders) mcDefine.colliders = this._parseFrames(mcDefine.colliders);
+            if(mcDefine['anchors']) mcDefine['anchors'] = this._parseFrames(mcDefine['anchors']);
+            if(mcDefine['colliders']) mcDefine['colliders'] = this._parseFrames(mcDefine['colliders']);
             var childDefine;
-            var childrenDefine = mcDefine.children;
+            var childrenDefine = mcDefine['children'];
             for(var childName in childrenDefine)
             {
                 childDefine = childrenDefine[childName];
                 childDefine.frames = this._strToArray(childDefine.frames);
             }
-            mcDefine.fps = fps || cc.game.config["frameRate"];
+            mcDefine['fps'] = fps || cc.game.config["frameRate"];
             this.mcsCache[assetsFile + sName] = mcDefine;
             //see if there is a '$' sign which present sub animation of the mc
             this._parseSubAnims(assetsFile, sName);

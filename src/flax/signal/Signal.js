@@ -61,7 +61,7 @@
          * <p><strong>IMPORTANT:</strong> Setting this property during a dispatch will only affect the next dispatch, if you want to stop the propagation of a signal use `halt()` instead.</p>
          * @type boolean
          */
-        active : true,
+        actived : true,
 
         /**
          * @param {Function} listener
@@ -204,7 +204,7 @@
          * @param {...*} [params] Parameters that should be passed to each handler.
          */
         dispatch : function (params) {
-            if (! this.active) {
+            if (! this.actived) {
                 return;
             }
 
@@ -215,7 +215,6 @@
             if (this.memorize) {
                 this._prevParams = paramsArr;
             }
-
             if (! n) {
                 //should come after memorize
                 return;
@@ -251,7 +250,7 @@
          * @return {string} String representation of the object.
          */
         toString : function () {
-            return '[Signal active:'+ this.active +' numListeners:'+ this.getNumListeners() +']';
+            return '[Signal active:'+ this.actived +' numListeners:'+ this.getNumListeners() +']';
         }
 
     };

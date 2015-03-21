@@ -62,9 +62,9 @@ flax.Label = cc.Sprite.extend({
         if(this._fontDefine == null){
             throw "Can't find the font named: " + this.fontName;
         }
-        this.frames = flax.assetsManager.getFrameNames(this.assetsFile, parseInt(this._fontDefine.start), parseInt(this._fontDefine.end));
-        this.chars = this._fontDefine.chars;
-        this.fontSize = parseInt(this._fontDefine.size);
+        this.frames = flax.assetsManager.getFrameNames(this.assetsFile, parseInt(this._fontDefine['start']), parseInt(this._fontDefine['end']));
+        this.chars = this._fontDefine['chars'];
+        this.fontSize = parseInt(this._fontDefine['size']);
     },
     tweenInt:function(from, to, time){
         this.setString(from);

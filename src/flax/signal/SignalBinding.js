@@ -60,7 +60,7 @@
          * If binding is active and should be executed.
          * @type boolean
          */
-        active : true,
+        actived : true,
 
         /**
          * Default parameters passed to listener during `Signal.dispatch` and `SignalBinding.execute`. (curried parameters)
@@ -76,7 +76,7 @@
          */
         execute : function (paramsArr) {
             var handlerReturn, params;
-            if (this.active && !!this._listener) {
+            if (this.actived && !!this._listener) {
                 params = this.params? this.params.concat(paramsArr) : paramsArr;
                 handlerReturn = this._listener.apply(this.context, params);
                 if (this._isOnce) {
@@ -137,7 +137,7 @@
          * @return {string} String representation of the object.
          */
         toString : function () {
-            return '[SignalBinding isOnce:' + this._isOnce +', isBound:'+ this.isBound() +', active:' + this.active + ']';
+            return '[SignalBinding isOnce:' + this._isOnce +', isBound:'+ this.isBound() +', actived:' + this.actived + ']';
         }
 
     };
