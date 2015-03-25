@@ -136,7 +136,8 @@ flax._movieClip = {
     {
         for(var childName in this._namedChildren){
             this._namedChildren[childName].destroy();
-            delete  this[childName];
+            delete this._namedChildren[childName];
+            delete this[childName];
         }
         this._namedChildren = {};
         this.totalFrames = this.define['totalFrames'];
@@ -214,6 +215,7 @@ flax._movieClip = {
                 if(child.destroy) child.destroy();
                 else child.removeFromParent(true);
                 delete this._namedChildren[childName];
+                delete this[childName];
             }
         }
     },
