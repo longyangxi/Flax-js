@@ -4,11 +4,12 @@
 
 flax.ScrollingBG = cc.Node.extend({
     name:null,
-    source:null,
-    assetID:null,
-    bg0:null,
-    bg1:null,
-    _isTiled:null,
+    onScrolledOver:null,
+    _loop:true,
+    _bg0:null,
+    _bg1:null,
+    _sources:null,
+    _scrollingIndex:0,
     _scrolling:false,
     _paused:false,
     _speedX:0,
@@ -20,50 +21,68 @@ flax.ScrollingBG = cc.Node.extend({
     ctor:function(source, assetID, isTiled)
     {
         this._super();
-        this.source = source;
-        this.assetID = assetID;
-        this._isTiled = isTiled;
-        if(this.source == null){
-            cc.log("Please give a source!");
-            return false;
+        this._sources = [];
+        this.onScrolledOver = new signals.Signal();
+        if(source){
+            this.addSource(source, assetID, isTiled);
         }
+    },
+    onExit:function()
+    {
+        this._super();
+        this.onScrolledOver.removeAll();
+    },
+    addSource:function(source, assetID, isTile)
+    {
+        this._sources.push({source: source, assetID: assetID, isTile:isTile});
+        if(this._bg0 == null){
+            this._bg0 = this._createNextBG();
+        }
+    },
+    _createNextBG:function()
+    {
+        if(this._scrollingIndex > this._sources.length - 1){
+            this._scrollingIndex = 0;
+        }
+        var bgData = this._sources[this._scrollingIndex];
+        this._scrollingIndex ++;
+
+        var bg = null;
         //If it's a custom display
-        if(this.assetID != null){
-            if(this._isTiled !== true){
-                this.bg0 = flax.assetsManager.createDisplay(this.source, this.assetID);
-                this.bg1 = flax.assetsManager.createDisplay(this.source, this.assetID);
+        if(bgData.assetID != null){
+            if(bgData.isTile !== true){
+                bg = flax.assetsManager.createDisplay(bgData.source, bgData.assetID, null, true);
             }else{
-                this.bg0 = flax.TiledImage.create(this.source, this.assetID);
-                this.bg1 = flax.TiledImage.create(this.source, this.assetID);
+                bg = new flax.TiledImage(bgData.source, bgData.assetID);
             }
-        }else if(this.source){
+        }else if(bgData.source){
             //if it's a FlaxSprite
-            if(flax.isFlaxDisplay(this.source)){
-                if(this.source.parent) this.source.parent.addChild(this, this.source.zIndex);
-                this.name = this.source.name;
+            if(flax.isFlaxDisplay(bgData.source)){
+                if(bgData.source.parent) bgData.source.parent.addChild(this, bgData.source.zIndex);
+                this.name = bgData.source.name;
                 if(this.parent) this.parent[this.name] = this;
-                this.setPosition(this.source.getPosition());
-                this.bg0 = flax.assetsManager.cloneDisplay(this.source);
-                this.bg1 = flax.assetsManager.cloneDisplay(this.source);
-                this.source.destroy();
+                this.setPosition(bgData.source.getPosition());
+                bg = flax.assetsManager.cloneDisplay(bgData.source);
+                bgData.source.destroy();
             }
             //If it's a image
-            else if(flax.isImageFile(this.source)){
-                this.bg0 = cc.Sprite.create(this.source);
-                this.bg1 = cc.Sprite.create(this.source);
+            else if(flax.isImageFile(bgData.source)){
+                bg = cc.Sprite.create(bgData.source);
             }else {
-                cc.log("Not support source type!");
-                return false;
+                throw "Not supported source type!";
             }
         }else{
             throw "Arguments is not valid!"
         }
-        this.bg0.setAnchorPoint(0, 0);
-        this.bg1.setAnchorPoint(0, 0);
-        this.addChild(this.bg0);
-        this.addChild(this.bg1);
-        this._size = this.bg0.getContentSize();
-        this.setContentSize(this._size);
+        bg.setAnchorPoint(0, 0);
+        this.addChild(bg);
+
+        if(this._size == null){
+            this._size = bg.getContentSize();
+            this.setContentSize(this._size);
+        }
+
+        return bg;
     },
     reset:function()
     {
@@ -71,26 +90,38 @@ flax.ScrollingBG = cc.Node.extend({
         if(!this._scrolling) return;
         this._scrolling = false;
         this._speedX = this._speedY = 0;
-        this.bg0.setPosition(this._x0, this._y0);
-        this.bg1.setPosition(this._x0, this._y0);
+
+        if(this._bg0.destroy) this._bg0.destroy();
+        else this._bg0.removeFromParent();
+        this._bg0 = null;
+
+        if(this._bg1.destroy) this._bg1.destroy();
+        else this._bg1.removeFromParent();
+        this._bg1 = null;
+
+        this._scrollingIndex = 0;
+        if(this._bg0 == null) this._bg0 = this._createNextBG();
+        this._bg0.setPosition(this._x0, this._y0);
         this.unscheduleUpdate();
     },
-    startXScroll:function(speed)
+    startXScroll:function(speed, loop)
     {
-        if(speed == 0) return;
+        if(speed == 0 || this._bg0 == null) return;
         if(this._scrolling) return;
         this._scrolling = true;
+        this._loop = loop !== false;
         this._speedX = speed;
         this._speedY = 0;
         this._d = (this._speedX > 0) ? 1: -1;
         this._resetScroll();
         this.scheduleUpdate();
     },
-    startYScroll:function(speed)
+    startYScroll:function(speed, loop)
     {
-        if(speed == 0) return;
+        if(speed == 0 || this._bg0 == null) return;
         if(this._scrolling) return;
         this._scrolling = true;
+        this._loop = loop !== false;
         this._speedY = speed;
         this._speedX = 0;
         this._d = (this._speedY > 0) ? 1: -1;
@@ -113,13 +144,14 @@ flax.ScrollingBG = cc.Node.extend({
     },
     _resetScroll:function()
     {
-        this.bg0.setPosition(this._x0, this._y0);
-        (this._speedX != 0) ? this.bg1.x = -this._d*(this._size.width - 1) : this.bg1.y = -this._d*(this._size.height - 1);
+        this._bg0.setPosition(this._x0, this._y0);
+        if(this._bg1 == null) this._bg1 = this._createNextBG();
+        (this._speedX != 0) ? this._bg1.x = -this._d*(this._size.width - 1) : this._bg1.y = -this._d*(this._size.height - 1);
     },
     update:function(delta)
     {
         if(this._size.width*this._size.height == 0) {
-            this._size = this.bg0.getContentSize();
+            this._size = this._bg0.getContentSize();
             if(this._size.width*this._size.height != 0){
                 this.setContentSize(this._size);
                 this._resetScroll();
@@ -129,35 +161,42 @@ flax.ScrollingBG = cc.Node.extend({
         var needReset = false;
         if(this._speedX != 0){
             var dx = this._speedX*delta;
-            this.bg0.x += dx;
-            this.bg1.x += dx;
-            var dist = this._size.width - this.bg0.x*this._d;
+            this._bg0.x += dx;
+            this._bg1.x += dx;
+            var dist = this._size.width - this._bg0.x*this._d;
             if(dist <= 0){
-                this.bg0.x += this._d*dist;
-                this.bg1.x += this._d*dist;
+                this._bg0.x += this._d*dist;
+                this._bg1.x += this._d*dist;
                 needReset = true;
             }
         }else if(this._speedY != 0){
             var dy = this._speedY*delta;
-            this.bg0.y += dy;
-            this.bg1.y += dy;
-            var dist = this._size.height - this.bg0.y*this._d;
+            this._bg0.y += dy;
+            this._bg1.y += dy;
+            var dist = this._size.height - this._bg0.y*this._d;
             if(dist <= 0){
-                this.bg0.y += this._d*dist;
-                this.bg1.y += this._d*dist;
+                this._bg0.y += this._d*dist;
+                this._bg1.y += this._d*dist;
                 needReset = true;
             }
         }
         if(needReset){
-            var temp = this.bg0;
-            this.bg0 = this.bg1;
-            this.bg1 = temp;
+            if(!this._loop && this._scrollingIndex > this._sources.length - 1){
+                this.onScrolledOver.dispatch();
+                this.pauseScroll();
+                return;
+            }
+            //todo, performance improve by reuse the bg?
+            if(this._bg0.destroy) this._bg0.destroy();
+            else this._bg0.removeFromParent();
+            this._bg0 = this._bg1;
+            this._bg1 = this._createNextBG();
             this._resetScroll();
         }
     },
     getRect:function(){
         if(this._size.width*this._size.height == 0) {
-            this._size = this.bg0.getContentSize();
+            this._size = this._bg0.getContentSize();
             if(this._size.width*this._size.height != 0){
                 this.setContentSize(this._size);
             }
