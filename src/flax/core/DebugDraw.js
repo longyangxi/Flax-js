@@ -6,7 +6,7 @@ flax.clearDraw = function()
     if(flax.__drawNode){
         flax.__drawNode.clear();
     }
-}
+};
 flax.drawLine = function(from, to, lineWidth, lineColor)
 {
     flax._createDebugNode();
@@ -52,4 +52,4 @@ flax._createDebugNode = function(){
         }
         if(flax.__drawNode.parent == null) flax.currentScene.addChild(flax.__drawNode, 99999);
     }
-}
+};

@@ -32,13 +32,13 @@ flax.ASSET_IMAGE = 3;
  * */
 flax.registerClass = function(key, className){
     flax._assetsClassMap[key] = className;
-}
+};
 /**
  * Register a className for MovieClip
  * */
 flax.registerMcClass = function(key, className){
     flax._assetsMcClassMap[key] = className;
-}
+};
 
 flax.AssetsManager = cc.Class.extend({
     framesCache:null,

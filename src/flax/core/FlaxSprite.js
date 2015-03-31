@@ -841,7 +841,7 @@ flax._sprite = {
     {
 
     }
-}
+};
 /////////////////////////////////////////////////////////////
 flax.FlaxSprite = cc.Sprite.extend(flax._sprite);
 flax.FlaxSprite.create = function(assetsFile, assetID)
@@ -861,7 +861,7 @@ flax.FlaxSpriteBatch.create = function(assetsFile, assetID)
     var tl = new flax.FlaxSpriteBatch(assetsFile, assetID);
     tl.clsName = "flax.FlaxSpriteBatch";
     return tl;
-}
+};
 flax.addModule(flax.FlaxSpriteBatch, flax.TileMapModule);
 //Avoid to advanced compile mode
 window['flax']['FlaxSpriteBatch'] = flax.FlaxSpriteBatch;

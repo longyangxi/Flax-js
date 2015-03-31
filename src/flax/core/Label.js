@@ -274,4 +274,4 @@ flax.registerFont = function(name, urls)
     if(typeof urls == "string") urls = [urls];
     if(flax._fontResources == null) flax._fontResources = {};
     flax._fontResources[name] = urls;
-}
+};

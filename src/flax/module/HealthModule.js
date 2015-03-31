@@ -31,4 +31,4 @@ flax.HealthModule = {
         if(this.ownerBody) this.ownerBody.destroy();
         else this.destroy();
     }
-}
+};

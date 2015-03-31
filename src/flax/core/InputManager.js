@@ -61,7 +61,7 @@ flax.InputManager = cc.Node.extend({
                 self.justDragDist += cc.pDistance(cc.p(), touch.getDelta());
                 self._dispatchOne(self, touch, event, InputType.move);
             }
-        })
+        });
         cc.eventManager.addListener(listener, this);
     },
     onExit:function(){
@@ -117,12 +117,12 @@ flax.InputManager = cc.Node.extend({
         return parent.children.indexOf(child0) > parent.children.indexOf(child1);
     },
     /**
-     * @param{cc.Node}target the target want to receive the touch event, if target is null, then global event will be triggered
+     * @param{cc.Node} target the target want to receive the touch event, if target is null, then global event will be triggered
      *                       for keyboard event, the target will be the context if the real context is null
-     * @param{function}function to call back, for touch event: func(touch, event),{event.currentTarget, event.target}
+     * @param{function} func function to call back, for touch event: func(touch, event),{event.currentTarget, event.target}
      *                       for keyboard event: func(key){};
-     * @param{string}event type as InputType said
-     * @param{cc.Node}context the callback context of "THIS", if null, use target as the context
+     * @param{string} type event type as InputType said
+     * @param{cc.Node} context the callback context of "THIS", if null, use target as the context
      * */
     addListener:function(target, func, type, context)
     {
@@ -280,7 +280,7 @@ flax.InputManager = cc.Node.extend({
             onTouchCancelled:function(touch, event){
                 self.handleTouchEnded(touch, event);
             }
-        })
+        });
         cc.eventManager.addListener(listener, target);
     },
     _createKeyboardListener:function()

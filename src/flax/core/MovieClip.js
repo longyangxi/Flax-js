@@ -336,7 +336,7 @@ flax._movieClip = {
         var arr = str.split(",");
         return cc.rect(parseFloat(arr[0]), parseFloat(arr[1]), parseFloat(arr[2]), parseFloat(arr[3]));
     }
-}
+};
 
 flax.MovieClip = flax.FlaxSprite.extend(flax._movieClip);
 flax.MovieClip.create = function(assetsFile, assetID)

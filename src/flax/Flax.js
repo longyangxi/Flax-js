@@ -48,27 +48,27 @@ flax._addResVersion = function(url)
     if(cc.sys.isNative  || typeof url != "string" || flax.isSoundFile(url)) return url;
     if(url.indexOf("?v=") > -1) return url;
     return url + "?v=" + cc.game.config["version"];
-}
+};
 flax._removeResVersion = function(url)
 {
     if(cc.sys.isNative  || typeof url != "string" || flax.isSoundFile(url)) return url;
     var i = url.indexOf("?v=");
     if(i > -1) url = url.substr(0, i);
     return url;
-}
+};
 flax.isDomainAllowed = function()
 {
     if(cc.sys.isNative) return true;
     var domain = document.domain;
     var domainAllowed = cc.game.config["domainAllowed"];
     return flax.isLocalDebug() || domainAllowed == null || domainAllowed.length == 0 || domainAllowed.indexOf(domain) > -1;
-}
+};
 flax.isLocalDebug = function()
 {
     if(cc.sys.isNative) return false;
     var domain = document.domain;
     return domain == "localhost" || domain.indexOf("192.168.") == 0;
-}
+};
 if(!cc.sys.isNative){
     //if local debug, make the version randomly, so every time debug is refresh
     if(flax.isLocalDebug()) {
@@ -91,7 +91,7 @@ if(!cc.sys.isNative){
     if(cc.sys.isMobile){
         var __hideBottomBar = function(){
             document.body.scrollTop = 0;
-        }
+        };
         var orientationEvent = ("onorientationchange" in window) ? "orientationchange" : "resize";
         window.addEventListener(orientationEvent, __hideBottomBar, true);
         __hideBottomBar();
@@ -138,7 +138,7 @@ flax.init = function(resolutionPolicy, initialUserData)
     }else{
         flax.updateLanguage(lan);
     }
-}
+};
 
 flax.getLanguageStr = function(key){
     if(flax._languageDict == null) {
@@ -149,7 +149,7 @@ flax.getLanguageStr = function(key){
     if(str == null) cc.log("Warning: there is no language string for key: "+key);
     //todo, more param replace
     return str;
-}
+};
 flax.updateLanguage = function(lan){
     if(lan == null || lan == "" || lan == flax.language) return;
     flax.language = lan;
@@ -157,10 +157,10 @@ flax.updateLanguage = function(lan){
     flax.languageIndex = flax.languages.indexOf(lan);
     if(flax.languageIndex == -1) cc.log("Invalid language: " + lan);
     if(cc.game.config["languageJson"]) flax._languageToLoad = flax._getLanguagePath(lan);
-}
+};
 flax._getLanguagePath = function(lan){
     return  "res/locale/"+(lan || flax.language)+".json";
-}
+};
 /**
  * Add a function module to some class
  * The function in the class will override the same name function in the module
@@ -192,7 +192,7 @@ flax.addModule = function(cls, module, override){
             cls.prototype[k] = module[k];
         }
     }
-}
+};
 flax.callModuleFuction = function(owner, funcName, params){
     funcName = "__" + funcName;
     var num = owner[funcName + "Num"];
@@ -205,13 +205,13 @@ flax.callModuleFuction = function(owner, funcName, params){
     }else if(owner[funcName]){
         owner[funcName](params);
     }
-}
+};
 flax.callModuleOnEnter = function(owner){
     flax.callModuleFuction(owner, "onEnter");
-}
+};
 flax.callModuleOnExit = function(owner){
     flax.callModuleFuction(owner, "onExit");
-}
+};
 
 flax._checkOSVersion = function(){
     if(cc.sys.isNative) return;
@@ -226,14 +226,14 @@ flax._checkOSVersion = function(){
         cc.sys.os = cc.sys.OS_ANDROID;
         if(i > -1) flax.osVersion = ua.substr( i + 8, 3 );
     }
-}
+};
 
 flax.registerScene = function(name, scene, resources)
 {
     if(!resources) resources = [];
     if(!(resources instanceof Array)) resources = [resources];
     flax._scenesDict[name] = {scene:scene, res:resources};
-}
+};
 /**
  * Replace the current scene
  * @param {String} sceneName the scene name registered
@@ -297,7 +297,7 @@ flax.replaceScene = function(sceneName, transition, duration)
         flax.currentScene.addChild(flax.inputManager, 999999);
         flax._checkDeviceOrientation();
     });
-}
+};
 /**
  * Refresh current scene
  * */
@@ -306,7 +306,7 @@ flax.refreshScene = function()
     if(flax.currentSceneName){
         flax.replaceScene(flax.currentSceneName);
     }
-}
+};
 flax._soundResources = {};
 flax.preload = function(res, callBack)
 {
@@ -366,7 +366,7 @@ flax.preload = function(res, callBack)
     }else{
         callBack();
     }
-}
+};
 
 //----------------------scene about-------------------------------------------------------
 
@@ -387,10 +387,10 @@ flax.setSoundEnabled = function(value)
         audioEngine.pauseMusic();
         audioEngine.stopAllEffects();
     }
-}
+};
 flax.getSoundEnabled = function() {
     return flax._soundEnabled;
-}
+};
 flax._lastMusic = null;
 flax.playMusic = function(path, loop, releaseOld)
 {
@@ -401,30 +401,30 @@ flax.playMusic = function(path, loop, releaseOld)
     }else{
         flax._lastMusic = path;
     }
-}
+};
 flax.stopMusic = function(release){
     cc.audioEngine.stopMusic(release === true);
-}
+};
 flax.pauseMusic = function(){
     cc.audioEngine.pauseMusic();
-}
+};
 flax.playEffect = function(path)
 {
     if(!flax._soundEnabled) return;
     var audioEngine = cc.audioEngine;
     var id = audioEngine.playEffect(path);
     return id;
-}
+};
 flax.stopEffect = function(effectID)
 {
     var audioEngine = cc.audioEngine;
     if(effectID != null) audioEngine.stopEffect(effectID);
     else audioEngine.stopAllEffects();
-}
+};
 flax.playSound = function(path)
 {
     return flax.playEffect(path);
-}
+};
 //----------------------sound about-------------------------------------------------------
 flax._checkDeviceOrientation = function(){
     if(cc.sys.isNative) return;
@@ -442,7 +442,7 @@ flax._checkDeviceOrientation = function(){
         flax._orientationTip.removeFromParent();
         flax.currentScene.addChild(flax._orientationTip, 1000000);
     }
-}
+};
 flax._oldGamePauseState = false;
 flax._showOrientaionTip = function(){
     var newLandscape = (Math.abs(window.orientation) == 90);
@@ -457,7 +457,7 @@ flax._showOrientaionTip = function(){
     }
     flax.inputManager.enabled = !flax._orientationTip.visible;
     flax.landscape = newLandscape;
-}
+};
 
 ///---------------------utils-------------------------------------------------------------
 flax.getAngle = function(startPoint, endPoint, forDegree)
@@ -569,19 +569,19 @@ flax.ifCollide = function(sprite1, sprite2)
 flax.isFlaxDisplay = function(target)
 {
     return target instanceof flax.FlaxSprite || target instanceof flax.FlaxSpriteBatch || target instanceof flax.Image;
-}
+};
 flax.isFlaxSprite = function(target)
 {
     return target instanceof flax.FlaxSprite || target instanceof flax.FlaxSpriteBatch
-}
+};
 flax.isMovieClip = function(target)
 {
     return target instanceof flax.MovieClip || target instanceof flax.MovieClipBatch;
-}
+};
 flax.isButton = function(target)
 {
     return target instanceof flax.Button || target instanceof flax.SimpleButton;
-}
+};
 flax.isChildOf = function(child, parent)
 {
     if(child == null || parent == null) return false;
@@ -603,7 +603,7 @@ flax.findParentWithClass = function(sprite, cls)
         p = p.parent;
     }
     return null;
-}
+};
 
 flax.findChildWithClass = function(sprite, cls)
 {
@@ -617,7 +617,7 @@ flax.findChildWithClass = function(sprite, cls)
         if(child) return child;
     }
     return null;
-}
+};
 /**
  * Fetch URL GET variables
  * */
@@ -631,7 +631,7 @@ flax.getUrlVars = function() {
         vars[pair[0]] = decodeURIComponent(pair[1]);
     }
     return vars;
-}
+};
 /**
  * Convert a name to a Object or a Function
  * @param {String}name cc.Sprite
@@ -679,11 +679,11 @@ flax.restrictValue = function(value, min, max)
     value = Math.max(min, value);
     value = Math.min(max, value);
     return value;
-}
+};
 flax.numberSign = function(number){
     if(number == 0) return 0;
     return number > 0 ? 1 : -1;
-}
+};
 flax.randInt = function (start, end)
 {
     return start + Math.floor(Math.random()*(end - start));
@@ -706,7 +706,7 @@ flax.isSoundFile = function(path)
     if(typeof path != "string") return false;
     var ext = cc.path.extname(path);
     return SOUND_TYPES.indexOf(ext) > -1;
-}
+};
 /**
  * Copy all the properties of params to target if it own the property
  * */
@@ -749,4 +749,4 @@ flax.goHomeUrl = function()
     if(!cc.sys.isNative && homeUrl){
         window.open(homeUrl);
     }
-}
+};

@@ -17,7 +17,7 @@ MOUSE_DOWN_SCALE = 0.95;
 flax._buttonDefine = {
     clickSound:null,//The sound will play when click
     group:null,//the button group it belongs to
-    _playChildrenOnState:false,//If auto paly children's animation when change state
+    _playChildrenOnState:false,//If auto play children's animation when change state
     _state:null,
     _initScale:null,
     __isButton:true,
@@ -159,7 +159,7 @@ flax._buttonDefine = {
             }
         }
     }
-}
+};
 
 flax.SimpleButton = flax.Animator.extend(flax._buttonDefine);
 flax.SimpleButton.create = function(assetsFile, assetID)
@@ -256,4 +256,4 @@ flax.ButtonGroup = cc.Class.extend({
         this.selectedButton = newSelected;
         this.onSelected.dispatch(newSelected);
     }
-})
+});
