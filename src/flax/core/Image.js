@@ -110,7 +110,7 @@ flax.Image = cc.Sprite.extend({
             cc.log(this.assetID+": there is no anchor named "+anchorName);
             return false;
         }
-        if(node == null) throw "Node can't be null!"
+        if(node == null) throw "Node can't be null!";
         if(this._anchorBindings.indexOf(node) > -1) {
             cc.log(this.assetID+": anchor has been bound, "+anchorName);
             return false;

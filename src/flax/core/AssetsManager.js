@@ -177,7 +177,7 @@ flax.AssetsManager = cc.Class.extend({
         if(typeof this.framesCache[assetsFile] !== "undefined") return false;
 
         var assetsFile1 = assetsFile;
-        var ext = cc.path.extname(assetsFile)
+        var ext = cc.path.extname(assetsFile);
         if(ext == ".flax") assetsFile1 = cc.path.changeBasename(assetsFile1, ".plist");
         var dict = cc.loader.getRes(assetsFile1);
         if(dict == null){

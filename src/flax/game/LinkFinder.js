@@ -93,7 +93,7 @@ LinkFinder.findAvailableLink = function(useTween)
     var tempPos = cc.p(theLink.getPosition());
     if(link == null) {
         var empty = this._findEmptyNeighbor(first.tx, first.ty);
-        if(empty == null) throw "Dead map!!!!"
+        if(empty == null) throw "Dead map!!!!";
         tempPos = this.map.getTiledPosition(empty.x, empty.y);
         if(theLink.parent) tempPos = theLink.parent.convertToNodeSpace(tempPos);
         if(useTween === true){

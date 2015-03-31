@@ -6,7 +6,7 @@ flax.ColliderType = {
     rect: "Rect",
     circle: "Circle",
     polygon: "Poly"
-}
+};
 flax.Collider = cc.Class.extend({
     name:null,
     owner:null,
@@ -50,7 +50,7 @@ flax.Collider = cc.Class.extend({
     createPhysics:function(density, friction,restitution, isSensor, catBits, maskBits){
         if(this.physicsFixture) return this.physicsFixture;
         var body = this.physicsBody = this.owner.physicsBody;
-        if(body == null) throw "Please CreatePhysics in its owner firstly!"
+        if(body == null) throw "Please CreatePhysics in its owner firstly!";
 
         var size = this.getSize();
         var centerPos = this.getCenter();
@@ -156,7 +156,7 @@ flax.Collider = cc.Class.extend({
         for(var i = 0, j = length - 1; i < length; j = i++)
         {
             var pi = this._polygons[i],
-                pj = this._polygons[j]
+                pj = this._polygons[j];
             intersect = ((pi.y > pos.y) !== (pj.y > pos.y)) && (pos.x < (pj.x - pi.x) * (pos.y - pi.y) / (pj.y - pi.y) + pi.x);
             if(intersect) inside = !inside;
         }
@@ -542,7 +542,7 @@ flax.DebugBox2DNode = cc.Node.extend({
         var b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
         var debugDraw = new b2DebugDraw();
         debugDraw.SetSprite(document.getElementById("gameCanvas").getContext("2d"));
-        var scale = PTM_RATIO * cc.view.getViewPortRect().width / cc.view.getDesignResolutionSize().width
+        var scale = PTM_RATIO * cc.view.getViewPortRect().width / cc.view.getDesignResolutionSize().width;
         debugDraw.SetDrawScale(scale);
         debugDraw.SetFillAlpha(0.5);
         debugDraw.SetLineThickness(1.0);
