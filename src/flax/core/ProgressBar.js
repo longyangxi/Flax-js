@@ -50,14 +50,19 @@ flax.ProgressBar = flax.Animator.extend({
     tween:function(from, to, duration)
     {
         if(this.pBar == null) return;
-        if(this._tween) this.pBar.stopAction(this._tween);
-        this._tween = cc.ProgressFromTo.create(duration, from, to);
+        if(this._tween) {
+            this.pBar.stopAction(this._tween);
+            this._tween.release();
+        }
+        this._tween = cc.progressFromTo(duration, from, to);
+        this._tween.retain();
         this.pBar.runAction(this._tween);
     },
     stopTween:function()
     {
         if(this._tween && this.pBar) {
             this.pBar.stopAction(this._tween);
+            this._tween.release();
             this._tween = null;
         }
     },
