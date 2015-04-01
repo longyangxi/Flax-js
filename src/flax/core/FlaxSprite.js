@@ -288,7 +288,11 @@ flax._sprite = {
         if(this.define['anchors']){
             var an = this.define['anchors'][name];
             if(an != null) {
-                return new flax.Anchor(an[this.currentFrame]);
+                if(!(an instanceof flax.Anchor)){
+                    an = new flax.Anchor(an[this.currentFrame]);
+                    this.define['anchors'][name] = an;
+                }
+                return an;
             }
         }
         return null;
