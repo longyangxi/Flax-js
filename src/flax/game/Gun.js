@@ -146,7 +146,7 @@ flax.BulletCanvas = cc.SpriteBatchNode.extend({
     },
     addBullet:function(rotation, position, param, owner){
         if(this.parent == null) {
-//            cc.log("Please init the bullet canvas: flax.BulletCanvas.create('"+this.assetsFile+"', container);");
+            cc.log("Please create a bullet canvas: flax.BulletCanvas.create('"+this.assetsFile+"', container, zIndex);");
             return;
         }
         if(!(param instanceof flax.GunParam)) param = flax.GunParam.create(param);
