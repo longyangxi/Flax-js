@@ -4,6 +4,10 @@ Flax is a game develop tool based on Flash Professional (Later we called it Flas
 
 Flax is just to use the power of the Flash to create animation/UI/scene/font etc.  Convert  a created SWF to texture to be used by other game develop platform, such as Cocos2d-js, Cocos2d-x, Unity, Starling, maybe more.
 
+Video
+========
+http://v.qq.com/page/d/a/4/d0148a7pma4.html
+
 Pros
 ====
 1. For Mac and Windows both
