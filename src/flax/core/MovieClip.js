@@ -253,7 +253,7 @@ flax._movieClip = {
         if(define == null) throw "There is no MovieClip named: " + this.assetID + " in assets: " + this.assetsFile + ", or make sure this class extends from the proper class!";
         return define;
     },
-    findChildByName:function(name, nest)
+    getChild:function(name, nest)
     {
         if(nest === undefined) nest = true;
         var child = this._namedChildren[name];
@@ -261,8 +261,8 @@ flax._movieClip = {
         if(!nest) return null;
         for(var key in this._namedChildren) {
             child = this._namedChildren[key];
-            if(child.findChildByName) {
-                child = child.findChildByName(name, nest);
+            if(child.getChild) {
+                child = child.getChild(name, nest);
                 if(child) return child;
             }
         }
@@ -280,13 +280,13 @@ flax._movieClip = {
     },
     getLabelText:function(labelName, ifNest)
     {
-        var label = this.findChildByName(labelName, ifNest === undefined ? true : ifNest);
+        var label = this.getChild(labelName, ifNest === undefined ? true : ifNest);
         if(label && (label instanceof flax.Label)) return label.getString();
         return null;
     },
     setLabelText:function(labelName, text, ifNest)
     {
-        var label = this.findChildByName(labelName, ifNest === undefined ? true : ifNest);
+        var label = this.getChild(labelName, ifNest === undefined ? true : ifNest);
         if(label && (label instanceof flax.Label)) {
             label.setString(text);
             return label;
