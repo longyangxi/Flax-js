@@ -27,7 +27,6 @@ flax._sprite = {
     autoRecycle:false,
     currentFrame:0,
     currentAnim:null,
-    prevFrame:-1,
     totalFrames:0,
     frameInterval:0,
     ignoreBodyRotation:false,
@@ -37,6 +36,7 @@ flax._sprite = {
     assetID:null,
     clsName:"flax.FlaxSprite",
     playing:false,
+    _prevFrame:-1,
     _labelFrames:null,
     _labelSounds:null,
     _loopStart:0,
@@ -552,8 +552,8 @@ flax._sprite = {
     },
     renderFrame:function(frame, forceUpdate)
     {
-        if(this.prevFrame == frame && forceUpdate != true) return;
-        if(this.prevFrame != frame) this.prevFrame = frame;
+        if(this._prevFrame == frame && forceUpdate != true) return;
+        if(this._prevFrame != frame) this._prevFrame = frame;
         this._handleAnchorBindings();
         this._updateCollider();
         this.doRenderFrame(frame);
