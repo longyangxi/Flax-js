@@ -8,8 +8,7 @@ flax.TileMapModule = {
     tileValue:TileValue.WALKABLE,
     _tileMap:null,
     _tileInited:false,
-    _tileMap:null,
-    _tileInited:false,
+
     onEnter:function()
     {
         if(this._tileMap && !this._tileInited) {
@@ -73,4 +72,4 @@ flax.TileMapModule = {
 //            this._tileMap.updateLayout(tx, ty);
         }
     }
-}
+};

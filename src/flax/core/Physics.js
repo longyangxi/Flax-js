@@ -6,7 +6,7 @@ flax.ColliderType = {
     rect: "Rect",
     circle: "Circle",
     polygon: "Poly"
-}
+};
 flax.Collider = cc.Class.extend({
     name:null,
     owner:null,
@@ -50,7 +50,7 @@ flax.Collider = cc.Class.extend({
     createPhysics:function(density, friction,restitution, isSensor, catBits, maskBits){
         if(this.physicsFixture) return this.physicsFixture;
         var body = this.physicsBody = this.owner.physicsBody;
-        if(body == null) throw "Please CreatePhysics in its owner firstly!"
+        if(body == null) throw "Please CreatePhysics in its owner firstly!";
 
         var size = this.getSize();
         var centerPos = this.getCenter();
@@ -156,7 +156,7 @@ flax.Collider = cc.Class.extend({
         for(var i = 0, j = length - 1; i < length; j = i++)
         {
             var pi = this._polygons[i],
-                pj = this._polygons[j]
+                pj = this._polygons[j];
             intersect = ((pi.y > pos.y) !== (pj.y > pos.y)) && (pos.x < (pj.x - pi.x) * (pos.y - pi.y) / (pj.y - pi.y) + pi.x);
             if(intersect) inside = !inside;
         }
@@ -262,11 +262,11 @@ flax.createPhysicsWorld = function(gravity, doSleep){
     flax._physicsBodyToRemove = [];
     flax._physicsFixtureToRemove = [];
     return world;
-}
+};
 flax.getPhysicsWorld = function(){
     if(flax._physicsWorld == null) throw "Pleas use flax.createPhysicsWorld to create the world firstly!";
     return flax._physicsWorld;
-}
+};
 flax.startPhysicsWorld = function(){
     var world = flax.getPhysicsWorld();
     if(world && flax.currentScene && !flax._physicsRunning){
@@ -274,13 +274,13 @@ flax.startPhysicsWorld = function(){
         flax.currentScene.schedule(flax._updatePhysicsWorld, 1.0/cc.game.config["frameRate"]);
         flax._physicsRunning = true;
     }
-}
+};
 flax.stopPhysicsWorld = function(){
     if(flax._physicsRunning && flax.currentScene) {
         flax.currentScene.unschedule(flax._updatePhysicsWorld);
         flax._physicsRunning = false;
     }
-}
+};
 flax.destroyPhysicsWorld = function(){
     if(!flax._physicsWorld) return;
     flax.stopPhysicsWorld();
@@ -297,16 +297,16 @@ flax.destroyPhysicsWorld = function(){
     flax._physicsWorld = null;
     flax._physicsListener = null;
     flax._physicsBodyToRemove = null;
-}
+};
 
 flax.removePhysicsBody = function(body){
     var i = flax._physicsBodyToRemove.indexOf(body);
     if(i == -1) flax._physicsBodyToRemove.push(body);
-}
+};
 flax.removePhysicsFixture = function(fixture){
     var i = flax._physicsFixtureToRemove.indexOf(fixture);
     if(i == -1) flax._physicsFixtureToRemove.push(fixture);
-}
+};
 /**
  * Cast a ray from point0 to point1, callBack when there is a collid happen
  * @param {function} callBack Callback when collid, function(flax.Collider, reflectedPoint, endPoint, fraction)
@@ -343,7 +343,7 @@ flax.physicsRaycast = function(callBack, point0, point1, rayRadius){
         //fraction: the distance rate from the start point to the collision point of the total ray length
         callBack(collider, point, endPoint, fraction);
     }, cc.pMult(point0, 1/PTM_RATIO), cc.pMult(point1, 1/PTM_RATIO));
-}
+};
 
 flax.physicsSimulate = function(body, time, step){
     if(!step) step = flax.frameInterval;
@@ -377,7 +377,7 @@ flax.physicsSimulate = function(body, time, step){
     }
     body.SetPositionAndAngle(oldTrans.pos, oldTrans.rot);
     return path;
-}
+};
 flax._createPhysicsListener = function(){
     if(flax._physicsListener) return;
     flax._physicsListener = new Box2D.Dynamics.b2ContactListener();
@@ -400,7 +400,7 @@ flax._createPhysicsListener = function(){
 
         flax.onCollideStart.dispatch(ca, cb);
         ca.physicsContact = cb.physicsContact = null;
-    }
+    };
     flax._physicsListener.EndContact = function (contact) {
         var fa = contact.GetFixtureA();
         var fb = contact.GetFixtureB();
@@ -411,7 +411,7 @@ flax._createPhysicsListener = function(){
         ca.physicsContact = cb.physicsContact = contact;
         flax.onCollideEnd.dispatch(ca, cb);
         ca.physicsContact = cb.physicsContact = null;
-    }
+    };
     flax._physicsListener.PreSolve = function (contact, oldManifold) {
         var fa = contact.GetFixtureA();
         var fb = contact.GetFixtureB();
@@ -422,7 +422,7 @@ flax._createPhysicsListener = function(){
         ca.physicsContact = cb.physicsContact = contact;
         flax.onCollidePre.dispatch(ca, cb);
         ca.physicsContact = cb.physicsContact = null;
-    }
+    };
     flax._physicsListener.PostSolve = function (contact, impulse) {
         var fa = contact.GetFixtureA();
         var fb = contact.GetFixtureB();
@@ -433,9 +433,9 @@ flax._createPhysicsListener = function(){
         ca.physicsContact = cb.physicsContact = contact;
         flax.onCollidePost.dispatch(ca, cb);
         ca.physicsContact = cb.physicsContact = null;
-    }
+    };
     flax._physicsWorld.SetContactListener(flax._physicsListener);
-}
+};
 
 /**
  * Create physical walls, up/down/left/right
@@ -478,7 +478,7 @@ flax.createPhysicalWalls = function(walls, friction){
         bodyDef.position.Set(winSize.width / PTM_RATIO, 0.5*winSize.height / PTM_RATIO);
         world.CreateBody(bodyDef).CreateFixture(fixDef);
     }
-}
+};
 //It is recommended that a fixed time step is used with Box2D for stability
 //of the simulation, however, we are using a variable time step here.
 //You need to make an informed choice, the following URL is useful
@@ -522,7 +522,7 @@ flax._updatePhysicsWorld = function(dt){
             sprite.rotation += b.__rotationOffset;
         }
     }
-}
+};
 flax._debugBox2DNode = null;
 /**
  * todo, bug
@@ -532,7 +532,7 @@ flax.debugDrawPhysics = function(){
         flax._debugBox2DNode = new flax.DebugBox2DNode(flax.getPhysicsWorld());
         flax.currentScene.addChild(flax._debugBox2DNode, Number.MAX_VALUE);
     }
-}
+};
 flax.DebugBox2DNode = cc.Node.extend({
     _refWorld: null,
     ctor: function(world) {
@@ -542,7 +542,7 @@ flax.DebugBox2DNode = cc.Node.extend({
         var b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
         var debugDraw = new b2DebugDraw();
         debugDraw.SetSprite(document.getElementById("gameCanvas").getContext("2d"));
-        var scale = PTM_RATIO * cc.view.getViewPortRect().width / cc.view.getDesignResolutionSize().width
+        var scale = PTM_RATIO * cc.view.getViewPortRect().width / cc.view.getDesignResolutionSize().width;
         debugDraw.SetDrawScale(scale);
         debugDraw.SetFillAlpha(0.5);
         debugDraw.SetLineThickness(1.0);
@@ -558,6 +558,6 @@ flax.DebugBox2DNode = cc.Node.extend({
             this._refWorld.DrawDebugData();
             ctx.scale(1, 1);
             ctx.translate(0, 0);
-        };
+        }
     }
 });

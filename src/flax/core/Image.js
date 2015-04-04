@@ -13,7 +13,7 @@ flax.Image = cc.Sprite.extend({
 
     ctor:function(assetsFile, assetID){
         cc.Sprite.prototype.ctor.call(this);
-        if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!"
+        if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!";
         this.__instanceId = ClassManager.getNewInstanceId();
         this._anchorBindings = [];
         this.setSource(assetsFile, assetID);
@@ -25,7 +25,7 @@ flax.Image = cc.Sprite.extend({
     setSource:function(assetsFile, assetID)
     {
         if(assetsFile == null || assetID == null){
-            throw 'assetsFile and assetID can not be null!'
+            throw 'assetsFile and assetID can not be null!';
             return;
         }
         if(this.assetsFile == assetsFile && this.assetID == assetID) return;
@@ -110,7 +110,7 @@ flax.Image = cc.Sprite.extend({
             cc.log(this.assetID+": there is no anchor named "+anchorName);
             return false;
         }
-        if(node == null) throw "Node can't be null!"
+        if(node == null) throw "Node can't be null!";
         if(this._anchorBindings.indexOf(node) > -1) {
             cc.log(this.assetID+": anchor has been bound, "+anchorName);
             return false;

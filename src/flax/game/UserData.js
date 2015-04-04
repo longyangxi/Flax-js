@@ -5,7 +5,7 @@ flax.userData = {
 //    gold:100,
 //    levelStars:[],
 //    powerups:[0,0,0,0]
-}
+};
 
 flax.fetchUserData = function(defaultValue) {
     var data = null;
@@ -18,7 +18,7 @@ flax.fetchUserData = function(defaultValue) {
     if(data) flax.copyProperties(data, flax.userData);
     else if(defaultValue) flax.userData = defaultValue;
     if(!flax.userData) flax.userData = {};
-}
+};
 
 flax.saveUserData =  function() {
     if(!flax.userData) flax.userData = {};
@@ -27,4 +27,4 @@ flax.saveUserData =  function() {
     }catch (e){
         cc.log("Save UserData Error: "+ e.name);
     }
-}
+};

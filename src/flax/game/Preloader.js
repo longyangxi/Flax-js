@@ -78,7 +78,7 @@ flax.Preloader = cc.Scene.extend({
                     flax.goHomeUrl();
                 }
             }
-        })
+        });
         cc.eventManager.addListener(listener, this._logo);
     },
     onEnter: function () {

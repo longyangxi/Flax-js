@@ -106,6 +106,7 @@
 
         /**
          * @param {Function} listener
+         * @param {Object} context
          * @return {number}
          * @private
          */
