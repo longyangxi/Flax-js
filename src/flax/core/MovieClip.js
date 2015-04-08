@@ -266,6 +266,7 @@ flax._movieClip = {
                 if(child) return child;
             }
         }
+        return null;
     },
     getChildByAssetID:function(id)
     {
