@@ -198,7 +198,6 @@ flax._movieClip = {
                 frameData.setForChild(child);
                 //all children use the same fps with this
                 if(this.sameFpsForChildren) child.fps = this.fps;
-                child.visible = true;
                 child.autoPlayChildren = this.autoPlayChildren;
                 if(this.autoPlayChildren && flax.isFlaxSprite(child)) {
                     this.playing ? child.play() : child.stop();
