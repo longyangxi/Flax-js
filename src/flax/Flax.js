@@ -550,6 +550,12 @@ flax.getRect = function(sprite, global)
     return rect;
 };
 
+flax._strToRect = function(str)
+{
+    var arr = str.split(",");
+    return cc.rect(parseFloat(arr[0]), parseFloat(arr[1]), parseFloat(arr[2]), parseFloat(arr[3]));
+};
+
 flax.ifTouched = function(target, pos)
 {
     if(target == null) return false;

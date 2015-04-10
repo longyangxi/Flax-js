@@ -141,7 +141,7 @@ flax._movieClip = {
         }
         this._namedChildren = {};
         this.totalFrames = this.define['totalFrames'];
-        this._theRect = this._strToRect(this.define['rect']);
+        this._theRect = flax._strToRect(this.define['rect']);
         this.setContentSize(this._theRect.width, this._theRect.height);
         this._initFrameDatas();
     },
@@ -330,11 +330,6 @@ flax._movieClip = {
             }
         }
 
-    },
-    _strToRect:function(str)
-    {
-        var arr = str.split(",");
-        return cc.rect(parseFloat(arr[0]), parseFloat(arr[1]), parseFloat(arr[2]), parseFloat(arr[3]));
     }
 };
 

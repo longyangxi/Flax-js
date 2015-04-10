@@ -1,7 +1,7 @@
 /**
  * Created by long on 14-12-27.
  */
-flax.Image = cc.Sprite.extend({
+flax._image = {
     define:null,
     name:null,
     assetsFile:null,
@@ -10,9 +10,18 @@ flax.Image = cc.Sprite.extend({
     autoRecycle:false,
     _anchorBindings:null,
     __instanceId:null,
+    _imgFile:null,
+    _sx:1.0,
+    _sy:1.0,
+    _imgSize:null,
+    _destroyed:false,
 
     ctor:function(assetsFile, assetID){
-        cc.Sprite.prototype.ctor.call(this);
+        if(this instanceof cc.Sprite) cc.Sprite.prototype.ctor.call(this);
+        else {
+            cc.Scale9Sprite.prototype.ctor.call(this);
+            this.clsName = "flax.Scale9Image";
+        }
         if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!";
         this.__instanceId = ClassManager.getNewInstanceId();
         this._anchorBindings = [];
@@ -34,17 +43,18 @@ flax.Image = cc.Sprite.extend({
         this.define = flax.assetsManager.getDisplayDefine(this.assetsFile, this.assetID);
         //get the resource folder
         var dir = this.assetsFile.slice(0, this.assetsFile.lastIndexOf("/"));
-        this.initWithFile(dir + "/" + this.define.url);
+        this._imgFile = dir + "/" + this.define['url'];
+        if(this instanceof flax.Scale9Image) this.initWithFile(this._imgFile, cc.rect(), this.define['scale9']);
+        else this.initWithFile(this._imgFile);
         //set the anchor
-        var anchorX = this.define.anchorX;
-        var anchorY = this.define.anchorY;
+        var anchorX = this.define['anchorX'];
+        var anchorY = this.define['anchorY'];
         if(!isNaN(anchorX) && !isNaN(anchorY)) {
             this.setAnchorPoint(anchorX, anchorY);
         }
         this.onNewSource();
         if(this.__pool__id__ == null) this.__pool__id__ = this.assetID;
     },
-    _destroyed:false,
     destroy:function()
     {
         if(this._destroyed) return;
@@ -92,8 +102,8 @@ flax.Image = cc.Sprite.extend({
     },
     getAnchor:function(name)
     {
-        if(this.define.anchors){
-            var an = this.define.anchors[name];
+        if(this.define['anchors']){
+            var an = this.define['anchors'][name];
             if(an != null) {
                 return new flax.Anchor(an[0]);
             }
@@ -102,11 +112,11 @@ flax.Image = cc.Sprite.extend({
     },
     bindAnchor:function(anchorName, node, alwaysBind)
     {
-        if(!this.define.anchors) {
+        if(!this.define['anchors']) {
             cc.log(this.assetID+": there is no any anchor!");
             return false;
         }
-        if(this.define.anchors[anchorName] == null) {
+        if(this.define['anchors'][anchorName] == null) {
             cc.log(this.assetID+": there is no anchor named "+anchorName);
             return false;
         }
@@ -132,10 +142,78 @@ flax.Image = cc.Sprite.extend({
         node.zIndex = anchor.zIndex;
         node.rotation = anchor.rotation;
     },
+    setScale:function(sx, sy)
+    {
+        if(this instanceof flax.Scale9Image){
+            if(sy == null){
+                this._sx = sx.x;
+                this._sy = sx.y;
+            }else{
+                this._sx = sx;
+                this._sy = sy;
+            }
+            this._updateSize(sx, sy);
+        }else{
+            this._super(sx, sy);
+        }
+    },
+    setScaleX:function(sx)
+    {
+        if(this instanceof flax.Scale9Image){
+            this._sx = sx;
+            this._updateSize(sx, this._sy);
+        }else{
+            this._super(sx);
+        }
+    },
+    setScaleY:function(sy)
+    {
+        if(this instanceof flax.Scale9Image){
+            this._sy = sy;
+            this._updateSize(this._sx, sy);
+        }else{
+            this._super(sy);
+        }
+    },
+    _updateSize:function(sx, sy)
+    {
+        if(this._imgSize == null){
+            var temp = new cc.Sprite(this._imgFile);
+            this._imgSize = temp.getContentSize();
+        }
+        this.width = this._imgSize.width*sx;
+        this.height = this._imgSize.height*sy;
+    },
     onNewSource:function()
     {
+
     }
-});
+};
+
+flax.Image = cc.Sprite.extend(flax._image);
+flax.Scale9Image = cc.Scale9Sprite.extend(flax._image);
+
+var _p = flax.Image.prototype;
+cc.defineGetterSetter(_p, "scale", _p.getScale, _p.setScale);
+cc.defineGetterSetter(_p, "scaleX", _p.getScaleX, _p.setScaleX);
+cc.defineGetterSetter(_p, "scaleY", _p.getScaleY, _p.setScaleY);
+
+_p = flax.Scale9Image.prototype;
+cc.defineGetterSetter(_p, "scale", _p.getScale, _p.setScale);
+cc.defineGetterSetter(_p, "scaleX", _p.getScaleX, _p.setScaleX);
+cc.defineGetterSetter(_p, "scaleY", _p.getScaleY, _p.setScaleY);
 
 //Avoid to advanced compile mode
 window['flax']['Image'] = flax.Image;
+window['flax']['Scale9Image'] = flax.Scale9Image;
+
+flax.Image.create = function(assetsFile, assetID)
+{
+    var define = flax.assetsManager.getDisplayDefine(assetsFile, assetID);
+    if(define['scale9']) {
+        var img = new flax.Scale9Image(assetsFile, assetID);
+    }else{
+        img = new flax.Image(assetsFile, assetID);
+    }
+    return img;
+}

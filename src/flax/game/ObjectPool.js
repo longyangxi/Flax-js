@@ -62,7 +62,7 @@ flax.ObjectPool = cc.Class.extend({
     recycle:function(object)
     {
         if(!(object instanceof this._cls)){
-            cc.log("The object to recycle is not the same type with this pool: "+this._cls);
+            cc.log("The object to recycle is not the same type with this pool: "+this._clsName);
             return;
         }
         if(this._pool.length < this.maxCount){
