@@ -142,21 +142,22 @@ flax._image = {
         node.zIndex = anchor.zIndex;
         node.rotation = anchor.rotation;
     },
-    setScale:function(sx, sy)
-    {
-        if(this instanceof flax.Scale9Image){
-            if(sy == null){
-                this._sx = sx.x;
-                this._sy = sx.y;
-            }else{
-                this._sx = sx;
-                this._sy = sy;
-            }
-            this._updateSize(sx, sy);
-        }else{
-            this._super(sx, sy);
-        }
-    },
+    //todo, setScale has issue in JSB
+//    setScale:function(sx, sy)
+//    {
+//        if(this instanceof flax.Scale9Image){
+//            if(sy == null){
+//                this._sx = sx.x;
+//                this._sy = sx.y;
+//            }else{
+//                this._sx = sx;
+//                this._sy = sy;
+//            }
+//            this._updateSize(sx, sy);
+//        }else{
+//            this._super(sx, sy);
+//        }
+//    },
     setScaleX:function(sx)
     {
         if(this instanceof flax.Scale9Image){
@@ -194,12 +195,12 @@ flax.Image = cc.Sprite.extend(flax._image);
 flax.Scale9Image = cc.Scale9Sprite.extend(flax._image);
 
 var _p = flax.Image.prototype;
-cc.defineGetterSetter(_p, "scale", _p.getScale, _p.setScale);
+//cc.defineGetterSetter(_p, "scale", _p.getScale, _p.setScale);
 cc.defineGetterSetter(_p, "scaleX", _p.getScaleX, _p.setScaleX);
 cc.defineGetterSetter(_p, "scaleY", _p.getScaleY, _p.setScaleY);
 
 _p = flax.Scale9Image.prototype;
-cc.defineGetterSetter(_p, "scale", _p.getScale, _p.setScale);
+//cc.defineGetterSetter(_p, "scale", _p.getScale, _p.setScale);
 cc.defineGetterSetter(_p, "scaleX", _p.getScaleX, _p.setScaleX);
 cc.defineGetterSetter(_p, "scaleY", _p.getScaleY, _p.setScaleY);
 
