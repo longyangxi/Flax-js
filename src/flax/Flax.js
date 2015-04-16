@@ -114,6 +114,7 @@ flax.init = function(resolutionPolicy, initialUserData)
 
     var width = cc.game.config["width"];
     var height = cc.game.config["height"];
+    if(!width || !height) throw "Please set the game width and height in the project.json!"
     if(!cc.sys.isNative){
         var stg = document.getElementById(cc.game.config["id"]);
         stg.width = width = width || stg.width;
