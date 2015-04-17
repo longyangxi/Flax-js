@@ -44,7 +44,7 @@ flax._image = {
         //get the resource folder
         var dir = this.assetsFile.slice(0, this.assetsFile.lastIndexOf("/"));
         this._imgFile = dir + "/" + this.define['url'];
-        if(this instanceof flax.Scale9Image) this.initWithFile(this._imgFile, cc.rect(), this.define['scale9']);
+        if(flax.Scale9Image && this instanceof flax.Scale9Image) this.initWithFile(this._imgFile, cc.rect(), this.define['scale9']);
         else this.initWithFile(this._imgFile);
         //set the anchor
         var anchorX = this.define['anchorX'];
@@ -145,7 +145,7 @@ flax._image = {
     //todo, setScale has issue in JSB
 //    setScale:function(sx, sy)
 //    {
-//        if(this instanceof flax.Scale9Image){
+//        if(flax.Scale9Image && target instanceof flax.Scale9Image){
 //            if(sy == null){
 //                this._sx = sx.x;
 //                this._sy = sx.y;
@@ -160,7 +160,7 @@ flax._image = {
 //    },
     setScaleX:function(sx)
     {
-        if(this instanceof flax.Scale9Image){
+        if(flax.Scale9Image && this instanceof flax.Scale9Image){
             this._sx = sx;
             this._updateSize(sx, this._sy);
         }else{
@@ -169,7 +169,7 @@ flax._image = {
     },
     setScaleY:function(sy)
     {
-        if(this instanceof flax.Scale9Image){
+        if(flax.Scale9Image && this instanceof flax.Scale9Image){
             this._sy = sy;
             this._updateSize(this._sx, sy);
         }else{

@@ -827,6 +827,7 @@ flax._sprite = {
         this._loopSequence = false;
         this._sequenceIndex = 0;
         this.currentAnim = null;
+        this.currentFrame = 0;
         this.__isInputMask = false;
     },
     isMouseEnabled:function()

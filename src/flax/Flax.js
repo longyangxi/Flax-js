@@ -575,7 +575,7 @@ flax.ifCollide = function(sprite1, sprite2)
 };
 flax.isFlaxDisplay = function(target)
 {
-    return target instanceof flax.FlaxSprite || target instanceof flax.FlaxSpriteBatch || target instanceof flax.Image || target instanceof flax.Scale9Image;
+    return target instanceof flax.FlaxSprite || target instanceof flax.FlaxSpriteBatch || target instanceof flax.Image || (flax.Scale9Image && target instanceof flax.Scale9Image);
 };
 flax.isFlaxSprite = function(target)
 {
