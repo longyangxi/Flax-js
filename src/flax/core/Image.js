@@ -192,26 +192,30 @@ flax._image = {
 };
 
 flax.Image = cc.Sprite.extend(flax._image);
-flax.Scale9Image = cc.Scale9Sprite.extend(flax._image);
 
-var _p = flax.Image.prototype;
-//cc.defineGetterSetter(_p, "scale", _p.getScale, _p.setScale);
-cc.defineGetterSetter(_p, "scaleX", _p.getScaleX, _p.setScaleX);
-cc.defineGetterSetter(_p, "scaleY", _p.getScaleY, _p.setScaleY);
+if(cc.Scale9Sprite) {
+    flax.Scale9Image = cc.Scale9Sprite.extend(flax._image);
 
-_p = flax.Scale9Image.prototype;
+    var _p = flax.Image.prototype;
 //cc.defineGetterSetter(_p, "scale", _p.getScale, _p.setScale);
-cc.defineGetterSetter(_p, "scaleX", _p.getScaleX, _p.setScaleX);
-cc.defineGetterSetter(_p, "scaleY", _p.getScaleY, _p.setScaleY);
+    cc.defineGetterSetter(_p, "scaleX", _p.getScaleX, _p.setScaleX);
+    cc.defineGetterSetter(_p, "scaleY", _p.getScaleY, _p.setScaleY);
+
+    _p = flax.Scale9Image.prototype;
+//cc.defineGetterSetter(_p, "scale", _p.getScale, _p.setScale);
+    cc.defineGetterSetter(_p, "scaleX", _p.getScaleX, _p.setScaleX);
+    cc.defineGetterSetter(_p, "scaleY", _p.getScaleY, _p.setScaleY);
 
 //Avoid to advanced compile mode
-window['flax']['Image'] = flax.Image;
-window['flax']['Scale9Image'] = flax.Scale9Image;
+    window['flax']['Image'] = flax.Image;
+    window['flax']['Scale9Image'] = flax.Scale9Image;
+}
 
 flax.Image.create = function(assetsFile, assetID)
 {
     var define = flax.assetsManager.getDisplayDefine(assetsFile, assetID);
     if(define['scale9']) {
+        if(flax.Scale9Image == null) throw "Please add module of 'gui' into project.json if you want to use Scale9Image!";
         var img = new flax.Scale9Image(assetsFile, assetID);
     }else{
         img = new flax.Image(assetsFile, assetID);
