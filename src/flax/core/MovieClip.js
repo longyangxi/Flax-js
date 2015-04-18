@@ -339,13 +339,12 @@ flax._movieClip = {
     {
         this._super();
         this._autoPlayChildren = false;
-        for(var key in this._namedChildren) {
-            var child = this._namedChildren[key];
-            if(flax.isFlaxSprite(child)) {
-                child.gotoAndStop(0);
-            }
-        }
-
+//        for(var key in this._namedChildren) {
+//            var child = this._namedChildren[key];
+//            if(flax.isFlaxSprite(child)) {
+//                child.gotoAndStop(0);
+//            }
+//        }
     }
 };
 
