@@ -51,12 +51,6 @@ flax._sprite = {
     _definedMainCollider:false,
     _anchorBindings:null,
     _inited:false,
-//    tx:0,
-//    ty:0,
-//    autoUpdateTileWhenMove:true,
-//    tileValue:TileValue.WALKABLE,
-//    _tileMap:null,
-//    _tileInited:false,
     _mouseEnabled:true,
     _baseAssetID:null,
     _subAnims:null,
@@ -513,15 +507,16 @@ flax._sprite = {
     _playNext:function(){
         this._sequenceIndex++;
         if(this._sequenceIndex >= this._animSequence.length){
-            if(this.onSequenceOver.getNumListeners()){
-                this.onSequenceOver.dispatch(this);
-            }
             if(!this._loopSequence) {
                 if(!this.autoStopWhenOver) this.gotoAndPlay(this._animSequence[this._sequenceIndex - 1], true);
                 this._animSequence = [];
-                return;
+            }else{
+                this._sequenceIndex = 0;
             }
-            this._sequenceIndex = 0;
+            if(this.onSequenceOver.getNumListeners()){
+                this.onSequenceOver.dispatch(this);
+            }
+            if(this._sequenceIndex !=0 ) return;
         }
         var anims = this._animSequence;
         var anim = anims[this._sequenceIndex];
@@ -592,9 +587,6 @@ flax._sprite = {
     {
         this._super();
         this._destroyed = false;
-//        if(this._tileMap && !this._tileInited) {
-//            this.updateTile(true);
-//        }
         this._updateCollider();
         if(this._physicsBodyParam) {
             this.createPhysics(this._physicsBodyParam.type, this._physicsBodyParam.fixedRotation, this._physicsBodyParam.bullet);
@@ -627,10 +619,6 @@ flax._sprite = {
         this.onFrameLabel.removeAll();
         flax.inputManager.removeListener(this);
         if(this.__isInputMask) flax.inputManager.removeMask(this);
-
-        //remove tilemap
-//        if(this._tileMap) this._tileMap.removeObject(this);
-//        this._tileMap = null;
 
         //remove anchors
         var node = null;
@@ -666,30 +654,6 @@ flax._sprite = {
             }
         }
     },
-//    getTileMap:function()
-//    {
-//        return this._tileMap;
-//    },
-//    setTileMap:function(map)
-//    {
-//        if(map && !(map instanceof flax.TileMap)) map = flax.getTileMap(map);
-//        if(this._tileMap == map) return;
-//        if(this._tileMap) this._tileMap.removeObject(this);
-//        this._tileMap = map;
-//        if(this._tileMap == null) return;
-//
-//        if(this.parent) {
-//            this.updateTile(true);
-//            this._updateCollider();
-//        }
-//    },
-//    updateTile:function(forceUpdate){
-//        if(!this._tileMap) return;
-//        var pos = this.getPosition();
-//        if(this.parent) pos = this.parent.convertToWorldSpace(pos);
-//        var t = this._tileMap.getTileIndex(pos);
-//        this.setTile(t.x, t.y, forceUpdate);
-//    },
     _updateCollider:function(){
 //        if(this._mainCollider == null) {
 //            this._mainCollider = flax.getRect(this, true);
@@ -720,79 +684,6 @@ flax._sprite = {
     setPositionY:function (y) {
         this.setPosition(this.x, y);
     },
-    _moveSpeed:null,
-    _moveSpeedLen:0,
-    _targetPos:null,
-    _inMoving:false,
-    /**
-     * Move to a new position within duration time
-     * Note: If you use cc.moveTo in JSB, the setPosition function in js can not be called, use this instead of
-     * */
-    moveTo:function(pos, duration) {
-        var dis = cc.pSub(pos, this.getPosition());
-        if(cc.pLength(dis) < 1 || !duration || duration <= 0){
-            this.setPosition(pos);
-            return;
-        }
-        this._moveSpeed = cc.pMult(dis, 1.0 / duration);
-        this._moveSpeedLen = cc.pLength(this._moveSpeed);
-        this._targetPos = pos;
-        if(!this._inMoving){
-            this.schedule(this._doMove, flax.frameInterval, cc.REPEAT_FOREVER);
-        }
-    },
-    /**
-     * Move to a new position with speed
-     * Note: If you use cc.moveTo in JSB, the setPosition function in js can not be called, use this instead of
-     * */
-    moveToBySpeed:function(pos, speed) {
-        var dis = cc.pSub(pos, this.getPosition());
-        var len = cc.pLength(dis);
-        if(len < 1){
-            this.setPosition(pos);
-            return;
-        }
-        this._moveSpeed = cc.pMult(dis, speed / len);
-        this._moveSpeedLen = cc.pLength(this._moveSpeed);
-        this._targetPos = pos;
-        if(!this._inMoving){
-            this.schedule(this._doMove, flax.frameInterval, cc.REPEAT_FOREVER);
-        }
-    },
-    _doMove:function(delta)
-    {
-        var pos = this.getPosition();
-        var dis = cc.pDistance(pos, this._targetPos);
-        var deltaDis = this._moveSpeedLen*delta;
-        if(dis < deltaDis){
-            this.setPosition(this._targetPos);
-            this._targetPos = this._moveSpeed = null;
-            this._inMoving = false;
-            this.unschedule(this._doMove);
-        }else{
-            this.setPosition(cc.pAdd(pos, cc.pMult(this._moveSpeed, delta)));
-        }
-    },
-//    setTile:function(tx, ty, forceUpdate)
-//    {
-//        if (forceUpdate === true || tx != this.tx || ty != this.ty) {
-//            var oldTx = this.tx;
-//            var oldTy = this.ty;
-//            this.tx = tx;
-//            this.ty = ty;
-//            if(this._tileMap && this.parent)
-//            {
-//                this._tileMap.removeObject(this, oldTx, oldTy);
-//                if(this.parent) {
-//                    this._tileMap.addObject(this);
-//                    this._tileInited = true;
-//                }
-//            }
-//        }else {
-//            //update the zOrder sort in the tile
-////            this._tileMap.updateLayout(tx, ty);
-//        }
-//    },
     _destroyed:false,
     destroy:function()
     {
@@ -802,7 +693,6 @@ flax._sprite = {
             var pool = flax.ObjectPool.get(this.assetsFile, this.clsName, this.__pool__id__ || "");
             pool.recycle(this);
         }
-
         this.removeFromParent();
     },
     /**
@@ -812,22 +702,22 @@ flax._sprite = {
     {
         //when recycled, reset all the prarams as default
         this.autoRecycle = false;
-        this.setScale(1);
+        this.setScale(1.0);
         this.opacity = 255;
         this.rotation = 0;
         this.autoDestroyWhenOver = false;
         this.autoStopWhenOver = false;
         this.autoHideWhenOver = false;
         this.ignoreBodyRotation = false;
-        this.gotoAndStop(0);
+        //todo, the fetched target from the pool will still stop at current frame
+//        this.gotoAndStop(0);
 
-//        this._tileInited = false;
         this.setPosition(0, 0);
         this._animSequence.length = 0;
         this._loopSequence = false;
         this._sequenceIndex = 0;
         this.currentAnim = null;
-        this.currentFrame = 0;
+//        this.currentFrame = 0;
         this.__isInputMask = false;
     },
     isMouseEnabled:function()
@@ -856,6 +746,7 @@ flax.FlaxSprite.create = function(assetsFile, assetID)
     return tl;
 };
 flax.addModule(flax.FlaxSprite, flax.TileMapModule);
+flax.addModule(flax.FlaxSprite, flax.MoveModule);
 //Avoid to advanced compile mode
 window['flax']['FlaxSprite'] = flax.FlaxSprite;
 
@@ -868,6 +759,7 @@ flax.FlaxSpriteBatch.create = function(assetsFile, assetID)
     return tl;
 };
 flax.addModule(flax.FlaxSpriteBatch, flax.TileMapModule);
+flax.addModule(flax.FlaxSpriteBatch, flax.MoveModule);
 //Avoid to advanced compile mode
 window['flax']['FlaxSpriteBatch'] = flax.FlaxSpriteBatch;
 

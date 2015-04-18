@@ -175,20 +175,11 @@ flax.addModule = function(cls, module, override){
     }
     for(var k in module){
         if(k.indexOf("on") == 0){
-//        if(k === "onEnter" || k === "onExit"){
             var nk = "__" + k;
             var kn = nk + "Num";
             if(cls.prototype[kn] === undefined) cls.prototype[kn] = 0;
             else cls.prototype[kn]++;
             cls.prototype[nk + cls.prototype[kn]] = module[k];
-//        if(k === "onEnter"){
-//            if(cls.prototype.__onEnterNum === undefined) cls.prototype.__onEnterNum = 0;
-//            else cls.prototype.__onEnterNum++;
-//            cls.prototype["__onEnter"+cls.prototype.__onEnterNum] = module.onEnter;
-//        }else if(k === "onExit"){
-//            if(cls.prototype.__onExitNum === undefined) cls.prototype.__onExitNum = 0;
-//            else cls.prototype.__onExitNum++;
-//            cls.prototype["__onExit"+cls.prototype.__onExitNum] = module.onExit;
         }else if(override === true || !cls.prototype[k]){
             cls.prototype[k] = module[k];
         }

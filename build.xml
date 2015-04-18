@@ -23,6 +23,7 @@
                 <file name="src/flax/core/AssetsManager.js"/>
                 <file name="src/flax/core/Physics.js"/>
                 <file name="src/flax/module/TileMapModule.js"/>
+                <file name="src/flax/module/MoveModule.js"/>
                 <file name="src/flax/core/FlaxSprite.js"/>
                 <file name="src/flax/core/Animator.js"/>
                 <file name="src/flax/core/Image.js"/>
