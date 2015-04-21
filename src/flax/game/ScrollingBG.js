@@ -63,7 +63,7 @@ flax.ScrollingBG = cc.Node.extend({
                 if(this.parent) this.parent[this.name] = this;
                 this.setPosition(bgData.source.getPosition());
                 bg = flax.assetsManager.cloneDisplay(bgData.source);
-                bgData.source.destroy();
+                bgData.source.removeFromParent();
             }
             //If it's a image
             else if(flax.isImageFile(bgData.source)){

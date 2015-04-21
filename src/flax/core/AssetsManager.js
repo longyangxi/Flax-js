@@ -126,6 +126,10 @@ flax.AssetsManager = cc.Class.extend({
                 mcCls = flax.nameToObject(clsName);
                 if(mcCls == null){
                     clsName = isMC ? flax._assetsMcClassMap[clsName] : flax._assetsClassMap[clsName];
+                    //Handle the scale9Image
+                    if(clsName == "flax.Image" && define['scale9']){
+                        clsName = "flax.Scale9Image";
+                    }
                     mcCls = flax.nameToObject(clsName);
                 }
                 if(mcCls == null)
@@ -233,6 +237,7 @@ flax.AssetsManager = cc.Class.extend({
             dDefine = displays[dName];
             if(dDefine['anchors']) dDefine['anchors'] = this._parseFrames(dDefine['anchors']);
             if(dDefine['colliders']) dDefine['colliders'] = this._parseFrames(dDefine['colliders']);
+            if(dDefine['scale9']) dDefine['scale9'] = flax._strToRect(dDefine['scale9']);
             dDefine['fps'] = fps || cc.game.config["frameRate"];
             this.displayDefineCache[assetsFile + dName] = dDefine;
             this._parseSubAnims(assetsFile, dName);

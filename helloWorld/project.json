@@ -33,6 +33,7 @@
       "src/flax/core/AssetsManager.js",
       "src/flax/core/Physics.js",
       "src/flax/module/TileMapModule.js",
+      "src/flax/module/MoveModule.js",
       "src/flax/core/FlaxSprite.js",
       "src/flax/core/Animator.js",
       "src/flax/core/Image.js",

@@ -87,8 +87,8 @@ flax.FrameData = cc.Class.extend({
 
 flax._movieClip = {
     clsName:"flax.MovieClip",
-    autoPlayChildren:false,//auto play children when play
     sameFpsForChildren:true,//all children use the same fps with this
+    _autoPlayChildren:false,//auto play children when play
     _namedChildren:null,
     _theRect:null,
     _frameDatas:null,
@@ -121,7 +121,7 @@ flax._movieClip = {
                 child = flax.assetsManager.createDisplay(assetsFile, assetID, null, true);
                 child.name = childName;
                 this._namedChildren[childName] = child;
-                if(this.autoPlayChildren && flax.isFlaxSprite(child)) {
+                if(this._autoPlayChildren && flax.isFlaxSprite(child)) {
                     this.playing ? child.gotoAndPlay(0) : child.gotoAndStop(0);
                 }
                 this[childName] = child;
@@ -141,7 +141,7 @@ flax._movieClip = {
         }
         this._namedChildren = {};
         this.totalFrames = this.define['totalFrames'];
-        this._theRect = this._strToRect(this.define['rect']);
+        this._theRect = flax._strToRect(this.define['rect']);
         this.setContentSize(this._theRect.width, this._theRect.height);
         this._initFrameDatas();
     },
@@ -189,7 +189,7 @@ flax._movieClip = {
 
                     child.name = childName;
                     this._namedChildren[childName] = child;
-                    if(this.autoPlayChildren && flax.isFlaxSprite(child)) {
+                    if(this._autoPlayChildren && flax.isFlaxSprite(child)) {
                         this.playing ? child.gotoAndPlay(0) : child.gotoAndStop(0);
                     }
                     this[childName] = child;
@@ -198,9 +198,8 @@ flax._movieClip = {
                 frameData.setForChild(child);
                 //all children use the same fps with this
                 if(this.sameFpsForChildren) child.fps = this.fps;
-                child.visible = true;
-                child.autoPlayChildren = this.autoPlayChildren;
-                if(this.autoPlayChildren && flax.isFlaxSprite(child)) {
+                child.autoPlayChildren = this._autoPlayChildren;
+                if(this._autoPlayChildren && flax.isFlaxSprite(child)) {
                     this.playing ? child.play() : child.stop();
                 }
                 //To fix the zIndex bug when use the old version tool
@@ -222,7 +221,7 @@ flax._movieClip = {
     stop:function()
     {
         this._super();
-        if(this.autoPlayChildren) {
+        if(this._autoPlayChildren) {
             for(var key in this._namedChildren) {
                 var child = this._namedChildren[key];
                 if(flax.isFlaxSprite(child)) {
@@ -234,12 +233,28 @@ flax._movieClip = {
     play:function()
     {
         this._super();
-        if(this.autoPlayChildren) {
+        if(this._autoPlayChildren) {
             for(var key in this._namedChildren) {
                 var child = this._namedChildren[key];
                 if(flax.isFlaxSprite(child)) {
                     child.play();
                 }
+            }
+        }
+    },
+    getAutoPlayChildren:function()
+    {
+        return this._autoPlayChildren;
+    },
+    setAutoPlayChildren:function(v)
+    {
+        if(this._autoPlayChildren == v) return;
+        this._autoPlayChildren = v;
+        for(var key in this._namedChildren) {
+            var child = this._namedChildren[key];
+            if(flax.isMovieClip(child)) {
+                child.setAutoPlayChildren(v);
+                v ? child.play() : child.stop();
             }
         }
     },
@@ -266,6 +281,7 @@ flax._movieClip = {
                 if(child) return child;
             }
         }
+        return null;
     },
     getChildByAssetID:function(id)
     {
@@ -322,19 +338,13 @@ flax._movieClip = {
     onRecycle:function()
     {
         this._super();
-        this.autoPlayChildren = false;
-        for(var key in this._namedChildren) {
-            var child = this._namedChildren[key];
-            if(flax.isFlaxSprite(child)) {
-                child.gotoAndStop(0);
-            }
-        }
-
-    },
-    _strToRect:function(str)
-    {
-        var arr = str.split(",");
-        return cc.rect(parseFloat(arr[0]), parseFloat(arr[1]), parseFloat(arr[2]), parseFloat(arr[3]));
+        this._autoPlayChildren = false;
+//        for(var key in this._namedChildren) {
+//            var child = this._namedChildren[key];
+//            if(flax.isFlaxSprite(child)) {
+//                child.gotoAndStop(0);
+//            }
+//        }
     }
 };
 
@@ -346,6 +356,11 @@ flax.MovieClip.create = function(assetsFile, assetID)
     return mc;
 };
 
+var _p = flax.MovieClip.prototype;
+/** @expose */
+_p.autoPlayChildren;
+cc.defineGetterSetter(_p, "autoPlayChildren", _p.getAutoPlayChildren, _p.setAutoPlayChildren);
+
 //Avoid to advanced compile mode
 window['flax']['MovieClip'] = flax.MovieClip;
 
@@ -356,6 +371,11 @@ flax.MovieClipBatch.create = function(assetsFile, assetID)
     mc.clsName = "flax.MovieClipBatch";
     return mc;
 };
+
+_p = flax.MovieClipBatch.prototype;
+/** @expose */
+_p.autoPlayChildren;
+cc.defineGetterSetter(_p, "autoPlayChildren", _p.getAutoPlayChildren, _p.setAutoPlayChildren);
 
 //Avoid to advanced compile mode
 window['flax']['MovieClipBatch'] = flax.MovieClipBatch;

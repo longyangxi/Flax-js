@@ -23,7 +23,7 @@ var flax = flax || {};
 //Avoid to advanced compile mode
 window['flax'] = flax;
 
-flax.version = 1.9;
+flax.version = 2.0;
 flax.minToolVersion = 2.0;
 flax.language = null;
 flax.languageIndex = -1;
@@ -114,6 +114,7 @@ flax.init = function(resolutionPolicy, initialUserData)
 
     var width = cc.game.config["width"];
     var height = cc.game.config["height"];
+    if(!width || !height) throw "Please set the game width and height in the project.json!"
     if(!cc.sys.isNative){
         var stg = document.getElementById(cc.game.config["id"]);
         stg.width = width = width || stg.width;
@@ -174,20 +175,11 @@ flax.addModule = function(cls, module, override){
     }
     for(var k in module){
         if(k.indexOf("on") == 0){
-//        if(k === "onEnter" || k === "onExit"){
             var nk = "__" + k;
             var kn = nk + "Num";
             if(cls.prototype[kn] === undefined) cls.prototype[kn] = 0;
             else cls.prototype[kn]++;
             cls.prototype[nk + cls.prototype[kn]] = module[k];
-//        if(k === "onEnter"){
-//            if(cls.prototype.__onEnterNum === undefined) cls.prototype.__onEnterNum = 0;
-//            else cls.prototype.__onEnterNum++;
-//            cls.prototype["__onEnter"+cls.prototype.__onEnterNum] = module.onEnter;
-//        }else if(k === "onExit"){
-//            if(cls.prototype.__onExitNum === undefined) cls.prototype.__onExitNum = 0;
-//            else cls.prototype.__onExitNum++;
-//            cls.prototype["__onExit"+cls.prototype.__onExitNum] = module.onExit;
         }else if(override === true || !cls.prototype[k]){
             cls.prototype[k] = module[k];
         }
@@ -550,6 +542,12 @@ flax.getRect = function(sprite, global)
     return rect;
 };
 
+flax._strToRect = function(str)
+{
+    var arr = str.split(",");
+    return cc.rect(parseFloat(arr[0]), parseFloat(arr[1]), parseFloat(arr[2]), parseFloat(arr[3]));
+};
+
 flax.ifTouched = function(target, pos)
 {
     if(target == null) return false;
@@ -568,7 +566,7 @@ flax.ifCollide = function(sprite1, sprite2)
 };
 flax.isFlaxDisplay = function(target)
 {
-    return target instanceof flax.FlaxSprite || target instanceof flax.FlaxSpriteBatch || target instanceof flax.Image;
+    return target instanceof flax.FlaxSprite || target instanceof flax.FlaxSpriteBatch || target instanceof flax.Image || (flax.Scale9Image && target instanceof flax.Scale9Image);
 };
 flax.isFlaxSprite = function(target)
 {
