@@ -21,7 +21,10 @@ flax.InputManager = cc.Node.extend({
     _keyboardCallbacks:{},
     _keyboardListenerCreated:false,
 
-    ctor:function()
+    _listener:null,
+    _keyboardListener:null,
+
+    ctor:function ()
     {
         cc.Node.prototype.ctor.call(this);
         this._masks = [];
@@ -34,7 +37,7 @@ flax.InputManager = cc.Node.extend({
     {
         this._super();
         var self = this;
-        var listener = cc.EventListener.create({
+        this._listener = cc.EventListener.create({
             event: cc.EventListener.TOUCH_ONE_BY_ONE,
             swallowTouches: false,
             onTouchBegan:function(touch, event)
@@ -62,11 +65,31 @@ flax.InputManager = cc.Node.extend({
                 self._dispatchOne(self, touch, event, InputType.move);
             }
         });
-        cc.eventManager.addListener(listener, this);
+        cc.eventManager.addListener(this._listener, this);
     },
-    onExit:function(){
+    onExit:function () {
+        if (this._listener) {
+            cc.eventManager.removeListener(this._listener);
+            this._listener = null;
+        }
+
+        if (this._keyboardListener) {
+            cc.eventManager.removeListener(this._keyboardListener);
+            this._keyboardListener = null;
+        }
+
+        for (var i = 0; i < this._masks.length; i++) {
+            var mask = this._masks[i];
+            mask.__isInputMask = false;
+        }
+
+        this._masks = [];
+        this.inTouching = false;
+        this.removeAllTouchListeners();
+        this.removeAllKeyboardListeners();
+        this._keyboardListenerCreated = false;
+
         this._super();
-        cc.eventManager.removeAllListeners();
     },
     /**
      * Add a Sprite node which will permitted the lower sprite to get touch event callback
@@ -149,7 +172,8 @@ flax.InputManager = cc.Node.extend({
                 if(arr[i].func == func)  return;
             }
             arr.push({func:func, context:context || target});
-            if(!this._keyboardListenerCreated) this._createKeyboardListener();
+            if (!this._keyboardListenerCreated)
+                this._keyboardListener = this._createKeyboardListener();
             return;
         }
 
@@ -160,7 +184,7 @@ flax.InputManager = cc.Node.extend({
             arr = [];
             this._callbacks[target.__instanceId] = arr;
             if(target != this) {
-                this._createListener(target, true);
+                var listener = this._createListener(target, true);
             }
         }
         //Make sure no duplicated listener
@@ -169,6 +193,7 @@ flax.InputManager = cc.Node.extend({
             if(arr[i].type == type && arr[i].func == func)  return;
         }
         var callback = {type:type, func:func, context:context || target};
+        if (listener) callback.listener = listener;
         arr.push(callback);
     },
     removeListener:function(target, func, type)
@@ -213,6 +238,12 @@ flax.InputManager = cc.Node.extend({
     },
     removeAllTouchListeners:function()
     {
+        for (var key in this._callbacks) {
+            var callback = this._callbacks[key];
+            if (callback.listener) {
+                cc.eventManager.removeListener(callback.listener);
+            }
+        }
         this._callbacks = {};
     },
     removeAllKeyboardListeners:function()
@@ -282,11 +313,12 @@ flax.InputManager = cc.Node.extend({
             }
         });
         cc.eventManager.addListener(listener, target);
+        return listener;
     },
     _createKeyboardListener:function()
     {
         var self = this;
-        cc.eventManager.addListener({
+        var listener = cc.EventListener.create({
             event: cc.EventListener.KEYBOARD,
             onKeyPressed:  function(keyCode, event){
                 self._dispatchKeyboardEvent(keyCode, InputType.keyPress);
@@ -294,8 +326,11 @@ flax.InputManager = cc.Node.extend({
             onKeyReleased: function(keyCode, event){
                 self._dispatchKeyboardEvent(keyCode, InputType.keyUp);
             }
-        }, this);
+        });
+
+        cc.eventManager.addListener(listener, this);
         this._keyboardListenerCreated = true;
+        return listener;
     },
     _ifNotMasked:function(target, pos)
     {
