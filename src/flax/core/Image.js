@@ -221,4 +221,4 @@ flax.Image.create = function(assetsFile, assetID)
         img = new flax.Image(assetsFile, assetID);
     }
     return img;
-}
+};

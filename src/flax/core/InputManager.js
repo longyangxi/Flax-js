@@ -65,11 +65,13 @@ flax.InputManager = cc.Node.extend({
                 self._dispatchOne(self, touch, event, InputType.move);
             }
         });
+        this._listener.retain();
         cc.eventManager.addListener(this._listener, this);
     },
     onExit:function () {
         if (this._listener) {
             cc.eventManager.removeListener(this._listener);
+            this._listener.release();
             this._listener = null;
         }
 
