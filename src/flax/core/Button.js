@@ -67,6 +67,11 @@ flax._buttonDefine = {
         if(this.isSelected() && !oldSelected && this.group){
             this.group.updateButtons(this);
         }
+        this.handleStateChange();
+    },
+    handleStateChange:function()
+    {
+        //to be override
     },
     getState:function()
     {

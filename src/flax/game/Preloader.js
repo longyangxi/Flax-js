@@ -1,35 +1,6 @@
-/****************************************************************************
- Copyright (c) 2010-2012 cocos2d-x.org
- Copyright (c) 2008-2010 Ricardo Quesada
- Copyright (c) 2011      Zynga Inc.
 
- http://www.cocos2d-x.org
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
- ****************************************************************************/
-
-flax.Preloader = cc.Scene.extend({
-    _interval : null,
-    _length : 0,
-    _count : 0,
+flax._preloader = {
     _label : null,
-    _className:"flax.Preloader",
     _logo:null,
     _inited:false,
     init : function(){
@@ -39,6 +10,10 @@ flax.Preloader = cc.Scene.extend({
         var self = this;
         var winSize = cc.director.getWinSize();
 
+        if(this instanceof cc.Layer){
+            var back = new cc.LayerColor(cc.color(0, 0, 0, 100));
+            this.addChild(back, 0);
+        }
         //logo
         var centerPos = cc.p(winSize.width / 2, winSize.height / 2);
 
@@ -60,7 +35,7 @@ flax.Preloader = cc.Scene.extend({
         return true;
     },
     createLabel:function(pos){
-        var label = this._label = cc.LabelTTF.create("Loading...", "Arial", 16);
+        var label = this._label = new cc.LabelTTF("Loading...", "Arial", 16);
         label.enableStroke(cc.color(51, 51, 51), 2);
         label.setColor(cc.color(255, 255, 255));
         label.setPosition(pos);
@@ -111,8 +86,8 @@ flax.Preloader = cc.Scene.extend({
         cc.loader.load(res,
             function (result, count, loadedCount) {
                 if(self._label == null) return;
-                var percent = (loadedCount / count * 100) | 0;
-                percent = Math.min(percent, 100);
+//                var percent = (loadedCount / count * 100) | 0;
+//                percent = Math.min(percent, 100);
 //                self._label.setString("Loading... " + percent + "%");
                 self._label.setString("Loading: " + (loadedCount + 1) + "/" + count);
             }, function () {
@@ -120,7 +95,10 @@ flax.Preloader = cc.Scene.extend({
                     self.cb();
             });
     }
-});
+};
 
+flax.Preloader = cc.Scene.extend(flax._preloader);
+flax.ResPreloader = cc.Layer.extend(flax._preloader);
 //Avoid to advanced compile mode
 window['flax']['Preloader'] = flax.Preloader;
+window['flax']['ResPreloader'] = flax.ResPreloader;

@@ -353,6 +353,11 @@ flax.InputManager = cc.Node.extend({
         return true;
     },
     _dispatch:function(target, touch, event, type){
+        //If the target is button, then don't handle its parent's event
+        if(target.__isButton) {
+            this._dispatchOne(target, touch, event, type);
+            return;
+        }
         var p = target;
         //if the child triggered some event, then its parent should also be informed
         var ps = [];

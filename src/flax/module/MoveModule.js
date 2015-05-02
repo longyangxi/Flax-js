@@ -26,6 +26,7 @@ flax.MoveModule = {
         var dis = cc.pSub(pos, this.getPosition());
         if(cc.pLength(dis) < 1 || !duration || duration <= 0){
             this.setPosition(pos);
+            if(this._callBack) this.scheduleOnce(this._doCallback, 0.01);
             return;
         }
         this._moveSpeed = cc.pMult(dis, 1.0 / duration);
@@ -46,6 +47,7 @@ flax.MoveModule = {
         var len = cc.pLength(dis);
         if(len < 1){
             this.setPosition(pos);
+            if(this._callBack) this.scheduleOnce(this._doCallback, 0.01);
             return;
         }
         this._moveSpeed = cc.pMult(dis, speed / len);
@@ -66,11 +68,15 @@ flax.MoveModule = {
             this._inMoving = false;
             this.unschedule(this._doMove);
             if(this._callBack){
-                this._callBack.apply(this._callContext || this);
-                this._callBack = null;
+                this._doCallback();
             }
         }else{
             this.setPosition(cc.pAdd(pos, cc.pMult(this._moveSpeed, delta)));
         }
+    },
+    _doCallback:function()
+    {
+        this._callBack.apply(this._callContext || this);
+        this._callBack = null;
     }
 }

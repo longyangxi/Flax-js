@@ -372,11 +372,13 @@ flax._sprite = {
         this.playSequence(anims);
         this._loopSequence = true;
     },
-    setSubAnim:function(anim, autoPlay)
+    _setSubAnim:function(anim, autoPlay)
     {
         if(!anim || anim.length == 0) return false;
         if(this._subAnims == null || this._subAnims.indexOf(anim) == -1){
-            if(!this.__isButton) cc.log("There is no animation named: " + anim);
+            if(!this.__isButton) {
+                cc.log("There is no animation named: " + anim);
+            }
             return false;
         }
         this.setSource(this.assetsFile, this._baseAssetID+"$"+anim);
@@ -394,7 +396,7 @@ flax._sprite = {
             if(this.playing && this.currentAnim == frameOrLabel && forcePlay !== true) return true;
             var lbl = this.getLabels(frameOrLabel);
             if(lbl == null){
-                var has = this.setSubAnim(frameOrLabel, true);
+                var has = this._setSubAnim(frameOrLabel, true);
                 if(!has) {
                     cc.log("There is no animation named: " + frameOrLabel);
                     this.play();
@@ -432,8 +434,10 @@ flax._sprite = {
         if(isNaN(frameOrLabel)) {
             var lbl = this.getLabels(frameOrLabel);
             if(lbl == null){
-                var has = this.setSubAnim(frameOrLabel, false);
-                if(!has && !this.__isButton) cc.log("There is no animation named: " + frameOrLabel);
+                var has = this._setSubAnim(frameOrLabel, false);
+                if(!has && !this.__isButton) {
+                    cc.log("There is no animation named: " + frameOrLabel);
+                }
                 return has;
             }
             frameOrLabel = lbl.start;
@@ -613,12 +617,17 @@ flax._sprite = {
     {
         this._super();
 
+        this._destroyed = true;
+
         this.onAnimationOver.removeAll();
         this.onSequenceOver.removeAll();
         this.onFrameChanged.removeAll();
         this.onFrameLabel.removeAll();
-        flax.inputManager.removeListener(this);
-        if(this.__isInputMask) flax.inputManager.removeMask(this);
+
+        if(flax.inputManager){
+            flax.inputManager.removeListener(this);
+            if(this.__isInputMask) flax.inputManager.removeMask(this);
+        }
 
         //remove anchors
         var node = null;
@@ -709,15 +718,13 @@ flax._sprite = {
         this.autoStopWhenOver = false;
         this.autoHideWhenOver = false;
         this.ignoreBodyRotation = false;
-        //todo, the fetched target from the pool will still stop at current frame
-//        this.gotoAndStop(0);
+        if(RESET_FRAME_ON_RECYCLE) this.gotoAndStop(0);
 
         this.setPosition(0, 0);
         this._animSequence.length = 0;
         this._loopSequence = false;
         this._sequenceIndex = 0;
         this.currentAnim = null;
-//        this.currentFrame = 0;
         this.__isInputMask = false;
     },
     isMouseEnabled:function()

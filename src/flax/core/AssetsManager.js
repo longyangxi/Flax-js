@@ -47,6 +47,7 @@ flax.AssetsManager = cc.Class.extend({
     mcsCache:null,
     subAnimsCache:null,
     fontsCache:null,
+    toolsVersion:null,
 
    init:function()
    {
@@ -56,6 +57,7 @@ flax.AssetsManager = cc.Class.extend({
        this.mcsCache = {};
        this.subAnimsCache = {};
        this.fontsCache = {};
+       this.toolsVersion = {};
    },
    getAssetType:function(assetsFile, assetID)
    {
@@ -86,7 +88,7 @@ flax.AssetsManager = cc.Class.extend({
     createDisplay:function(assetsFile, assetID, params, fromPool, clsName)
     {
         if(assetsFile == null || assetID == null){
-            throw  "Pleas give me assetsFile and assetID!";
+            throw  "Please give me assetsFile and assetID!";
         }
         if(clsName == null && params) clsName = params["class"];
         if((params && typeof params === "string") || (clsName && typeof clsName !== "string")) {
@@ -129,6 +131,7 @@ flax.AssetsManager = cc.Class.extend({
                     //Handle the scale9Image
                     if(clsName == "flax.Image" && define['scale9']){
                         clsName = "flax.Scale9Image";
+                        if(flax.Scale9Image == null) throw "Please add module of 'gui' into project.json if you want to use Scale9Image!";
                     }
                     mcCls = flax.nameToObject(clsName);
                 }
@@ -176,6 +179,28 @@ flax.AssetsManager = cc.Class.extend({
         obj.zIndex = target.zIndex;
         return obj;
     },
+    removeAssets:function(assetsFile)
+    {
+        delete this.framesCache[assetsFile];
+        delete this.displaysCache[assetsFile];
+        delete this.displayDefineCache[assetsFile];
+        delete this.mcsCache[assetsFile];
+        delete this.subAnimsCache[assetsFile];
+        delete this.fontsCache[assetsFile];
+
+        var assetsFile1 = assetsFile;
+        var ext = cc.path.extname(assetsFile);
+        if(ext == ".flax") assetsFile1 = cc.path.changeBasename(assetsFile1, ".plist");
+
+        cc.spriteFrameCache.removeSpriteFramesFromFile(assetsFile1);
+        delete cc.loader.cache[assetsFile1];
+    },
+    removeAllAssets:function()
+    {
+        for(var file in this.framesCache){
+            this.removeAssets(file);
+        }
+    },
     addAssets:function(assetsFile)
     {
         if(typeof this.framesCache[assetsFile] !== "undefined") return false;
@@ -188,7 +213,9 @@ flax.AssetsManager = cc.Class.extend({
             throw "Make sure you have pre-loaded the resource: "+assetsFile;
         }
         //the min tool version this API needed
-        if(!dict["metadata"]["flaxVersion"] || dict["metadata"]["flaxVersion"] < flax.minToolVersion){
+        var toolVersion = dict["metadata"]["flaxVersion"];
+        this.toolsVersion[assetsFile] = toolVersion || 0;
+        if(!toolVersion || toolVersion < flax.minToolVersion){
             throw "The resource: " + assetsFile + " was exported with the old version of Flax, please do it with current version!";
         }
         //get the fps from flash
@@ -361,6 +388,11 @@ flax.AssetsManager = cc.Class.extend({
         this.addAssets(assetsFile);
         var key = assetsFile + fontName;
         return this.fontsCache[key];
+    },
+    getToolVersion:function(assetsFile)
+    {
+        var v = this.toolsVersion[assetsFile];
+        return v || 0;
     }
 });
 

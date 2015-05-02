@@ -8,6 +8,8 @@ IMAGE_TYPES = [".png", ".jpg", ".bmp",".jpeg",".gif"];
 SOUND_TYPES = [".mp3", ".ogg", ".wav", ".mp4", ".m4a"];
 DEFAULT_SOUNDS_FOLDER = "res/music/";
 H_ALIGHS = ["left","center","right"];
+//Reset animation frame to 0 when recycle
+RESET_FRAME_ON_RECYCLE = true;
 
 var TileValue = TileValue || {
     WALKABLE:0,
@@ -23,7 +25,7 @@ var flax = flax || {};
 //Avoid to advanced compile mode
 window['flax'] = flax;
 
-flax.version = 2.0;
+flax.version = 2.1;
 flax.minToolVersion = 2.0;
 flax.language = null;
 flax.languageIndex = -1;
@@ -163,6 +165,35 @@ flax._getLanguagePath = function(lan){
     return  "res/locale/"+(lan || flax.language)+".json";
 };
 /**
+ * Create a display from a assetsFile with assetID
+ * @param {String} assetsFile the assetsFile
+ * @param {String} assetID the asset id in the assetsFile
+ * @param {Object} params params could be set to the target with attr function
+ *                 the special param is:
+ *                 parent, if set parent, the display will be auto added to it
+ *                 class, if set class, the display will be created with the class
+ *                 batch, if set true and it is MovieClip then create flax.MovieClipBatch instance
+ * @param {Boolean} fromPool if the display should fetch from the pool
+ * @param {String} clsName the class name to create the display, if null, it'll be automatically set according by the assets file
+ * Deprecated: createDisplay:function(assetsFile, assetID, clsName, fromPool, parent, params)
+ * */
+flax.createDisplay = function(assetsFile, assetID, params, fromPool, clsName)
+{
+    return flax.assetsManager.createDisplay(assetsFile, assetID, params, fromPool, clsName);
+}
+/**
+ * @param{cc.Node} target the target want to receive the touch event, if target is null, then global event will be triggered
+ *                       for keyboard event, the target will be the context if the real context is null
+ * @param{function} func function to call back, for touch event: func(touch, event),{event.currentTarget, event.target}
+ *                       for keyboard event: func(key){};
+ * @param{string} type event type as InputType said
+ * @param{cc.Node} context the callback context of "THIS", if null, use target as the context
+ * */
+flax.addListener = function(target, func, type, context)
+{
+    flax.inputManager.addListener(target, func, type, context);
+}
+/**
  * Add a function module to some class
  * The function in the class will override the same name function in the module
  * But if override === true, the function in the module will override the same name function in the class,
@@ -300,12 +331,13 @@ flax.refreshScene = function()
     }
 };
 flax._soundResources = {};
-flax.preload = function(res, callBack)
+flax.preload = function(res, callBack, dynamic, context)
 {
     if(res == null || res.length == 0) {
-        callBack();
+        callBack.apply(context);
         return;
     }
+    if(typeof res === "string") res = [res];
     var needLoad = false;
     var res1 = [];
     var i = res.length;
@@ -331,9 +363,15 @@ flax.preload = function(res, callBack)
         }
     }
     if(needLoad){
-        var loaderScene =  flax.nameToObject(cc.game.config["preloader"] || "flax.Preloader");
-        loaderScene = new loaderScene();
-        loaderScene.initWithResources(res1, function(){
+        var loader =  flax.nameToObject(cc.game.config["preloader"] || "flax.Preloader");
+        //If dynamic load resources staying on current scene
+        if(dynamic === true) loader = flax.ResPreloader;
+        loader = new loader();
+        loader.initWithResources(res1, function(){
+            if(dynamic === true) {
+                flax.inputManager.removeMask(loader);
+                loader.removeFromParent();
+            }
             //replace the resource's key with no version string when not in JSB
             if(!cc.sys.isNative) {
                 var i = res1.length;
@@ -350,13 +388,18 @@ flax.preload = function(res, callBack)
                     }
                 }
             }
-            callBack();
+            callBack.apply(context);
         });
 
-        cc.director.runScene(loaderScene);
-        return loaderScene;
+        if(dynamic === true) {
+            flax.currentScene.addChild(loader, 999999);
+            flax.inputManager.addMask(loader);
+        }else{
+            cc.director.runScene(loader);
+        }
+        return loader;
     }else{
-        callBack();
+        callBack.apply(context);
     }
 };
 

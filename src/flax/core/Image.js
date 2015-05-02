@@ -46,6 +46,7 @@ flax._image = {
         this._imgFile = dir + "/" + this.define['url'];
         if(flax.Scale9Image && this instanceof flax.Scale9Image) this.initWithFile(this._imgFile, cc.rect(), this.define['scale9']);
         else this.initWithFile(this._imgFile);
+        this.addEventListener("load", this.onImgLoaded, this);
         //set the anchor
         var anchorX = this.define['anchorX'];
         var anchorY = this.define['anchorY'];
@@ -54,6 +55,12 @@ flax._image = {
         }
         this.onNewSource();
         if(this.__pool__id__ == null) this.__pool__id__ = this.assetID;
+    },
+    onImgLoaded:function()
+    {
+        var temp = new cc.Sprite(this._imgFile);
+        this._imgSize = temp.getContentSize();
+        this._updateSize(this._sx, this._sy);
     },
     destroy:function()
     {
@@ -178,10 +185,7 @@ flax._image = {
     },
     _updateSize:function(sx, sy)
     {
-        if(this._imgSize == null){
-            var temp = new cc.Sprite(this._imgFile);
-            this._imgSize = temp.getContentSize();
-        }
+        if(this._imgSize == null) return;
         this.width = this._imgSize.width*sx;
         this.height = this._imgSize.height*sy;
     },
