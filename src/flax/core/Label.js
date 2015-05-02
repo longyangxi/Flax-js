@@ -95,6 +95,7 @@ flax.Label = cc.Sprite.extend({
 
         this.mlWidth = 0;
         this.mlHeight = 0;
+        var i;
         for(i = 0; i < this._str.length ; i++)
         {
             var ch = this._str[i];
@@ -123,7 +124,7 @@ flax.Label = cc.Sprite.extend({
                 continue;
             }
 
-            sprite = cc.Sprite.create(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
+            var sprite = cc.Sprite.create(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
             sprite.anchorX = this._fontDefine.anchorX;
             sprite.anchorY = this._fontDefine.anchorY;
             // calculate the position of the sprite;
@@ -153,7 +154,7 @@ flax.Label = cc.Sprite.extend({
             var deltaX = (this.params.textWidth - this.mlWidth)/2;
             i = this._charCanvas.childrenCount;
             while(i--){
-                charChild = this._charCanvas.children[i];
+                var charChild = this._charCanvas.children[i];
                 if(H_ALIGHS[this.params.textAlign] == "center") charChild.x += deltaX;
                 else if(H_ALIGHS[this.params.textAlign] == "right") charChild.x += 2*deltaX;
                 charChild.y -= deltaY;
