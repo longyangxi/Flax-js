@@ -19,7 +19,8 @@ flax.InputManager = cc.Node.extend({
     _masks:[],
     _callbacks:{},
     _keyboardCallbacks:{},
-    _keyboardListenerCreated:false,
+    _keyboardListener:null,
+    _touchListeners:null,
 
     ctor:function()
     {
@@ -28,7 +29,8 @@ flax.InputManager = cc.Node.extend({
         this.inTouching = false;
         this._callbacks = {};
         this._keyboardCallbacks = {};
-        this._keyboardListenerCreated = false;
+        this._keyboardListener = null;
+        this._touchListeners = {};
     },
     onEnter:function()
     {
@@ -66,7 +68,10 @@ flax.InputManager = cc.Node.extend({
     },
     onExit:function(){
         this._super();
-        cc.eventManager.removeAllListeners();
+        this.removeAllTouchListeners();
+        this.removeAllKeyboardListeners();
+        this.removeAllMasks();
+//        cc.eventManager.removeAllListeners();
     },
     /**
      * Add a Sprite node which will permitted the lower sprite to get touch event callback
@@ -82,6 +87,14 @@ flax.InputManager = cc.Node.extend({
             this._masks.splice(i, 1);
             mask.__isInputMask = false;
         }
+    },
+    removeAllMasks:function(){
+        var i = this._masks.length;
+        while(i--){
+            this._masks.splice(i, 1);
+            this._masks[i].__isInputMask = false;
+        }
+        this._masks.length = 0;
     },
     _compareRealZIndex:function(node0, node1){
         if(!node0.parent || !node1.parent) return 1;
@@ -149,7 +162,9 @@ flax.InputManager = cc.Node.extend({
                 if(arr[i].func == func)  return;
             }
             arr.push({func:func, context:context || target});
-            if(!this._keyboardListenerCreated) this._createKeyboardListener();
+            if(!this._keyboardListener) {
+                this._createKeyboardListener();
+            }
             return;
         }
 
@@ -160,7 +175,8 @@ flax.InputManager = cc.Node.extend({
             arr = [];
             this._callbacks[target.__instanceId] = arr;
             if(target != this) {
-                this._createListener(target, true);
+                var listener =  this._createListener(target, true);
+                this._touchListeners[target.__instanceId] = listener;
             }
         }
         //Make sure no duplicated listener
@@ -189,6 +205,11 @@ flax.InputManager = cc.Node.extend({
                 }
                 if(calls.length == 0 || (!func && !type)){
                     delete this._callbacks[target.__instanceId];
+                    var listener = this._touchListeners[target.__instanceId];
+                    if(listener){
+                        cc.eventManager.removeListener(listener);
+                        delete this._touchListeners[target.__instanceId];
+                    }
                 }
 //            },0.01);
         }
@@ -214,10 +235,20 @@ flax.InputManager = cc.Node.extend({
     removeAllTouchListeners:function()
     {
         this._callbacks = {};
+        for(var id in this._touchListeners){
+            var listener = this._touchListeners[id];
+            cc.eventManager.removeListener(listener);
+            delete this._touchListeners[id];
+
+        }
     },
     removeAllKeyboardListeners:function()
     {
         this._keyboardCallbacks = {};
+        if(this._keyboardListener) {
+            cc.eventManager.removeListener(this._keyboardListener);
+            this._keyboardListener = null;
+        }
     },
     handleTouchBegan:function(touch, event)
     {
@@ -282,11 +313,12 @@ flax.InputManager = cc.Node.extend({
             }
         });
         cc.eventManager.addListener(listener, target);
+        return listener;
     },
     _createKeyboardListener:function()
     {
         var self = this;
-        cc.eventManager.addListener({
+        this._keyboardListener = {
             event: cc.EventListener.KEYBOARD,
             onKeyPressed:  function(keyCode, event){
                 self._dispatchKeyboardEvent(keyCode, InputType.keyPress);
@@ -294,8 +326,8 @@ flax.InputManager = cc.Node.extend({
             onKeyReleased: function(keyCode, event){
                 self._dispatchKeyboardEvent(keyCode, InputType.keyUp);
             }
-        }, this);
-        this._keyboardListenerCreated = true;
+        };
+        cc.eventManager.addListener(this._keyboardListener, this);
     },
     _ifNotMasked:function(target, pos)
     {

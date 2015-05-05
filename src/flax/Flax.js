@@ -25,7 +25,7 @@ var flax = flax || {};
 //Avoid to advanced compile mode
 window['flax'] = flax;
 
-flax.version = 2.1;
+flax.version = 2.11;
 flax.minToolVersion = 2.0;
 flax.language = null;
 flax.languageIndex = -1;

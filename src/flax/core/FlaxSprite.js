@@ -372,6 +372,10 @@ flax._sprite = {
         this.playSequence(anims);
         this._loopSequence = true;
     },
+    stopSequence:function(){
+        this._loopSequence = false;
+        this._animSequence.length = 0;
+    },
     _setSubAnim:function(anim, autoPlay)
     {
         if(!anim || anim.length == 0) return false;

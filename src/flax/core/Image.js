@@ -46,7 +46,8 @@ flax._image = {
         this._imgFile = dir + "/" + this.define['url'];
         if(flax.Scale9Image && this instanceof flax.Scale9Image) this.initWithFile(this._imgFile, cc.rect(), this.define['scale9']);
         else this.initWithFile(this._imgFile);
-        this.addEventListener("load", this.onImgLoaded, this);
+        if(!cc.sys.isNative) this.addEventListener("load", this.onImgLoaded, this);
+        else this.onImgLoaded();
         //set the anchor
         var anchorX = this.define['anchorX'];
         var anchorY = this.define['anchorY'];
@@ -171,7 +172,7 @@ flax._image = {
             this._sx = sx;
             this._updateSize(sx, this._sy);
         }else{
-            this._super(sx);
+            cc.Node.prototype.setScaleX.call(this, sx);
         }
     },
     setScaleY:function(sy)
@@ -180,7 +181,7 @@ flax._image = {
             this._sy = sy;
             this._updateSize(this._sx, sy);
         }else{
-            this._super(sy);
+            cc.Node.prototype.setScaleX.call(this, sy);
         }
     },
     _updateSize:function(sx, sy)
