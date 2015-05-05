@@ -58,6 +58,7 @@ flax.ScrollingBG = cc.Node.extend({
         }else if(bgData.source){
             //if it's a FlaxSprite
             if(flax.isFlaxDisplay(bgData.source)){
+                //todo, JSB Invalid native object error!
                 if(bgData.source.parent) bgData.source.parent.addChild(this, bgData.source.zIndex);
                 this.name = bgData.source.name;
                 if(this.parent) this.parent[this.name] = this;

@@ -207,7 +207,8 @@ flax.InputManager = cc.Node.extend({
                     delete this._callbacks[target.__instanceId];
                     var listener = this._touchListeners[target.__instanceId];
                     if(listener){
-                        cc.eventManager.removeListener(listener);
+                        //todo,3.5 cause Invalid native object error!
+//                        cc.eventManager.removeListener(listener);
                         delete this._touchListeners[target.__instanceId];
                     }
                 }
@@ -246,7 +247,8 @@ flax.InputManager = cc.Node.extend({
     {
         this._keyboardCallbacks = {};
         if(this._keyboardListener) {
-            cc.eventManager.removeListener(this._keyboardListener);
+            //todo,3.5 cause Invalid native object error!
+//            cc.eventManager.removeListener(this._keyboardListener);
             this._keyboardListener = null;
         }
     },
