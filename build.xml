@@ -23,6 +23,7 @@
                 <file name="src/flax/core/AssetsManager.js"/>
                 <file name="src/flax/core/Physics.js"/>
                 <file name="src/flax/module/TileMapModule.js"/>
+                <file name="src/flax/module/ScreenLayoutModule.js"/>
                 <file name="src/flax/module/MoveModule.js"/>
                 <file name="src/flax/core/FlaxSprite.js"/>
                 <file name="src/flax/core/Animator.js"/>
@@ -40,6 +41,7 @@
             <sources dir="${basedir}">
                 <file name="src/flax/module/HealthModule.js"/>
                 <file name="src/flax/module/EnemyWaveModule.js"/>
+                <file name="src/flax/game/SoundButton.js"/>
                 <file name="src/flax/game/Gun.js"/>
                 <file name="src/flax/game/Gunner.js"/>
                 <file name="src/flax/game/ScrollingBG.js"/>

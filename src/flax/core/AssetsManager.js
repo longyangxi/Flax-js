@@ -10,7 +10,8 @@ flax._assetsClassMap =
     "jpg":"flax.Image",
     "png":"flax.Image",
     "scrollPane":"flax.ScrollPane",
-    "gun":"flax.Gunner"
+    "gun":"flax.Gunner",
+    "soundBtn":"flax.SimpleSoundButton"
 };
 
 flax._assetsMcClassMap =
@@ -18,7 +19,8 @@ flax._assetsMcClassMap =
     "button":"flax.Button",
     "scrollPane":"flax.MCScrollPane",
     "gun":"flax.MCGunner",
-    "gun1":"flax.MCGunner"
+    "gun1":"flax.MCGunner",
+    "soundBtn":"flax.SoundButton"
 };
 /**
  * Asset type in flax

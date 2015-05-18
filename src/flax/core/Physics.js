@@ -182,25 +182,28 @@ flax.Collider = cc.Class.extend({
         var dy=distY-rect.height/2;
         return (dx*dx+dy*dy<=(circle.width/2*circle.width/2));
     },
-    getRect:function(global){
-        global = (global !== false);
-        if(!global) return this._localRect;
+    getRect:function(coordinate){
+        if(coordinate == null) coordinate = true;
+        if(!coordinate) return this._localRect;
 
-        var center = this.getCenter(true);
-        var size = this.getSize();
+        var center = this.getCenter(coordinate);
+        var size = this.getSize(coordinate);
         var rect = cc.rect(center.x - size.width/2, center.y - size.height/2, size.width, size.height);
         return rect;
     },
-    getCenter:function(global){
+    getCenter:function(coordinate){
         var center = this.owner.convertToWorldSpace(this._center);
-        if(global === false && this.owner.parent) center = this.owner.parent.convertToNodeSpace(center);
+        if(this.owner.parent) {
+            if(coordinate === false) center = this.owner.parent.convertToNodeSpace(center);
+            else if(coordinate instanceof cc.Node) center = coordinate.convertToNodeSpace(center);
+        }
         return center;
     },
     /**
      * If the owner or its parent has been scaled, the calculate the real size of the collider
      * */
-    getSize:function(){
-        var s = flax.getScale(this.owner, true);
+    getSize:function(coordinate){
+        var s = flax.getScale(this.owner, coordinate);
         var w = this._width*Math.abs(s.x);
         var h = this._height*Math.abs(s.y);
         return {width:w, height:h};

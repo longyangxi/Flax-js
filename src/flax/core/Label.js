@@ -162,17 +162,18 @@ flax.Label = cc.Sprite.extend({
         this._charCanvas.setContentSize(this.mlWidth, this.mlHeight);
         this.setContentSize(this.mlWidth, this.mlHeight);
     },
-    getRect:function(global)
+    getRect:function(coordinate)
     {
-        global = (global !== false);
+        if(coordinate == null) coordinate = true;
         var border = 2;
         var rect = cc.rect(0.5*this.width/this._str.length, -this.params.textHeight, this.width, this.height + border);
         rect.y += (this.params.textHeight - this.height)/2 - border/2;
-        if(!global) return rect;
+        if(!coordinate) return rect;
         var w = rect.width;
         var h = rect.height;
         var origin = cc.p(rect.x, rect.y);
         origin = this.convertToWorldSpace(origin);
+        if(coordinate instanceof cc.Node) origin = coordinate.convertToNodeSpace(origin);
         return cc.rect(origin.x, origin.y, w, h);
     },
     destroy:function()

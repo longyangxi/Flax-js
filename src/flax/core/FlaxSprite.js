@@ -60,6 +60,7 @@ flax._sprite = {
     _physicsToBeSet:null,
     _physicsBodyParam:null,
     _physicsColliders:null,
+    _fpsForAnims:null,
 
     ctor:function(assetsFile, assetID){
         if(this.clsName == "flax.FlaxSprite") throw  "flax.FlaxSprite is an abstract class, please use flax.Animator or flax.MovieClip!";
@@ -69,6 +70,7 @@ flax._sprite = {
         this.__instanceId = ClassManager.getNewInstanceId();
         this._anchorBindings = [];
         this._animSequence = [];
+        this._fpsForAnims = {};
         this.onAnimationOver = new signals.Signal();
         this.onSequenceOver = new signals.Signal();
         this.onFrameChanged = new signals.Signal();
@@ -146,6 +148,10 @@ flax._sprite = {
             }
         }
         flax.copyProperties(this.define['sounds'], this._frameSounds);
+    },
+    setFpsForAnim:function(anim, fps)
+    {
+        this._fpsForAnims[anim] = fps;
     },
     addFrameSound:function(frame, sound)
     {
@@ -270,12 +276,12 @@ flax._sprite = {
         }
         this._physicsColliders = [];
     },
-    getRect:function(global)
+    getRect:function(coordinate)
     {
-        return this.getMainCollider().getRect(global);
+        return this.getMainCollider().getRect(coordinate);
     },
-    getCenter:function(global){
-        return this.getMainCollider().getCenter(global);
+    getCenter:function(coordinate){
+        return this.getMainCollider().getCenter(coordinate);
     },
     getAnchor:function(name)
     {
@@ -386,8 +392,14 @@ flax._sprite = {
             return false;
         }
         this.setSource(this.assetsFile, this._baseAssetID+"$"+anim);
-        if(autoPlay === false) this.gotoAndStop(0);
-        else this.gotoAndPlay(0);
+        if(autoPlay === false) {
+            this.gotoAndStop(0);
+        }else {
+            if(this._fpsForAnims[anim]) {
+                this.setFPS(this._fpsForAnims[anim]);
+            }
+            this.gotoAndPlay(0);
+        }
         this.currentAnim = anim;
         this._animTime = 0;
         return true;
@@ -411,6 +423,9 @@ flax._sprite = {
             this._loopEnd = lbl.end;
             this.currentFrame = this._loopStart;
             this.currentAnim = frameOrLabel;
+            if(this._fpsForAnims[frameOrLabel]) {
+                this.setFPS(this._fpsForAnims[frameOrLabel]);
+            }
         }else{
             if(!this.isValideFrame(frameOrLabel))
             {
@@ -758,6 +773,7 @@ flax.FlaxSprite.create = function(assetsFile, assetID)
 };
 flax.addModule(flax.FlaxSprite, flax.TileMapModule);
 flax.addModule(flax.FlaxSprite, flax.MoveModule);
+flax.addModule(flax.FlaxSprite, flax.ScreenLayoutModule);
 //Avoid to advanced compile mode
 window['flax']['FlaxSprite'] = flax.FlaxSprite;
 
@@ -771,6 +787,7 @@ flax.FlaxSpriteBatch.create = function(assetsFile, assetID)
 };
 flax.addModule(flax.FlaxSpriteBatch, flax.TileMapModule);
 flax.addModule(flax.FlaxSpriteBatch, flax.MoveModule);
+flax.addModule(flax.FlaxSpriteBatch, flax.ScreenLayoutModule);
 //Avoid to advanced compile mode
 window['flax']['FlaxSpriteBatch'] = flax.FlaxSpriteBatch;
 

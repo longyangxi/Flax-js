@@ -91,8 +91,8 @@ flax.InputManager = cc.Node.extend({
     removeAllMasks:function(){
         var i = this._masks.length;
         while(i--){
-            this._masks.splice(i, 1);
             this._masks[i].__isInputMask = false;
+            this._masks.splice(i, 1);
         }
         this._masks.length = 0;
     },
@@ -388,15 +388,19 @@ flax.InputManager = cc.Node.extend({
     },
     _dispatch:function(target, touch, event, type){
         //If the target is button, then don't handle its parent's event
-        if(target.__isButton) {
-            this._dispatchOne(target, touch, event, type);
-            return;
-        }
+//        if(target.__isButton) {
+//            this._dispatchOne(target, touch, event, type);
+//            return;
+//        }
         var p = target;
         //if the child triggered some event, then its parent should also be informed
         var ps = [];
         while(p){
-            ps.push(p);
+            //Fixed the bug when addListener on the callback
+            var calls = this._callbacks[p.__instanceId];
+            if(calls && calls.length){
+                ps.push(p);
+            }
             p = p.parent;
         }
         for(var i = 0; i < ps.length; i++){

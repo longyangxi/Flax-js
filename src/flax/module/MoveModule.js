@@ -14,7 +14,8 @@ flax.MoveModule = {
 
     },
     onExit:function(){
-
+        this._inMoving = false;
+        this._callBack = this._callContext = this._targetPos = null;
     },
     /**
      * Move to a new position within duration time
@@ -32,9 +33,7 @@ flax.MoveModule = {
         this._moveSpeed = cc.pMult(dis, 1.0 / duration);
         this._moveSpeedLen = cc.pLength(this._moveSpeed);
         this._targetPos = pos;
-        if(!this._inMoving){
-            this.schedule(this._doMove, flax.frameInterval, cc.REPEAT_FOREVER);
-        }
+        this.resumeMove();
     },
     /**
      * Move to a new position with speed
@@ -53,8 +52,28 @@ flax.MoveModule = {
         this._moveSpeed = cc.pMult(dis, speed / len);
         this._moveSpeedLen = cc.pLength(this._moveSpeed);
         this._targetPos = pos;
-        if(!this._inMoving){
-            this.schedule(this._doMove, flax.frameInterval, cc.REPEAT_FOREVER);
+        this.resumeMove();
+    },
+    pauseMove:function()
+    {
+        if(this._inMoving){
+            this.unschedule(this._doMove);
+            this._inMoving = false;
+        }
+    },
+    resumeMove:function()
+    {
+        if(this._inMoving || !this._targetPos) return;
+        this._inMoving = true;
+        this.schedule(this._doMove, flax.frameInterval, cc.REPEAT_FOREVER);
+    },
+    stopMove:function()
+    {
+        if(this._inMoving){
+            this._targetPos = this._moveSpeed = null;
+            this._inMoving = false;
+            this._callBack = null;
+            this.unschedule(this._doMove);
         }
     },
     _doMove:function(delta)
@@ -64,9 +83,7 @@ flax.MoveModule = {
         var deltaDis = this._moveSpeedLen*delta;
         if(dis < deltaDis){
             this.setPosition(this._targetPos);
-            this._targetPos = this._moveSpeed = null;
-            this._inMoving = false;
-            this.unschedule(this._doMove);
+            this.stopMove();
             if(this._callBack){
                 this._doCallback();
             }

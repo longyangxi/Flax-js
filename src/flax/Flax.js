@@ -31,11 +31,14 @@ flax.language = null;
 flax.languageIndex = -1;
 flax.languages = ["en","zh","de","fr","it","es","tr","pt","ru"];
 flax.landscape = false;
+flax.stageRect = null;
+flax.designedStageSize = null;
 flax.osVersion = "unknown";
 flax.assetsManager = null;
 flax.inputManager = null;
-flax.currentSceneName = "";
+flax.currentSceneName = null;
 flax.currentScene = null;
+flax.prevSceneName = null;
 flax.buttonSound = null;
 flax.frameInterval = 1/60;
 flax._scenesDict = {};
@@ -127,6 +130,7 @@ flax.init = function(resolutionPolicy, initialUserData)
     }else{
         cc.view.setDesignResolutionSize(width, height, resolutionPolicy);
     }
+    flax.designedStageSize = cc.size(width, height);
 
     flax.frameInterval = 1/cc.game.config["frameRate"];
     flax.assetsManager = flax.AssetsManager.create();
@@ -141,6 +145,8 @@ flax.init = function(resolutionPolicy, initialUserData)
     }else{
         flax.updateLanguage(lan);
     }
+
+    flax.stageRect = cc.rect(cc.visibleRect.bottomLeft.x, cc.visibleRect.bottomLeft.y, cc.visibleRect.width, cc.visibleRect.height);
 };
 
 flax.getLanguageStr = function(key){
@@ -192,6 +198,10 @@ flax.createDisplay = function(assetsFile, assetID, params, fromPool, clsName)
 flax.addListener = function(target, func, type, context)
 {
     flax.inputManager.addListener(target, func, type, context);
+}
+flax.removeListener = function(target, func, type)
+{
+    flax.inputManager.removeListener(target, func, type);
 }
 /**
  * Add a function module to some class
@@ -266,6 +276,16 @@ flax.registerScene = function(name, scene, resources)
 flax.replaceScene = function(sceneName, transition, duration)
 {
     if(!flax.isDomainAllowed()) return;
+
+    if(flax.ObjectPool) flax.ObjectPool.release();
+    if(flax.BulletCanvas) flax.BulletCanvas.release();
+    cc.director.resume();
+    flax.prevSceneName = flax.currentSceneName;
+    flax.currentSceneName = sceneName;
+    if(flax.stopPhysicsWorld) flax.stopPhysicsWorld();
+    if(flax.inputManager) flax.inputManager.removeFromParent();
+    if(flax.clearDraw) flax.clearDraw(true);
+
     var s = flax._scenesDict[sceneName];
     if(s == null){
         throw "Please register the scene: "+sceneName+" firstly!";
@@ -281,12 +301,7 @@ flax.replaceScene = function(sceneName, transition, duration)
             s.res.push({type:"font", name:fontName, srcs:flax._fontResources[fontName]});
         }
     }
-    if(flax.ObjectPool) flax.ObjectPool.release();
-    if(flax.BulletCanvas) flax.BulletCanvas.release();
-    cc.director.resume();
-    flax.currentSceneName = sceneName;
-    if(flax.stopPhysicsWorld) flax.stopPhysicsWorld();
-    if(flax.inputManager) flax.inputManager.removeFromParent();
+
     flax.preload(s.res,function(){
         //init language
         if(flax._languageToLoad){
@@ -303,6 +318,7 @@ flax.replaceScene = function(sceneName, transition, duration)
             }
             flax._fontResources = null;
         }
+
         flax.currentScene = new s.scene();
         var transitioned = false;
         if(transition){
@@ -443,6 +459,9 @@ flax.stopMusic = function(release){
 flax.pauseMusic = function(){
     cc.audioEngine.pauseMusic();
 };
+flax.resumeMusic = function(){
+    cc.audioEngine.resumeMusic();
+}
 flax.playEffect = function(path)
 {
     if(!flax._soundEnabled) return;
@@ -519,33 +538,38 @@ flax.getPointOnCircle = function(center, radius, angleDegree)
     if(center == null) center = cc.p();
     return cc.pAdd(center, cc.p(radius*Math.cos(angleDegree), radius*Math.sin(angleDegree)));
 };
-flax.getPosition = function(sprite, global)
+flax.getPosition = function(sprite, coordinate)
 {
     var pos = sprite.getPosition();
-    if(global === true && sprite.parent) pos = sprite.parent.convertToWorldSpace(pos);
+    if(sprite.parent){
+        if(coordinate) pos = sprite.parent.convertToWorldSpace(pos);
+        if(coordinate instanceof cc.Sprite) pos = coordinate.convertToNodeSpace(pos);
+    }
     return pos;
 };
 /**
- * Get the sprite's global rotation, if the sprite rotated 30 and the parent rotated -15, then the sprite's global rotation is 15
+ * Get the sprite's rotation in coordinate, if the sprite rotated 30 and the parent rotated -15, then the sprite's global rotation is 15
+ * If coordinate === true, will return global rotation
  * */
-flax.getRotation = function(sprite, global)
+flax.getRotation = function(sprite, coordinate)
 {
-    if(global !== true) return sprite.rotation;
+    if(coordinate == false) return sprite.rotation;
     var r = 0;
     var p = sprite;
     while(p)
     {
         r += p.rotation;
         p = p.parent;
+        if(p === coordinate) break;
     }
     return r;
 };
 /**
  * Get the sprite's global scale
  * */
-flax.getScale = function(sprite, global)
+flax.getScale = function(sprite, coordinate)
 {
-    if(global !== true) return cc.p(sprite.scaleX, sprite.scaleY);
+    if(coordinate == false) return cc.p(sprite.scaleX, sprite.scaleY);
     var sx = 1.0;
     var sy = 1.0;
     var p = sprite;
@@ -554,28 +578,36 @@ flax.getScale = function(sprite, global)
         sx *= p.scaleX;
         sy *= p.scaleY;
         p = p.parent;
+        if(p === coordinate) break;
     }
     return cc.p(sx, sy);
 };
 /**
  * Get the bounding rect of the sprite, maybe should refer the getBoundingBoxToWorld of the cc.Node
+ * @param {cc.Sprite} sprite The target to cal
+ * @param {Bollean|cc.Node} coordinate The coordinate to cal, if === undefined or === true means global coordinate
+ *                                       if === cc.Sprite, cal in its coordinate!
  * */
-flax.getRect = function(sprite, global)
+flax.getRect = function(sprite, coordinate)
 {
     var rect;
     if(sprite.getRect) {
-        rect = sprite.getRect(global);
+        rect = sprite.getRect(coordinate);
         return rect;
     }else if(sprite instanceof cc.Layer || sprite instanceof cc.Scene){
-        return cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height);
+        return flax.stageRect;
     }
-    global = (global !== false);
+    if(coordinate == null) coordinate = true;
     var pos = sprite.getPosition();
     if(sprite.parent){
-        if(global) {
+        if(coordinate) {
             pos = sprite.parent.convertToWorldSpace(pos);
+            if(coordinate instanceof cc.Node){
+                pos = coordinate.convertToNodeSpace(pos);
+            }
         }else {
             pos = sprite.getAnchorPointInPoints();
+            //todo
             pos = flax.currentScene.convertToNodeSpace(pos);
         }
     }
@@ -782,6 +814,65 @@ flax.createDInts = function(count, centerInt)
     }
     return ds;
 };
+
+/**
+ * Convert to utf-8 string to unicode string, especially for Chinese chars from server of JSB
+ * */
+flax.utf8ToUnicode = function(strUtf8) {
+    if(!strUtf8){
+        return;
+    }
+
+    var bstr = "";
+    var nTotalChars = strUtf8.length; // total chars to be processed.
+    var nOffset = 0; // processing point on strUtf8
+    var nRemainingBytes = nTotalChars; // how many bytes left to be converted
+    var nOutputPosition = 0;
+    var iCode, iCode1, iCode2; // the value of the unicode.
+    while (nOffset < nTotalChars) {
+        iCode = strUtf8.charCodeAt(nOffset);
+        if ((iCode & 0x80) == 0) // 1 byte.
+        {
+            if (nRemainingBytes < 1) // not enough data
+                break;
+            bstr += String.fromCharCode(iCode & 0x7F);
+            nOffset++;
+            nRemainingBytes -= 1;
+        }
+        else if ((iCode & 0xE0) == 0xC0) // 2 bytes
+        {
+            iCode1 = strUtf8.charCodeAt(nOffset + 1);
+            if (nRemainingBytes < 2 || // not enough data
+                (iCode1 & 0xC0) != 0x80) // invalid pattern
+            {
+                break;
+            }
+            bstr += String
+                .fromCharCode(((iCode & 0x3F) << 6) | (iCode1 & 0x3F));
+            nOffset += 2;
+            nRemainingBytes -= 2;
+        } else if ((iCode & 0xF0) == 0xE0) // 3 bytes
+        {
+            iCode1 = strUtf8.charCodeAt(nOffset + 1);
+            iCode2 = strUtf8.charCodeAt(nOffset + 2);
+            if (nRemainingBytes < 3 || // not enough data
+                (iCode1 & 0xC0) != 0x80 || // invalid pattern
+                (iCode2 & 0xC0) != 0x80) {
+                break;
+            }
+            bstr += String.fromCharCode(((iCode & 0x0F) << 12)
+                | ((iCode1 & 0x3F) << 6) | (iCode2 & 0x3F));
+            nOffset += 3;
+            nRemainingBytes -= 3;
+        } else
+        // 4 or more bytes -- unsupported
+            break;
+    }
+    if (nRemainingBytes != 0) { // bad UTF8 string.
+        return "";
+    }
+    return bstr;
+}
 
 flax.homeUrl = "http://flax.so";
 flax.goHomeUrl = function()

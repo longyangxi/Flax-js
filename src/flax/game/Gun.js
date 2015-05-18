@@ -125,8 +125,6 @@ flax.Gun = cc.Node.extend({
     }
 });
 flax.BulletCanvas = cc.SpriteBatchNode.extend({
-    //out of the rect, the bullet will auto destroyed
-    stageRect:null,
     assetsFile:null,
     onBulletHit:null,
     onBulletOut:null,
@@ -134,7 +132,6 @@ flax.BulletCanvas = cc.SpriteBatchNode.extend({
     onEnter:function(){
         this._super();
         this._bullets = [];
-        if(this.stageRect == null) this.stageRect = cc.rect(0, 0, cc.visibleRect.width, cc.visibleRect.height);
         this.onBulletHit = new signals.Signal();
         this.onBulletOut = new signals.Signal();
         this.scheduleUpdate();
@@ -235,7 +232,7 @@ flax.BulletCanvas = cc.SpriteBatchNode.extend({
             rect = flax.getRect(b, true);
             hitted = false;
             targets = null;
-            var outOfBounds = !cc.rectIntersectsRect(this.stageRect, rect);
+            var outOfBounds = !cc.rectIntersectsRect(flax.stageRect, rect);
             if(!outOfBounds){
                 targets = this._checkHittedTarget(b, rect, false);
                 if(targets && targets.length){

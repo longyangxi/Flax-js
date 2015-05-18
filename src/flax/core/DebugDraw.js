@@ -1,10 +1,13 @@
 /**
  * Created by long on 14-8-19.
  */
-flax.clearDraw = function()
+flax.clearDraw = function(destroy)
 {
-    if(flax.__drawNode){
-        flax.__drawNode.clear();
+    if(flax.__drawNode == null) return;
+    flax.__drawNode.clear();
+    if(destroy === true) {
+        flax.__drawNode.removeFromParent();
+        flax.__drawNode = null;
     }
 };
 flax.drawLine = function(from, to, lineWidth, lineColor)
@@ -26,6 +29,11 @@ flax.drawRect = function(rect, lineWidth, lineColor, fillColor)
     var dp = cc.pAdd(cc.p(rect.x, rect.y), cc.p(rect.width, rect.height));
     flax.__drawNode.drawRect(cc.p(rect.x, rect.y), dp, fillColor, lineWidth, lineColor);
 };
+flax.drawStageRect = function()
+{
+    var w = h = 2;
+    flax.drawRect(cc.rect(flax.stageRect.x + w, flax.stageRect.y + h, flax.stageRect.width - 2*w, flax.stageRect.height - 2*h));
+}
 flax.drawCircle = function(center, radius, lineWidth, lineColor)
 {
     flax._createDebugNode();
