@@ -71,5 +71,9 @@ flax.TileMapModule = {
             //update the zOrder sort in the tile
 //            this._tileMap.updateLayout(tx, ty);
         }
+    },
+    snapToTile:function(tx, ty, autoAdd)
+    {
+        this._tileMap.snapToTile(this,tx, ty, autoAdd);
     }
 };

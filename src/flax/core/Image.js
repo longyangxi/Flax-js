@@ -66,7 +66,11 @@ flax._image = {
     {
         var temp = new cc.Sprite(this._imgFile);
         this._imgSize = temp.getContentSize();
-        this._updateSize(this._sx, this._sy);
+//        this._updateSize(this._sx, this._sy);
+        //to fix the bug... not scaled properly
+        this.scheduleOnce(function(){
+            this._updateSize(this._sx, this._sy);
+        },0.01)
     },
     destroy:function()
     {

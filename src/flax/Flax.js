@@ -29,7 +29,7 @@ flax.version = 2.12;
 flax.minToolVersion = 2.0;
 flax.language = null;
 flax.languageIndex = -1;
-flax.languages = ["en","zh","de","fr","it","es","tr","pt","ru"];
+flax.languages = ["zh","en","de","fr","it","es","tr","pt","ru"];
 flax.landscape = false;
 flax.stageRect = null;
 flax.designedStageSize = null;
@@ -113,7 +113,7 @@ flax.init = function(resolutionPolicy, initialUserData)
     flax._inited = true;
     cc.log("Flax inited, version: "+flax.version);
 
-    if(resolutionPolicy == null) resolutionPolicy = cc.ResolutionPolicy.SHOW_ALL;
+    if(resolutionPolicy == null) resolutionPolicy = cc.sys.isMobile ? cc.ResolutionPolicy.NO_BORDER : cc.ResolutionPolicy.SHOW_ALL;
     if(flax.fetchUserData) flax.fetchUserData(initialUserData);
     flax._checkOSVersion();
 
@@ -814,6 +814,21 @@ flax.createDInts = function(count, centerInt)
     }
     return ds;
 };
+
+flax.log = function(info, prefix)
+{
+    if(!prefix) prefix = "Flax log"
+   if(typeof info === "object"){
+       cc.log(prefix + ": {")
+        for(var k in info)
+        {
+            if(k) cc.log(" " + k +": " + info[k]);
+        }
+       cc.log("}");
+   }else{
+       cc.log(prefix + ": " + info);
+   }
+}
 
 /**
  * Convert to utf-8 string to unicode string, especially for Chinese chars from server of JSB

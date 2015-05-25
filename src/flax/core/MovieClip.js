@@ -391,17 +391,17 @@ flax._movieClip = {
         }
     },
     //todo, not verified yet
-    getRect:function(coordinate)
-    {
-        var rect = null;
-        for (var i = 0; i < this.children.length; i++) {
-            var child = this.children[i];
-            var r = flax.getRect(child, coordinate);
-            if(rect) rect = cc.rectUnion(r, rect);
-            else rect = r;
-        }
-        return rect;
-    },
+//    getRect:function(coordinate)
+//    {
+//        var rect = null;
+//        for (var i = 0; i < this.children.length; i++) {
+//            var child = this.children[i];
+//            var r = flax.getRect(child, coordinate);
+//            if(rect) rect = cc.rectUnion(r, rect);
+//            else rect = r;
+//        }
+//        return rect;
+//    },
     onRecycle:function()
     {
         this._super();

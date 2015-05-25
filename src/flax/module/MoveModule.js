@@ -3,6 +3,9 @@
  */
 
 flax.MoveModule = {
+    gravityOnMove:null,
+    destroyWhenReach:false,
+    destroyWhenOutofStage:false,
     _moveSpeed:null,
     _moveSpeedLen:0,
     _targetPos:null,
@@ -11,28 +14,28 @@ flax.MoveModule = {
     _callContext:null,
 
     onEnter:function(){
-
     },
     onExit:function(){
+        this.destroyWhenReach = false;
+        this.destroyWhenOutofStage = false;
+        this.gravityOnMove = null;
         this._inMoving = false;
-        this._callBack = this._callContext = this._targetPos = null;
     },
     /**
      * Move to a new position within duration time
      * Note: If you use cc.moveTo in JSB, the setPosition function in js can not be called, use this instead of
      * */
     moveTo:function(pos, duration, callBack, callContext) {
+        this._targetPos = pos;
         this._callBack = callBack;
         this._callContext = callContext;
         var dis = cc.pSub(pos, this.getPosition());
         if(cc.pLength(dis) < 1 || !duration || duration <= 0){
-            this.setPosition(pos);
-            if(this._callBack) this.scheduleOnce(this._doCallback, 0.01);
+            this.scheduleOnce(this._moveOver, 0.01);
             return;
         }
         this._moveSpeed = cc.pMult(dis, 1.0 / duration);
         this._moveSpeedLen = cc.pLength(this._moveSpeed);
-        this._targetPos = pos;
         this.resumeMove();
     },
     /**
@@ -40,18 +43,17 @@ flax.MoveModule = {
      * Note: If you use cc.moveTo in JSB, the setPosition function in js can not be called, use this instead of
      * */
     moveToBySpeed:function(pos, speed, callBack, callContext) {
+        this._targetPos = pos;
         this._callBack = callBack;
         this._callContext = callContext;
         var dis = cc.pSub(pos, this.getPosition());
         var len = cc.pLength(dis);
         if(len < 1){
-            this.setPosition(pos);
-            if(this._callBack) this.scheduleOnce(this._doCallback, 0.01);
+            this.scheduleOnce(this._moveOver, 0.01);
             return;
         }
         this._moveSpeed = cc.pMult(dis, speed / len);
         this._moveSpeedLen = cc.pLength(this._moveSpeed);
-        this._targetPos = pos;
         this.resumeMove();
     },
     pauseMove:function()
@@ -81,19 +83,25 @@ flax.MoveModule = {
         var pos = this.getPosition();
         var dis = cc.pDistance(pos, this._targetPos);
         var deltaDis = this._moveSpeedLen*delta;
-        if(dis < deltaDis){
-            this.setPosition(this._targetPos);
+        if(dis < deltaDis || (this.destroyWhenOutofStage && !cc.rectContainsRect(flax.stageRect, this.getRect(true)))){
+            this._moveOver();
             this.stopMove();
-            if(this._callBack){
-                this._doCallback();
-            }
         }else{
+            if(this.gravityOnMove){
+                this._moveSpeed = cc.pAdd(this._moveSpeed, cc.pMult(this.gravityOnMove, delta));
+            }
             this.setPosition(cc.pAdd(pos, cc.pMult(this._moveSpeed, delta)));
         }
     },
-    _doCallback:function()
+    _moveOver:function()
     {
-        this._callBack.apply(this._callContext || this);
-        this._callBack = null;
+        if(this._targetPos) this.setPosition(this._targetPos);
+        if(this._callBack){
+            this._callBack.apply(this._callContext || this);
+            this._callBack = null;
+        }
+        if(this.destroyWhenReach){
+            this.destroy();
+        }
     }
 }

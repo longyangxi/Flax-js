@@ -25,9 +25,9 @@ flax._preloader = {
                 self._logo.setPosition(centerPos);
                 self.addChild(self._logo, 10);
                 if(!cc.sys.isNative){
-                    self.createLabel(cc.pSub(centerPos, cc.p(0,  self._logo.height/2 + 10)))
+                    self.createLabel(cc.pSub(centerPos, cc.p(0,  self._logo.height/2 + 10)));
+                    self.logoClick();
                 }
-                self.logoClick();
             })
         }else{
             self.createLabel(centerPos);
@@ -51,7 +51,9 @@ flax._preloader = {
             {
                 if(cc.rectContainsPoint(flax.getRect(logo, true), touch.getLocation())){
                     flax.goHomeUrl();
+                    return true;
                 }
+                return false;
             }
         });
         cc.eventManager.addListener(listener, this._logo);
