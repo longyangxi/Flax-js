@@ -280,6 +280,10 @@ flax._sprite = {
     {
         return this.getMainCollider().getRect(coordinate);
     },
+    debugDraw:function()
+    {
+        flax.drawRect(flax.getRect(this, true));
+    },
     getCenter:function(coordinate){
         return this.getMainCollider().getCenter(coordinate);
     },
