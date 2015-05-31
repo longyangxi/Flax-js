@@ -7,12 +7,10 @@ ALL_DIRECTONS1 = ["UP","DOWN","LEFT","RIGHT","RIGHT_UP","RIGHT_DOWN"];
 EIGHT_DIRECTIONS_VALUE  = {"UP":[0,1],"DOWN":[0,-1],"LEFT":[-1,0],"RIGHT":[1,0],"LEFT_UP":[-1,1],"RIGHT_UP":[1,1],"RIGHT_DOWN":[1,-1],"LEFT_DOWN":[-1,-1]};
 MAX_IN_TILE = 10;
 
-flax.TileMap = cc.Class.extend({
-    id:"default",
-    offsetX:0,
-    offsetY:0,
+flax.TileMap = cc.Node.extend({
     isHexagon:false,//if true, the tiles will layout like the bubble safari
     autoLayout:false,
+    _gridCanvas:null,
     _tileWidth:0,
     _tileHeight:0,
     _mapWidth:0,
@@ -21,9 +19,22 @@ flax.TileMap = cc.Class.extend({
     _objectsArr:null,
     _inUpdate:false,
 
-    ctor:function(id)
+    ctor:function()
     {
-        if(id) this.id = id;
+        this._super();
+    },
+    init:function(tileWidth, tileHeight, mapWidth, mapHeight, inPixel)
+    {
+        if(!tileWidth || !tileHeight) throw "Please set tileWdith and tileHeight!"
+        this._tileWidth = tileWidth;
+        this._tileHeight = tileHeight;
+        if(!mapWidth) mapWidth = cc.visibleRect.width;
+        if(!mapHeight) mapHeight = cc.visibleRect.height;
+        if(inPixel){
+            mapWidth = Math.ceil(mapWidth/this._tileWidth);
+            mapHeight = Math.ceil(mapHeight/this._tileHeight);
+        }
+        this.setMapSize(mapWidth, mapHeight);
     },
     //fix the tile update bug when in JSB
     update:function(delta){
@@ -33,20 +44,8 @@ flax.TileMap = cc.Class.extend({
             if(obj.autoUpdateTileWhenMove) obj.updateTile();
         }
     },
-    setTileSize:function(tw, th)
-    {
-        if(this._tileWidth == tw && this._tileHeight == th) return;
-        this._tileWidth = tw;
-        this._tileHeight = th;
-    },
     getTileSize:function(){
         return {width: this._tileWidth, height: this._tileHeight};
-    },
-    setMapSizePixel:function(w, h)
-    {
-        if(w == null) w = cc.visibleRect.width;
-        if(h == null) h = cc.visibleRect.height;
-        return this.setMapSize(Math.ceil(w/this._tileWidth), Math.ceil(h/this._tileHeight));
     },
     getMapSizePixel:function()
     {
@@ -98,20 +97,31 @@ flax.TileMap = cc.Class.extend({
     getMapSize:function(){
         return {width:this._mapWidth, height:this._mapHeight};
     },
-    showDebugGrid:function(){
-        if(flax.currentScene == null) return;
-        if(flax.tileMapCanvas) flax.tileMapCanvas.clear();
+    /**
+     * @deprecated
+     * */
+    showDebugGrid:function()
+    {
+        this.showGrid();
+    },
+    showGrid:function(lineWidth, lineColor){
+        if(this._gridCanvas) this._gridCanvas.clear();
         else{
-            flax.tileMapCanvas = cc.DrawNode.create();
-            flax.currentScene.addChild(flax.tileMapCanvas, 100000);
+            this._gridCanvas = cc.DrawNode.create();
+            this.addChild(this._gridCanvas);
         }
-        flax.tileMapCanvas.setPosition(this.offsetX, this.offsetY);
+        if(!lineWidth) lineWidth = 1;
+        if(!lineColor) lineColor = cc.color(255,0,0,255);
         for(var i = 0; i <= this._mapWidth; i++){
-            flax.tileMapCanvas.drawSegment(cc.p(i*this._tileWidth, 0), cc.p(i*this._tileWidth, this._tileHeight*this._mapHeight), 1, cc.color(255,0,0,255));
+            this._gridCanvas.drawSegment(cc.p(i*this._tileWidth, 0), cc.p(i*this._tileWidth, this._tileHeight*this._mapHeight), lineWidth, lineColor);
         }
         for(var j = 0; j <= this._mapHeight; j++){
-            flax.tileMapCanvas.drawSegment(cc.p(0, j*this._tileHeight), cc.p(this._tileWidth*this._mapWidth, j*this._tileHeight), 1, cc.color(255,0,0,255));
+            this._gridCanvas.drawSegment(cc.p(0, j*this._tileHeight), cc.p(this._tileWidth*this._mapWidth, j*this._tileHeight), lineWidth, lineColor);
         }
+    },
+    hideGrid:function()
+    {
+        if(this._gridCanvas) this._gridCanvas.clear();
     },
     showDebugTile:function(tx, ty, color){
         var pos = this.getTiledPosition(tx, ty);
@@ -146,14 +156,18 @@ flax.TileMap = cc.Class.extend({
      * Note: Must be the global position
      * */
     getTileIndex:function(pos){
-        var tx = Math.floor((pos.x - this.offsetX)/this._tileWidth);
-        var ty = Math.floor((pos.y - this.offsetY)/this._tileHeight);
-        if(this.isHexagon && ty%2 != 0) tx = Math.floor((pos.x - this.offsetX - this._tileWidth*0.5)/this._tileWidth);
+        var offset = this.getPosition();
+        if(this.parent) offset = this.parent.convertToWorldSpace(offset);
+        var tx = Math.floor((pos.x - offset.x)/this._tileWidth);
+        var ty = Math.floor((pos.y - offset.y)/this._tileHeight);
+        if(this.isHexagon && ty%2 != 0) tx = Math.floor((pos.x - offset.x - this._tileWidth*0.5)/this._tileWidth);
         return cc.p(tx, ty);
     },
     getTiledPosition:function(tx, ty){
-        var x = (tx + 0.5)*this._tileWidth + this.offsetX;
-        var y = (ty + 0.5)*this._tileHeight + this.offsetY;
+        var offset = this.getPosition();
+        if(this.parent) offset = this.parent.convertToWorldSpace(offset);
+        var x = (tx + 0.5)*this._tileWidth + offset.x;
+        var y = (ty + 0.5)*this._tileHeight + offset.y;
         if(this.isHexagon && ty%2 != 0) x += 0.5*this._tileWidth;
         return cc.p(x, y);
     },
@@ -571,13 +585,22 @@ cc.defineGetterSetter(_p, "tileSize", _p.getTileSize);
 _p.mapSize;
 cc.defineGetterSetter(_p, "mapSize", _p.getMapSize);
 
+/**
+ * @deprecated
+ * */
 flax._tileMaps = {};
+/**
+ * @deprecated
+ * */
 flax.getTileMap = function(id)
 {
     if(typeof flax._tileMaps[id] !== "undefined") return flax._tileMaps[id];
     cc.log("The tileMap: "+id+" hasn't been defined, pls use flax.registerTileMap to define it firstly!");
     return null;
 };
+/**
+ * @deprecated
+ * */
 flax.registerTileMap = function(tileMap)
 {
     flax._tileMaps[tileMap.id] = tileMap;

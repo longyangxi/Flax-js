@@ -7,6 +7,9 @@ flax.MoveModule = {
     destroyWhenReach:false,
     destroyWhenOutofStage:false,
     moveSpeed:null,
+    moveAcc:null,
+    restrainRect:null,
+    inRandom:false,
     _moveSpeedLen:0,
     _targetPos:null,
     _inMoving:false,
@@ -19,6 +22,8 @@ flax.MoveModule = {
         this.destroyWhenReach = false;
         this.destroyWhenOutofStage = false;
         this.gravityOnMove = null;
+        this.restrainRect = null;
+        this.inRandom = false;
         this._inMoving = false;
     },
     /**
@@ -26,6 +31,7 @@ flax.MoveModule = {
      * Note: If you use cc.moveTo in JSB, the setPosition function in js can not be called, use this instead of
      * */
     moveTo:function(pos, duration, callBack, callContext) {
+        this.inRandom = false;
         this._targetPos = pos;
         this._callBack = callBack;
         this._callContext = callContext;
@@ -43,6 +49,7 @@ flax.MoveModule = {
      * Note: If you use cc.moveTo in JSB, the setPosition function in js can not be called, use this instead of
      * */
     moveToBySpeed:function(pos, speed, callBack, callContext) {
+        this.inRandom = false;
         this._targetPos = pos;
         this._callBack = callBack;
         this._callContext = callContext;
@@ -63,12 +70,22 @@ flax.MoveModule = {
      * */
     moveBySpeed:function(speed, direction)
     {
+        this._targetPos = null;
+        this._callBack = null;
+        this.inRandom = false;
+
         if(typeof speed === "object"){
             this.moveSpeed = speed;
         }else{
             this.moveSpeed = flax.getPointOnCircle(cc.p(), speed, direction);
         }
         this.resumeMove();
+    },
+    moveRandomly:function(speed, direction, restrainRect)
+    {
+        this.restrainRect = restrainRect || flax.stageRect;
+        this.moveBySpeed(speed, direction || 360*Math.random());
+        this.inRandom = direction == null;
     },
     pauseMove:function()
     {
@@ -89,6 +106,8 @@ flax.MoveModule = {
             this._targetPos = this.moveSpeed = null;
             this._inMoving = false;
             this._callBack = null;
+            this.restrainRect = null;
+            this.inRandom = false;
             this.unschedule(this._doMove);
         }
     },
@@ -97,12 +116,38 @@ flax.MoveModule = {
         var pos = this.getPosition();
         var dis = this._targetPos ? cc.pDistance(pos, this._targetPos) : Number.maxValue;
         var deltaDis = this._moveSpeedLen*delta;
-        if(dis < deltaDis || (this.destroyWhenOutofStage && !cc.rectContainsRect(flax.stageRect, this.getRect(true)))){
+        if(dis < deltaDis || (this.destroyWhenOutofStage && !cc.rectContainsRect(flax.stageRect, flax.getRect(this, true)))){
             this._moveOver();
             this.stopMove();
         }else{
-            if(this.gravityOnMove){
-                this.moveSpeed = cc.pAdd(this.moveSpeed, cc.pMult(this.gravityOnMove, delta));
+            var rect = flax.getRect(this, this.parent);
+            //when collide with the bounder, bounce back
+            if(this.restrainRect){
+                var dx = 0;
+                var dy = 0;
+                if(rect.x < this.restrainRect.x){
+                    dx = 1.0;
+                }else if(rect.x > this.restrainRect.x + this.restrainRect.width - rect.width) {
+                    dx = -1.0;
+                }
+                if(rect.y < this.restrainRect.y){
+                    dy = 1.0;
+                }else if(rect.y > this.restrainRect.y + this.restrainRect.height - rect.height) {
+                    dy = -1.0;
+                }
+                if(this.inRandom){
+                    if(dx) this.moveSpeed.x = dx*Math.abs(this.moveSpeed.x);
+                    if(dy) this.moveSpeed.y = dy*Math.abs(this.moveSpeed.y);
+                }else if(dx || dy){
+                    //todo
+//                    this.moveSpeed = cc.p();
+//                    this.stopMove();
+                }
+            }
+            var acc = this.moveAcc;
+            if(this.gravityOnMove) acc = cc.pAdd(acc || cc.p(), this.gravityOnMove);
+            if(acc) {
+                this.moveSpeed = cc.pAdd(this.moveSpeed, cc.pMult(acc, delta));
             }
             this.setPosition(cc.pAdd(pos, cc.pMult(this.moveSpeed, delta)));
         }

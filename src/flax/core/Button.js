@@ -27,13 +27,29 @@ flax._buttonDefine = {
         this._initScale = {x: this.scaleX, y : this.scaleY};
         flax.inputManager.addListener(this, this._onPress, InputType.press);
         flax.inputManager.addListener(this, this._onClick, InputType.click);
+        //listen the mouse drag event on PC and mobile
         flax.inputManager.addListener(this, this._onMove, InputType.move);
+        //listen the mouse move event on PC
+        if(!cc.sys.isMobile){
+            var self = this;
+            var mouseListener = cc.EventListener.create({
+                event: cc.EventListener.MOUSE,
+                onMouseMove:function(event){
+                    if(event.getButton() != 0){
+                        var evt = {target:self, currentTarget:self};
+                        if(self.isMouseEnabled()) self._onMove(event, evt);
+                    }
+                }
+            })
+            cc.eventManager.addListener(mouseListener, this);
+        }
     },
     onExit:function(){
         if(this.group){
             this.group.removeButton(this);
             this.group = null;
         }
+        cc.eventManager.removeListener(this);
         this._super();
     },
     onRecycle:function(){
@@ -132,7 +148,7 @@ flax._buttonDefine = {
     _onMove:function(touch, event)
     {
         if(flax.ifTouched(this, touch.getLocation())){
-            this._toSetState(ButtonState.DOWN);
+            this._toSetState(cc.sys.isMobile ? ButtonState.DOWN : ButtonState.OVER);
         }else{
             this._toSetState(ButtonState.UP);
         }

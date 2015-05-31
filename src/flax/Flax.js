@@ -25,7 +25,7 @@ var flax = flax || {};
 //Avoid to advanced compile mode
 window['flax'] = flax;
 
-flax.version = 2.12;
+flax.version = 2.2;
 flax.minToolVersion = 2.0;
 flax.language = null;
 flax.languageIndex = -1;
@@ -36,6 +36,7 @@ flax.designedStageSize = null;
 flax.osVersion = "unknown";
 flax.assetsManager = null;
 flax.inputManager = null;
+flax.mousePos = null;
 flax.currentSceneName = null;
 flax.currentScene = null;
 flax.prevSceneName = null;
@@ -106,8 +107,9 @@ if(!cc.sys.isNative){
 /**
  * @param {cc.ResolutionPolicy} resolutionPolicy resolution policy
  * @param {Object} initialUserData initial user data
+ * @param {Size}   designSize  custom the designed screen size
  * */
-flax.init = function(resolutionPolicy, initialUserData)
+flax.init = function(resolutionPolicy, initialUserData, designSize)
 {
     if(flax._inited) return;
     flax._inited = true;
@@ -117,8 +119,8 @@ flax.init = function(resolutionPolicy, initialUserData)
     if(flax.fetchUserData) flax.fetchUserData(initialUserData);
     flax._checkOSVersion();
 
-    var width = cc.game.config["width"];
-    var height = cc.game.config["height"];
+    var width = designSize ? designSize.width : cc.game.config["width"];
+    var height = designSize ? designSize.height: cc.game.config["height"];
     if(!width || !height) throw "Please set the game width and height in the project.json!"
     if(!cc.sys.isNative){
         var stg = document.getElementById(cc.game.config["id"]);
@@ -194,6 +196,8 @@ flax.createDisplay = function(assetsFile, assetID, params, fromPool, clsName)
  *                       for keyboard event: func(key){};
  * @param{string} type event type as InputType said
  * @param{cc.Node} context the callback context of "THIS", if null, use target as the context
+ * Note: If the target is null, then listen the global event, in this instance, be sure to REMOVE the listener manually
+ * on the sprite exit, otherwise, a new sprite will not receive the event again!
  * */
 flax.addListener = function(target, func, type, context)
 {
@@ -598,20 +602,21 @@ flax.getRect = function(sprite, coordinate)
         return flax.stageRect;
     }
     if(coordinate == null) coordinate = true;
+    var size = sprite.getContentSize();
     var pos = sprite.getPosition();
     if(sprite.parent){
         if(coordinate) {
-            pos = sprite.parent.convertToWorldSpace(pos);
-            if(coordinate instanceof cc.Node){
-                pos = coordinate.convertToNodeSpace(pos);
+            if(coordinate != sprite.parent){
+                pos = sprite.parent.convertToWorldSpace(pos);
+                if(coordinate instanceof cc.Node){
+                    pos = coordinate.convertToNodeSpace(pos);
+                }
             }
         }else {
-            pos = sprite.getAnchorPointInPoints();
-            //todo
-            pos = flax.currentScene.convertToNodeSpace(pos);
+            return cc.rect(0, 0,size.width, size.height);
         }
     }
-    var size = sprite.getContentSize();
+    //todo, scale
     var anchor = sprite.getAnchorPoint();
     rect = cc.rect(pos.x - size.width * anchor.x,pos.y - size.height * anchor.y,size.width, size.height);
     return rect;
@@ -815,19 +820,41 @@ flax.createDInts = function(count, centerInt)
     return ds;
 };
 
+flax._logNestIndex = 0;
+flax._prevLogOjb = null;
 flax.log = function(info, prefix)
 {
-    if(!prefix) prefix = "Flax log"
-   if(typeof info === "object"){
-       cc.log(prefix + ": {")
+    flax._logNestIndex = 1;
+    if(!prefix) prefix = "Flax log";
+    flax._log(info, prefix);
+
+}
+
+flax._log = function(info, prefix)
+{
+    if(typeof info === "object"){
+
+        var space = " ";
+        var si = flax._logNestIndex;
+        while(si--){
+            space += " ";
+        }
+
+        cc.log(prefix + ": {")
         for(var k in info)
         {
-            if(k) cc.log(" " + k +": " + info[k]);
+            var subInfo = info[k];
+            if(typeof subInfo === "function") continue;
+
+            if(typeof subInfo === "object") flax._log(subInfo, space + k);
+            else cc.log(space + k +": " + subInfo);
         }
-       cc.log("}");
-   }else{
-       cc.log(prefix + ": " + info);
-   }
+        cc.log(space + "}");
+        //todo
+//        flax._logNestIndex++;
+    }else if(typeof info != "function"){
+        cc.log(prefix + ": " + info);
+    }
 }
 
 /**

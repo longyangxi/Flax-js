@@ -35,12 +35,37 @@ flax.InputManager = cc.Node.extend({
     onEnter:function()
     {
         this._super();
+
         var self = this;
-        var listener = cc.EventListener.create({
+
+        //listen the mouse move event on PC
+        if(!cc.sys.isMobile){
+            var mouseListener = cc.EventListener.create({
+                event: cc.EventListener.MOUSE,
+                onMouseMove:function(event){
+                    //event.getButton() == 0 means left mouse is in pressing
+                    self.inDragging = event.getButton() == 0;
+                    self.justDragged = self.inDragging;
+                    if(self.inDragging) self.justDragDist += cc.pDistance(cc.p(), event.getDelta());
+                    //dispatch mouse hover event
+                    if(!self.inDragging){
+                        var evt = {target:self, currentTarget:self};
+                        self._dispatchOne(self, event, evt, InputType.move);
+                        //todo, dispatch for every single target
+//                        self._dispatch(self, event, evt, InputType.move);
+                    }
+                    flax.mousePos = event.getLocation();
+                }
+            })
+            cc.eventManager.addListener(mouseListener, this);
+        }
+
+        var touchListener = cc.EventListener.create({
             event: cc.EventListener.TOUCH_ONE_BY_ONE,
             swallowTouches: false,
             onTouchBegan:function(touch, event)
             {
+                flax.mousePos = touch.getLocation();
                 if (!self.enabled) return false;
                 self.inDragging = false;
                 self.justDragged = false;
@@ -58,13 +83,14 @@ flax.InputManager = cc.Node.extend({
             },
             onTouchMoved:function(touch, event)
             {
+                flax.mousePos = touch.getLocation();
                 self.inDragging = true;
                 self.justDragged = true;
                 self.justDragDist += cc.pDistance(cc.p(), touch.getDelta());
                 self._dispatchOne(self, touch, event, InputType.move);
             }
         });
-        cc.eventManager.addListener(listener, this);
+        cc.eventManager.addListener(touchListener, this);
     },
     onExit:function(){
         this._super();
@@ -136,6 +162,8 @@ flax.InputManager = cc.Node.extend({
      *                       for keyboard event: func(key){};
      * @param{string} type event type as InputType said
      * @param{cc.Node} context the callback context of "THIS", if null, use target as the context
+     * Note: If the target is null, then listen the global event, in this instance, be sure to REMOVE the listener manually
+     * on the sprite exit, otherwise, a new sprite will not receive the event again!
      * */
     addListener:function(target, func, type, context)
     {
