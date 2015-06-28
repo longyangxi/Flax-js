@@ -10,6 +10,7 @@ MAX_IN_TILE = 10;
 flax.TileMap = cc.Node.extend({
     isHexagon:false,//if true, the tiles will layout like the bubble safari
     autoLayout:false,
+    _allTilesIndex:null,
     _gridCanvas:null,
     _tileWidth:0,
     _tileHeight:0,
@@ -22,6 +23,7 @@ flax.TileMap = cc.Node.extend({
     ctor:function()
     {
         this._super();
+        this.setAnchorPoint(0, 0);
     },
     init:function(tileWidth, tileHeight, mapWidth, mapHeight, inPixel)
     {
@@ -92,6 +94,7 @@ flax.TileMap = cc.Node.extend({
         }
         this._mapWidth = w;
         this._mapHeight = h;
+        this.setContentSize(this.getMapSizePixel());
         return result;
     },
     getMapSize:function(){
@@ -119,6 +122,7 @@ flax.TileMap = cc.Node.extend({
             this._gridCanvas.drawSegment(cc.p(0, j*this._tileHeight), cc.p(this._tileWidth*this._mapWidth, j*this._tileHeight), lineWidth, lineColor);
         }
     },
+
     hideGrid:function()
     {
         if(this._gridCanvas) this._gridCanvas.clear();
@@ -126,7 +130,8 @@ flax.TileMap = cc.Node.extend({
     showDebugTile:function(tx, ty, color){
         var pos = this.getTiledPosition(tx, ty);
         if(color == null) color = cc.color(0, 255, 0, 128);
-        flax.drawRect(cc.rect(pos.x - this._tileWidth/2, pos.y - this._tileHeight/2, this._tileWidth, this._tileHeight),1, color, color);
+        var s = flax.getScale(this, true);
+        flax.drawRect(cc.rect(pos.x - this._tileWidth*s.x/2, pos.y - this._tileHeight*s.y/2, this._tileWidth*s.x, this._tileHeight*s.y),1, color, color);
     },
     clear:function(removeChildren)
     {
@@ -158,17 +163,27 @@ flax.TileMap = cc.Node.extend({
     getTileIndex:function(pos){
         var offset = this.getPosition();
         if(this.parent) offset = this.parent.convertToWorldSpace(offset);
-        var tx = Math.floor((pos.x - offset.x)/this._tileWidth);
-        var ty = Math.floor((pos.y - offset.y)/this._tileHeight);
-        if(this.isHexagon && ty%2 != 0) tx = Math.floor((pos.x - offset.x - this._tileWidth*0.5)/this._tileWidth);
+
+        var scale = flax.getScale(this, true);
+        var sx = Math.abs(scale.x);
+        var sy = Math.abs(scale.y);
+
+        var tx = Math.floor((pos.x - offset.x)/(this._tileWidth*sx));
+        var ty = Math.floor((pos.y - offset.y)/(this._tileHeight*sy));
+        if(this.isHexagon && ty%2 != 0) tx = Math.floor((pos.x - offset.x - (this._tileWidth*sx)*0.5)/(this._tileWidth*sx));
         return cc.p(tx, ty);
     },
     getTiledPosition:function(tx, ty){
         var offset = this.getPosition();
         if(this.parent) offset = this.parent.convertToWorldSpace(offset);
-        var x = (tx + 0.5)*this._tileWidth + offset.x;
-        var y = (ty + 0.5)*this._tileHeight + offset.y;
-        if(this.isHexagon && ty%2 != 0) x += 0.5*this._tileWidth;
+
+        var scale = flax.getScale(this, true);
+        var sx = Math.abs(scale.x);
+        var sy = Math.abs(scale.y);
+
+        var x = (tx + 0.5)*this._tileWidth*sx + offset.x;
+        var y = (ty + 0.5)*this._tileHeight*sy + offset.y;
+        if(this.isHexagon && ty%2 != 0) x += 0.5*this._tileWidth*sx;
         return cc.p(x, y);
     },
     /**
@@ -200,6 +215,7 @@ flax.TileMap = cc.Node.extend({
                 if(returnObjects) {
                     tiles = tiles.concat(this.getObjects(i, j));
                 }else {
+                    //todo, the tile maybe has invalide
                     tiles.push(cc.p(i, j));
                 }
             }
@@ -293,7 +309,7 @@ flax.TileMap = cc.Node.extend({
         var objs = this._objectsMap[tx][ty];
         if(objs.length == 0) return;
         objs.sort(this._sortByY);
-        var zOrder0 = (tx + (this._mapHeight - 1 - ty)*this._mapWidth)*MAX_IN_TILE;
+        var zIndex0 = (tx + (this._mapHeight - 1 - ty)*this._mapWidth)*MAX_IN_TILE;
         var child = null;
         var childCount = 0;
         for(var i = 0; i < objs.length; i++)
@@ -561,6 +577,44 @@ flax.TileMap = cc.Node.extend({
             return objs.length == 0;
         }
         return false;
+    },
+    tileToIndex:function(tx, ty)
+    {
+        return ty*this._mapWidth + tx;
+    },
+    indexToTile:function(i)
+    {
+        var tx = i%this._mapWidth;
+        var ty = Math.floor((i - tx)/this._mapWidth);
+        return cc.p(tx, ty);
+    },
+    getAllTilesIndex:function()
+    {
+        if(!this._allTilesIndex){
+            this._allTilesIndex = [];
+            for(var i = 0; i < this._mapWidth*this._mapHeight; i++){
+                this._allTilesIndex.push(i);
+            }
+        }
+        return this._allTilesIndex;
+    },
+    findEmptyTilesIndex:function()
+    {
+        var allTiles = this.getAllTilesIndex().concat();
+        var objs = this._objectsArr;
+        var len = objs.length;
+        for(var i = 0; i < len; i++){
+            if(!allTiles.length) break;
+            var obj = objs[i];
+            var blocks = this.getCoveredTiles(obj);
+            var bLen = blocks.length;
+            for(var j = 0; j < bLen; j++){
+                var b = blocks[j];
+                var ii = allTiles.indexOf(this.tileToIndex(b.x, b.y));
+                if(ii > -1) allTiles.splice(ii, 1);
+            }
+        }
+        return allTiles;
     },
     _sortByY:function(a, b)
     {

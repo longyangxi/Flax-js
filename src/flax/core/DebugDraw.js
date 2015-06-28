@@ -5,6 +5,9 @@
 flax.__drawNode = null;
 
 flax.createDrawNode = function(parent, zIndex){
+
+    if(flax.__drawNode && flax.__drawNode.parent && !parent) return;
+
     if(flax.__drawNode == null) {
         flax.__drawNode = cc.DrawNode.create();
     }

@@ -326,6 +326,24 @@ flax._sprite = {
         }
         return true;
     },
+    unbindAnchor:function(anchorNameOrNode, autoDestroy)
+    {
+        var node = null;
+        var i = -1;
+        var n = this._anchorBindings.length;
+        while(++i < n) {
+            node = this._anchorBindings[i];
+            if(node === anchorNameOrNode || node.__anchor__ === anchorNameOrNode){
+                this._anchorBindings.splice(i, 1);
+                delete  node.__anchor__;
+                if(autoDestroy){
+                    if(node.destroy) node.destroy();
+                    else node.removeFromParent();
+                }
+                break;
+            }
+        }
+    },
     getCurrentLabel:function()
     {
         var labels = this.define['labels'];

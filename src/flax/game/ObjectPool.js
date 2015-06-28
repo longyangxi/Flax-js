@@ -45,6 +45,7 @@ flax.ObjectPool = cc.Class.extend({
 
         obj.__pool__id__ = this._extraID;
         obj.clsName = this._clsName;
+        obj._destroyed = false;
         obj.autoRecycle = true;
         obj.visible = true;
 

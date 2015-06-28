@@ -12,13 +12,26 @@ var VLayoutType = {
     TOP:2
 }
 flax.ScreenLayoutModule = {
+    _isAutoLayout:false,
+    _hlayout:null,
+    _vlayout:null,
     onEnter:function()
     {
-
+        flax.onDeviceRotate.add(this._updateLayout, this);
+        flax.onScreenResize.add(this._updateLayout, this);
     },
     onExit:function()
     {
-
+        flax.onDeviceRotate.remove(this._updateLayout, this);
+        flax.onScreenResize.remove(this._updateLayout, this);
+    },
+    _updateLayout:function(landscape)
+    {
+        if(this._isAutoLayout){
+            this.autoLayout();
+        }else if(this._hlayout != null && this._vlayout != null){
+            this.setLayout(this._hlayout, this._vlayout);
+        }
     },
     /**
      * Set the layout
@@ -27,6 +40,10 @@ flax.ScreenLayoutModule = {
      * */
     setLayout:function(hLayout, vLayout)
     {
+        this._isAutoLayout = false;
+        this._hlayout = hLayout;
+        this._vlayout = vLayout;
+
         var rect = flax.getRect(this, true);
         var sCenter = cc.visibleRect.center;
         var anchorPos = this.getAnchorPointInPoints();
@@ -58,8 +75,8 @@ flax.ScreenLayoutModule = {
         }
 
         var scale = flax.getScale(this, true);
-        var offsetX = !hLayout ? flax.stageRect.x : 0;
-        var offsetY = !vLayout ? flax.stageRect.y : 0;
+        var offsetX = !hLayout ? cc.visibleRect.bottomLeft.x : 0;
+        var offsetY = !vLayout ? cc.visibleRect.bottomLeft.y : 0;
         var pos = cc.p(x + offsetX + anchorPos.x*scale.x, y + offsetY + anchorPos.y*scale.y);
 
         if(this.parent){
@@ -76,12 +93,14 @@ flax.ScreenLayoutModule = {
     {
         if(cc.view.getResolutionPolicy() != cc.ResolutionPolicy.NO_BORDER) return;
 
+        this._isAutoLayout = true;
+
         var rect = flax.getRect(this, this.parent);
         var sCenter = cc.visibleRect.center;
         var anchorPos = this.getAnchorPointInPoints();
         var offsetPlus = 0;
 
-        var rateX = flax.stageRect.width/flax.designedStageSize.width;
+        var rateX = cc.visibleRect.width/flax.designedStageSize.width;
         if(rateX != 1.0){
             var offsetX = this.x - sCenter.x;
             if(offsetX > 0) {
@@ -91,7 +110,7 @@ flax.ScreenLayoutModule = {
             this.x = sCenter.x + offsetX*rateX + anchorPos.x*this.scaleX - offsetPlus;
         }
 
-        var rateY = flax.stageRect.height/flax.designedStageSize.height;
+        var rateY = cc.visibleRect.height/flax.designedStageSize.height;
         if(rateY != 1.0){
             var offsetY = this.y - sCenter.y;
             offsetPlus = 0;

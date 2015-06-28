@@ -25,7 +25,7 @@ var flax = flax || {};
 //Avoid to advanced compile mode
 window['flax'] = flax;
 
-flax.version = 2.2;
+flax.version = 2.3;
 flax.minToolVersion = 2.0;
 flax.language = null;
 flax.languageIndex = -1;
@@ -86,7 +86,7 @@ if(!cc.sys.isNative){
     setTimeout(function(){
         var bgColor = document.body.style.backgroundColor;
         var canvasNode = document.getElementById(cc.game.config["id"]);
-        canvasNode.style.backgroundColor = bgColor;
+        canvasNode.style.backgroundColor = bgColor;//'transparent'
 
         bgColor = bgColor.replace("rgb(","");
         bgColor = bgColor.replace(")", "");
@@ -149,6 +149,15 @@ flax.init = function(resolutionPolicy, initialUserData, designSize)
     }
 
     flax.stageRect = cc.rect(cc.visibleRect.bottomLeft.x, cc.visibleRect.bottomLeft.y, cc.visibleRect.width, cc.visibleRect.height);
+    flax.onDeviceRotate = new signals.Signal();
+    flax.onScreenResize = new signals.Signal();
+
+    if(!cc.sys.isNative){
+        window.addEventListener("resize", function(){
+            flax.stageRect = cc.rect(cc.visibleRect.bottomLeft.x, cc.visibleRect.bottomLeft.y, cc.visibleRect.width, cc.visibleRect.height);
+            flax.onScreenResize.dispatch();
+        }, false);
+    }
 };
 
 flax.getLanguageStr = function(key){
@@ -484,37 +493,57 @@ flax.playSound = function(path)
     return flax.playEffect(path);
 };
 //----------------------sound about-------------------------------------------------------
+flax.onDeviceRotate = null;
+flax.onScreenResize = null;
+
 flax._checkDeviceOrientation = function(){
     if(cc.sys.isNative) return;
-    if(!flax._orientationTip && cc.sys.isMobile && cc.game.config["rotateImg"]){
-        flax._orientationTip = cc.LayerColor.create(flax.bgColor, cc.visibleRect.width + 10, cc.visibleRect.height +10);
-        var img =  cc.Sprite.create(cc.game.config["rotateImg"]);
-        img.setPosition(cc.visibleRect.center);
-        flax._orientationTip.__icon = img;
-        flax._orientationTip.addChild(img);
+    if(!flax._orientationTip && cc.sys.isMobile){
+        if(cc.game.config["rotateImg"]){
+            flax._orientationTip = cc.LayerColor.create(flax.bgColor, cc.visibleRect.width + 10, cc.visibleRect.height +10);
+            var img =  cc.Sprite.create(cc.game.config["rotateImg"]);
+            img.setPosition(cc.visibleRect.center);
+            flax._orientationTip.__icon = img;
+            flax._orientationTip.addChild(img);
+        }
         var orientationEvent = ("onorientationchange" in window) ? "orientationchange" : "resize";
         window.addEventListener(orientationEvent, flax._showOrientaionTip, true);
         flax._showOrientaionTip();
     }
     if(flax._orientationTip){
         flax._orientationTip.removeFromParent();
-        flax.currentScene.addChild(flax._orientationTip, 1000000);
+        flax.currentScene.addChild(flax._orientationTip, Number.MAX_VALUE);
     }
 };
 flax._oldGamePauseState = false;
 flax._showOrientaionTip = function(){
+    //Math.abs(window.orientation) = 90 || 0
     var newLandscape = (Math.abs(window.orientation) == 90);
-    flax._orientationTip.visible = (cc.game.config["landscape"] != newLandscape);
-    flax._orientationTip.__icon.rotation = (newLandscape ? -90 : 0);
-    document.body.scrollTop = 0;
-    if(flax._orientationTip.visible) {
-        if(flax.landscape != newLandscape) flax._oldGamePauseState = cc.director.isPaused();
-        cc.director.pause();
-    }else if(!flax._oldGamePauseState){
-        cc.director.resume();
+    var landscapeConfiged = cc.game.config["landscape"];
+    if(flax._orientationTip){
+        var notLandscapeAsSet = (landscapeConfiged != newLandscape);
+        flax._orientationTip.visible = notLandscapeAsSet;
+        flax._orientationTip.__icon.rotation = (newLandscape ? -90 : 0);
+        document.body.scrollTop = 0;
+        if(flax._orientationTip.visible) {
+            if(flax.landscape != newLandscape) flax._oldGamePauseState = cc.director.isPaused();
+            cc.director.pause();
+        }else if(!flax._oldGamePauseState){
+            cc.director.resume();
+        }
+        flax.inputManager.enabled = !flax._orientationTip.visible;
     }
-    flax.inputManager.enabled = !flax._orientationTip.visible;
     flax.landscape = newLandscape;
+
+
+    if(landscapeConfiged == newLandscape){
+        cc.view.setDesignResolutionSize(flax.designedStageSize.width, flax.designedStageSize.height, cc.view.getResolutionPolicy());
+    }else{
+        cc.view.setDesignResolutionSize(flax.designedStageSize.height, flax.designedStageSize.width, cc.view.getResolutionPolicy());
+    }
+    flax.stageRect = cc.rect(cc.visibleRect.bottomLeft.x, cc.visibleRect.bottomLeft.y, cc.visibleRect.width, cc.visibleRect.height);
+
+    flax.onDeviceRotate.dispatch(flax.landscape);
 };
 
 ///---------------------utils-------------------------------------------------------------
@@ -602,7 +631,10 @@ flax.getRect = function(sprite, coordinate)
         return flax.stageRect;
     }
     if(coordinate == null) coordinate = true;
+
     var size = sprite.getContentSize();
+    var s = flax.getScale(sprite, coordinate);
+
     var pos = sprite.getPosition();
     if(sprite.parent){
         if(coordinate) {
@@ -613,12 +645,13 @@ flax.getRect = function(sprite, coordinate)
                 }
             }
         }else {
+            size.width *= Math.abs(s.x);
+            size.height *= Math.abs(s.y);
             return cc.rect(0, 0,size.width, size.height);
         }
     }
-    //todo, scale
     var anchor = sprite.getAnchorPoint();
-    rect = cc.rect(pos.x - size.width * anchor.x,pos.y - size.height * anchor.y,size.width, size.height);
+    rect = cc.rect(pos.x - size.width * s.x * anchor.x, pos.y - size.height* s.y * anchor.y, size.width * Math.abs(s.x), size.height * Math.abs(s.y));
     return rect;
 };
 
@@ -636,9 +669,8 @@ flax.ifTouched = function(target, pos)
     if(target.mainCollider){
         return target.mainCollider.containsPoint(pos);
     }
-    var local = target.convertToNodeSpace(pos);
-    var r = flax.getRect(target,false);
-    return cc.rectContainsPoint(r, local);
+    var r = flax.getRect(target,true);
+    return cc.rectContainsPoint(r, pos);
 };
 flax.ifCollide = function(sprite1, sprite2)
 {
@@ -824,9 +856,11 @@ flax._logNestIndex = 0;
 flax._prevLogOjb = null;
 flax.log = function(info, prefix)
 {
-    flax._logNestIndex = 1;
-    if(!prefix) prefix = "Flax log";
-    flax._log(info, prefix);
+    if(prefix) console.log(prefix + ": ");
+    console.log(info);
+//    flax._logNestIndex = 1;
+//    if(!prefix) prefix = "Flax log";
+//    flax._log(info, prefix);
 
 }
 

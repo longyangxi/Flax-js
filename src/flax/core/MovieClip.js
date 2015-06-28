@@ -88,6 +88,7 @@ flax.FrameData = cc.Class.extend({
 flax._movieClip = {
     clsName:"flax.MovieClip",
     sameFpsForChildren:true,//all children use the same fps with this
+    createChildFromPool:true,
     _autoPlayChildren:false,//auto play children when play
     namedChildren:null,
 //    _stoppingChildren:null,
@@ -120,7 +121,7 @@ flax._movieClip = {
             } else {
                 var autoPlay = child._autoPlayChildren;
                 child.destroy();
-                child = flax.assetsManager.createDisplay(assetsFile, assetID, null, true);
+                child = flax.assetsManager.createDisplay(assetsFile, assetID, null, this.createChildFromPool);
                 child.name = childName;
                 this.namedChildren[childName] = child;
                 if(child.__isMovieClip === true && !autoPlay) child.autoPlayChildren = this._autoPlayChildren;
@@ -246,7 +247,7 @@ flax._movieClip = {
                     if(childDefine.text != null){
                         child = flax.Label.create(this.assetsFile, frameData, childDefine);
                     }else{
-                        child = flax.assetsManager.createDisplay(childDefine.assetsFile || this.assetsFile, childDefine["class"], null, true);
+                        child = flax.assetsManager.createDisplay(childDefine.assetsFile || this.assetsFile, childDefine["class"], null, this.createChildFromPool);
                     }
 
                     child.name = childName;
