@@ -43,6 +43,11 @@ flax.Collider = cc.Class.extend({
         }
         this._localRect = cc.rect(this._center.x - this._width/2, this._center.y - this._height/2, this._width, this._height);
     },
+    setOwner:function(owner)
+    {
+        this.owner = owner;
+        this.owner.retain();
+    },
     /**
      * Enable the physics with the params
      * @param {int} type Box2D.Dynamics.b2Body.b2_dynamicBody,b2_staticBody,b2_kinematicBody
@@ -111,6 +116,10 @@ flax.Collider = cc.Class.extend({
             flax.removePhysicsFixture(this.physicsFixture);
             this.physicsFixture = null;
             this.physicsBody = null;
+        }
+        if(this.owner){
+            this.owner.release();
+            this.owner = null;
         }
     },
     //todo, with polygon

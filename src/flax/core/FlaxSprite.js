@@ -261,7 +261,7 @@ flax._sprite = {
                     }
                     cd = this._colliders[k][frame] = new flax.Collider(cArr[frame]);
                     cd.name = k;
-                    cd.owner = this;
+                    cd.setOwner(this);
                     if(k == "main" || k == "base") {
                         this._mainCollider = cd;
                     }
@@ -272,7 +272,7 @@ flax._sprite = {
         if(!this._definedMainCollider){
             this._mainCollider = new flax.Collider("Rect,0,0," + this.width + "," + this.height + ",0", false);
             this._mainCollider.name = "main";
-            this._mainCollider.owner = this;
+            this._mainCollider.setOwner(this);
         }
         this._physicsColliders = [];
     },

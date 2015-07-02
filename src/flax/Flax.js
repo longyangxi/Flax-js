@@ -26,6 +26,7 @@ var flax = flax || {};
 window['flax'] = flax;
 
 flax.version = 2.3;
+flax.gameVersion = 0;
 flax.minToolVersion = 2.0;
 flax.language = null;
 flax.languageIndex = -1;
@@ -53,7 +54,7 @@ flax._addResVersion = function(url)
 {
     if(cc.sys.isNative  || typeof url != "string" || flax.isSoundFile(url)) return url;
     if(url.indexOf("?v=") > -1) return url;
-    return url + "?v=" + cc.game.config["version"];
+    return url + "?v=" + (flax.gameVersion || cc.game.config['version']);
 };
 flax._removeResVersion = function(url)
 {
@@ -78,7 +79,7 @@ flax.isLocalDebug = function()
 if(!cc.sys.isNative){
     //if local debug, make the version randomly, so every time debug is refresh
     if(flax.isLocalDebug()) {
-        cc.game.config["version"] = 1 + Math.floor(Math.random()*(999999 - 1))
+        flax.gameVersion = 1 + Math.floor(Math.random()*(999999 - 1))
     }
 //set the game canvas color as html body color
     /************************************************/
@@ -568,8 +569,8 @@ flax.getPointOnCircle = function(center, radius, angleDegree)
 {
     angleDegree = 90 - angleDegree;
     angleDegree *= DEGREE_TO_RADIAN;
-    if(center == null) center = cc.p();
-    return cc.pAdd(center, cc.p(radius*Math.cos(angleDegree), radius*Math.sin(angleDegree)));
+    if(center == null) center = {x:0, y:0};
+    return cc.pAdd(center, {x:radius*Math.cos(angleDegree), y:radius*Math.sin(angleDegree)});
 };
 flax.getPosition = function(sprite, coordinate)
 {
@@ -602,7 +603,7 @@ flax.getRotation = function(sprite, coordinate)
  * */
 flax.getScale = function(sprite, coordinate)
 {
-    if(coordinate == false) return cc.p(sprite.scaleX, sprite.scaleY);
+    if(coordinate == false) return {x:sprite.scaleX, y:sprite.scaleY};
     var sx = 1.0;
     var sy = 1.0;
     var p = sprite;
@@ -613,7 +614,7 @@ flax.getScale = function(sprite, coordinate)
         p = p.parent;
         if(p === coordinate) break;
     }
-    return cc.p(sx, sy);
+    return {x:sx, y:sy};
 };
 /**
  * Get the bounding rect of the sprite, maybe should refer the getBoundingBoxToWorld of the cc.Node
@@ -852,45 +853,6 @@ flax.createDInts = function(count, centerInt)
     return ds;
 };
 
-flax._logNestIndex = 0;
-flax._prevLogOjb = null;
-flax.log = function(info, prefix)
-{
-    if(prefix) console.log(prefix + ": ");
-    console.log(info);
-//    flax._logNestIndex = 1;
-//    if(!prefix) prefix = "Flax log";
-//    flax._log(info, prefix);
-
-}
-
-flax._log = function(info, prefix)
-{
-    if(typeof info === "object"){
-
-        var space = " ";
-        var si = flax._logNestIndex;
-        while(si--){
-            space += " ";
-        }
-
-        cc.log(prefix + ": {")
-        for(var k in info)
-        {
-            var subInfo = info[k];
-            if(typeof subInfo === "function") continue;
-
-            if(typeof subInfo === "object") flax._log(subInfo, space + k);
-            else cc.log(space + k +": " + subInfo);
-        }
-        cc.log(space + "}");
-        //todo
-//        flax._logNestIndex++;
-    }else if(typeof info != "function"){
-        cc.log(prefix + ": " + info);
-    }
-}
-
 /**
  * Convert to utf-8 string to unicode string, especially for Chinese chars from server of JSB
  * */
@@ -949,7 +911,18 @@ flax.utf8ToUnicode = function(strUtf8) {
     }
     return bstr;
 }
+flax.formatTime = function(seconds)
+{
+    var h = Math.floor(seconds/3600);
+    var m = Math.floor((seconds - h*3600)/60);
+    var s = seconds - h*3600 - m*60;
 
+    if(h < 10) h = "0" + h;
+    if(m < 10) m = "0" + m;
+    if(s < 10) s = "0" + s;
+
+    return h + ":" + m + ":" + s;
+}
 /**
  * generate a unique id
  //8 character ID (base=2)

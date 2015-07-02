@@ -44,7 +44,8 @@ LinkFinder.shuffle = function(useTween){
     while(++i < halfCount){
         var a0 = tiles[i];
         var a1 = tiles[i + halfCount];
-        var tempPos = cc.p(a0.getPosition());
+//        var tempPos = cc.p(a0.getPosition());
+        var tempPos = a0.getPosition();
         if(useTween !== false){
             a0.runAction(cc.MoveTo.create(0.2, a1.getPosition()));
             a1.runAction(cc.MoveTo.create(0.2, tempPos));

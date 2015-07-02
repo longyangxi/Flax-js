@@ -160,7 +160,15 @@ flax.TileMap = cc.Node.extend({
     /**
      * Note: Must be the global position
      * */
-    getTileIndex:function(pos){
+    getTileIndex:function(pos, y){
+        var x0,y0;
+        if(y == null){
+            x0 = pos.x;
+            y0 = pos.y;
+        }else{
+            x0 = pos;
+            y0 = y;
+        }
         var offset = this.getPosition();
         if(this.parent) offset = this.parent.convertToWorldSpace(offset);
 
@@ -168,10 +176,10 @@ flax.TileMap = cc.Node.extend({
         var sx = Math.abs(scale.x);
         var sy = Math.abs(scale.y);
 
-        var tx = Math.floor((pos.x - offset.x)/(this._tileWidth*sx));
-        var ty = Math.floor((pos.y - offset.y)/(this._tileHeight*sy));
-        if(this.isHexagon && ty%2 != 0) tx = Math.floor((pos.x - offset.x - (this._tileWidth*sx)*0.5)/(this._tileWidth*sx));
-        return cc.p(tx, ty);
+        var tx = Math.floor((x0 - offset.x)/(this._tileWidth*sx));
+        var ty = Math.floor((y0 - offset.y)/(this._tileHeight*sy));
+        if(this.isHexagon && ty%2 != 0) tx = Math.floor((x0 - offset.x - (this._tileWidth*sx)*0.5)/(this._tileWidth*sx));
+        return {x:tx, y:ty};
     },
     getTiledPosition:function(tx, ty){
         var offset = this.getPosition();
@@ -184,7 +192,7 @@ flax.TileMap = cc.Node.extend({
         var x = (tx + 0.5)*this._tileWidth*sx + offset.x;
         var y = (ty + 0.5)*this._tileHeight*sy + offset.y;
         if(this.isHexagon && ty%2 != 0) x += 0.5*this._tileWidth*sx;
-        return cc.p(x, y);
+        return {x:x, y:y};
     },
     /**
      * All the tiles/objects occupied by the sprite bounds, if returnObjects == true, then return all the objects in these tiles
@@ -200,10 +208,10 @@ flax.TileMap = cc.Node.extend({
     getCoveredTiles1:function(rect, returnObjects)
     {
         returnObjects = (returnObjects === true);
-        var t = this.getTileIndex(cc.p(rect.x, rect.y));
+        var t = this.getTileIndex(rect.x, rect.y);
         var leftX = t.x;
         var leftY = t.y;
-        t = this.getTileIndex(cc.p(rect.x + rect.width, rect.y + rect.height));
+        t = this.getTileIndex(rect.x + rect.width, rect.y + rect.height);
         var rightX = t.x;
         var rightY = t.y;
         var tiles = [];
@@ -216,7 +224,7 @@ flax.TileMap = cc.Node.extend({
                     tiles = tiles.concat(this.getObjects(i, j));
                 }else {
                     //todo, the tile maybe has invalide
-                    tiles.push(cc.p(i, j));
+                    tiles.push({x:i, y:j});
                 }
             }
         }
@@ -377,7 +385,7 @@ flax.TileMap = cc.Node.extend({
      * */
     getObjects1:function(x, y)
     {
-        var t = this.getTileIndex(cc.p(x, y));
+        var t = this.getTileIndex(x, y);
         return this.getObjects(t.x, t.y);
     },
     getAllObjects:function()
@@ -393,7 +401,7 @@ flax.TileMap = cc.Node.extend({
             j = -1;
             while(++j < this._mapHeight){
                 if(filterFunc == null || filterFunc(this, i, j) !== false){
-                    tiles.push(cc.p(i, j));
+                    tiles.push({x:i, y:j});
                 }
             }
         }
@@ -408,7 +416,7 @@ flax.TileMap = cc.Node.extend({
         var result = [];
         while(++i < this._mapHeight){
             if(returnObject === true) result = result.concat(this.getObjects(row, i));
-            else result = result.push(cc.p(row, i));
+            else result = result.push({x:row, y:i});
         }
         return result;
     },
@@ -421,7 +429,7 @@ flax.TileMap = cc.Node.extend({
         var result = [];
         while(++i < this._mapWidth){
             if(returnObject === true) result = result.concat(this.getObjects(i, col));
-            else result = result.push(cc.p(i, col));
+            else result = result.push({x:i, y:col});
         }
         return result;
     },
@@ -586,7 +594,7 @@ flax.TileMap = cc.Node.extend({
     {
         var tx = i%this._mapWidth;
         var ty = Math.floor((i - tx)/this._mapWidth);
-        return cc.p(tx, ty);
+        return {x:tx, y:ty};
     },
     getAllTilesIndex:function()
     {

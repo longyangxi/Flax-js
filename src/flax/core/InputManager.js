@@ -46,7 +46,9 @@ flax.InputManager = cc.Node.extend({
                     //event.getButton() == 0 means left mouse is in pressing
                     self.inDragging = event.getButton() == 0;
                     self.justDragged = self.inDragging;
-                    if(self.inDragging) self.justDragDist += cc.pDistance(cc.p(), event.getDelta());
+                    if(self.inDragging) {
+                        self.justDragDist += cc.pLength(event.getDelta());
+                    }
                     //dispatch mouse hover event
                     if(!self.inDragging){
                         var evt = {target:self, currentTarget:self};
@@ -86,7 +88,7 @@ flax.InputManager = cc.Node.extend({
                 flax.mousePos = touch.getLocation();
                 self.inDragging = true;
                 self.justDragged = true;
-                self.justDragDist += cc.pDistance(cc.p(), touch.getDelta());
+                self.justDragDist += cc.pLength(touch.getDelta());
                 self._dispatchOne(self, touch, event, InputType.move);
             }
         });
