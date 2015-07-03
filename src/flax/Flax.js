@@ -240,7 +240,7 @@ flax.addModule = function(cls, module, override){
         }
     }
 };
-flax.callModuleFuction = function(owner, funcName, params){
+flax.callModuleFunction = function(owner, funcName, params){
     funcName = "__" + funcName;
     var num = owner[funcName + "Num"];
     if(num !== undefined){
@@ -254,10 +254,10 @@ flax.callModuleFuction = function(owner, funcName, params){
     }
 };
 flax.callModuleOnEnter = function(owner){
-    flax.callModuleFuction(owner, "onEnter");
+    flax.callModuleFunction(owner, "onEnter");
 };
 flax.callModuleOnExit = function(owner){
-    flax.callModuleFuction(owner, "onExit");
+    flax.callModuleFunction(owner, "onExit");
 };
 
 flax._checkOSVersion = function(){

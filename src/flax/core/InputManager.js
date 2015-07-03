@@ -228,7 +228,7 @@ flax.InputManager = cc.Node.extend({
                 if(func || type) {
                     while(i--){
                         call = calls[i];
-                        if((type && call.type == type) || (func && call.func == func)) {
+                        if((!type || call.type == type) && (!func || call.func == func)) {
                             calls.splice(i, 1);
                         }
                     }

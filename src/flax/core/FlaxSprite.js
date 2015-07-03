@@ -718,22 +718,24 @@ flax._sprite = {
     setPosition:function(pos, yValue)
     {
         var dirty = false;
+        var _x = this.getPositionX();
+        var _y = this.getPositionY();
         if(yValue === undefined) {
-            dirty = (pos.x != this.x || pos.y != this.y);
+            dirty = (pos.x != _x || pos.y != _y);
             if(dirty) this._super(pos);
         }else {
-            dirty = (pos != this.x || yValue != this.y);
+            dirty = (pos != _x || yValue != _y);
             if(dirty) this._super(pos, yValue);
         }
         if(!dirty || !this.parent) return;
-        flax.callModuleFuction(this, "onPosition");
+        flax.callModuleFunction(this, "onPosition");
         this._updateCollider();
     },
     setPositionX:function (x) {
-        this.setPosition(x, this.y);
+        this.setPosition(x, this.getPositionY());
     },
     setPositionY:function (y) {
-        this.setPosition(this.x, y);
+        this.setPosition(this.getPositionX(), y);
     },
     _destroyed:false,
     destroy:function()

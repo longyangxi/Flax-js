@@ -155,7 +155,7 @@ flax._gunnerDefine = {
     onDie:function()
     {
         this.stopShoot();
-        flax.callModuleFuction(this, "onDie");
+        flax.callModuleFunction(this, "onDie");
         if(this.ownerBody) this.ownerBody.destroy();
         else this.destroy();
     }

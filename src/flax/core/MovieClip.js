@@ -49,16 +49,16 @@ flax.FrameData = cc.Class.extend({
     },
     setForChild:function(child)
     {
-        if(!this._hasSkew && this.rotation != child.rotation) child.rotation = this.rotation;
-        if(this.scaleX != child.scaleX) child.scaleX = this.scaleX;
-        if(this.scaleY != child.scaleY) child.scaleY = this.scaleY;
+        if(!this._hasSkew) child.setRotation(this.rotation);
+        child.setScaleX(this.scaleX);
+        child.setScaleY(this.scaleY);
 
         if(this._hasSkew){
-            child.rotationX = this.skewX;
-            child.rotationY = this.skewY;
+            child.setRotationX(this.skewX);
+            child.setRotationY(this.skewY);
         }
 
-        if(child.setOpacity && this.opacity != child.opacity) child.opacity = this.opacity;
+        if(child.setOpacity) child.setOpacity(this.opacity);
 
         var x = this.x;
         var y = this.y;
@@ -77,8 +77,8 @@ flax.FrameData = cc.Class.extend({
             y -= this.textHeight/2;
         }
 
-        if(x != child.x) child.x = x;
-        if(y != child.y) child.y = y;
+        child.setPositionX(x);
+        child.setPositionY(y);
     },
     clone:function(){
         return new flax.FrameData(this._data);
