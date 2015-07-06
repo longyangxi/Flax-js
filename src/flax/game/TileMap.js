@@ -19,11 +19,13 @@ flax.TileMap = cc.Node.extend({
     _objectsMap:null,
     _objectsArr:null,
     _inUpdate:false,
+    _offset:null,
 
     ctor:function()
     {
         this._super();
         this.setAnchorPoint(0, 0);
+        this._offset = cc.p();
     },
     init:function(tileWidth, tileHeight, mapWidth, mapHeight, inPixel)
     {
@@ -169,7 +171,10 @@ flax.TileMap = cc.Node.extend({
             x0 = pos;
             y0 = y;
         }
-        var offset = this.getPosition();
+
+        var offset = this._offset;
+        offset.x = this.getPositionX();
+        offset.y = this.getPositionY();
         if(this.parent) offset = this.parent.convertToWorldSpace(offset);
 
         var scale = flax.getScale(this, true);
@@ -182,7 +187,10 @@ flax.TileMap = cc.Node.extend({
         return {x:tx, y:ty};
     },
     getTiledPosition:function(tx, ty){
-        var offset = this.getPosition();
+
+        var offset = this._offset;
+        offset.x = this.getPositionX();
+        offset.y = this.getPositionY();
         if(this.parent) offset = this.parent.convertToWorldSpace(offset);
 
         var scale = flax.getScale(this, true);

@@ -11,10 +11,56 @@ var VLayoutType = {
     MIDDLE:1,
     TOP:2
 }
+
+flax.getLayoutPosition = function(target, hLayout, vLayout)
+{
+    var rect = flax.getRect(target, true);
+    var sCenter = cc.visibleRect.center;
+    var anchorPos = target.getAnchorPointInPoints();
+
+    var x = 0;
+    var y = 0;
+
+    switch(hLayout){
+        case HLayoutType.LEFT:
+            x = 0;
+            break;
+        case HLayoutType.CENTER:
+            x = sCenter.x - rect.width/2;
+            break;
+        case HLayoutType.RIGHT:
+            x = cc.visibleRect.right.x - rect.width;
+            break;
+    }
+    switch(vLayout){
+        case VLayoutType.BOTTOM:
+            y = 0;
+            break;
+        case VLayoutType.MIDDLE:
+            y = sCenter.y - rect.height/2;
+            break;
+        case VLayoutType.TOP:
+            y = cc.visibleRect.top.y - rect.height;
+            break;
+    }
+
+    var scale = flax.getScale(target, true);
+    var offsetX = !hLayout ? cc.visibleRect.bottomLeft.x : 0;
+    var offsetY = !vLayout ? cc.visibleRect.bottomLeft.y : 0;
+    var pos = cc.p(x + offsetX + anchorPos.x*scale.x, y + offsetY + anchorPos.y*scale.y);
+
+    if(target.parent){
+        pos = target.parent.convertToNodeSpace(pos);
+    }
+    return pos;
+}
+
 flax.ScreenLayoutModule = {
     _isAutoLayout:false,
     _hlayout:null,
     _vlayout:null,
+    _offsetX:0,
+    _offsetY:0,
     onEnter:function()
     {
         flax.onDeviceRotate.add(this._updateLayout, this);
@@ -25,13 +71,11 @@ flax.ScreenLayoutModule = {
         flax.onDeviceRotate.remove(this._updateLayout, this);
         flax.onScreenResize.remove(this._updateLayout, this);
     },
-    _updateLayout:function(landscape)
+    setLayoutOffset:function(offsetX, offsetY)
     {
-        if(this._isAutoLayout){
-            this.autoLayout();
-        }else if(this._hlayout != null && this._vlayout != null){
-            this.setLayout(this._hlayout, this._vlayout);
-        }
+        this._offsetX = offsetX;
+        this._offsetY = offsetY;
+        this._updateLayout();
     },
     /**
      * Set the layout
@@ -43,45 +87,9 @@ flax.ScreenLayoutModule = {
         this._isAutoLayout = false;
         this._hlayout = hLayout;
         this._vlayout = vLayout;
-
-        var rect = flax.getRect(this, true);
-        var sCenter = cc.visibleRect.center;
-        var anchorPos = this.getAnchorPointInPoints();
-
-        var x = 0;
-        var y = 0;
-
-        switch(hLayout){
-            case HLayoutType.LEFT:
-                x = 0;
-                break;
-            case HLayoutType.CENTER:
-                x = sCenter.x - rect.width/2;
-                break;
-            case HLayoutType.RIGHT:
-                x = cc.visibleRect.right.x - rect.width;
-                break;
-        }
-        switch(vLayout){
-            case VLayoutType.BOTTOM:
-                y = 0;
-                break;
-            case VLayoutType.MIDDLE:
-                y = sCenter.y - rect.height/2;
-                break;
-            case VLayoutType.TOP:
-                y = cc.visibleRect.top.y - rect.height;
-                break;
-        }
-
-        var scale = flax.getScale(this, true);
-        var offsetX = !hLayout ? cc.visibleRect.bottomLeft.x : 0;
-        var offsetY = !vLayout ? cc.visibleRect.bottomLeft.y : 0;
-        var pos = cc.p(x + offsetX + anchorPos.x*scale.x, y + offsetY + anchorPos.y*scale.y);
-
-        if(this.parent){
-            pos = this.parent.convertToNodeSpace(pos);
-        }
+        var pos = flax.getLayoutPosition(this, hLayout, vLayout);
+        pos.x += this._offsetX;
+        pos.y += this._offsetY;
         this.setPosition(pos);
     },
     /**
@@ -107,7 +115,7 @@ flax.ScreenLayoutModule = {
                 offsetPlus = rect.width;
             }
             offsetX = rect.x + offsetPlus - sCenter.x;
-            this.x = sCenter.x + offsetX*rateX + anchorPos.x*this.scaleX - offsetPlus;
+            this.x = sCenter.x + offsetX*rateX + anchorPos.x*this.scaleX - offsetPlus + this._offsetX;
         }
 
         var rateY = cc.visibleRect.height/flax.designedStageSize.height;
@@ -118,7 +126,15 @@ flax.ScreenLayoutModule = {
                 offsetPlus = rect.height;
             }
             offsetY = rect.y + offsetPlus - sCenter.y;
-            this.y = sCenter.y + offsetY*rateY + anchorPos.y*this.scaleY - offsetPlus;
+            this.y = sCenter.y + offsetY*rateY + anchorPos.y*this.scaleY - offsetPlus + this._offsetY;
+        }
+    },
+    _updateLayout:function(landscape)
+    {
+        if(this._isAutoLayout){
+            this.autoLayout();
+        }else if(this._hlayout != null && this._vlayout != null){
+            this.setLayout(this._hlayout, this._vlayout);
         }
     }
 }

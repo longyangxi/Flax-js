@@ -565,12 +565,21 @@ flax.getAngle1 = function(dx, dy, forDegree)
     }
     return angle;
 };
+flax.getDistance = function(p0, p1)
+{
+    var x0 = p0 == null ? 0 : p0.x;
+    var y0 = p0 == null ? 0 : p0.y;
+    var dx = p1.x - x0;
+    var dy = p1.y - y0;
+    return Math.sqrt(dx*dx + dy*dy);
+}
 flax.getPointOnCircle = function(center, radius, angleDegree)
 {
     angleDegree = 90 - angleDegree;
     angleDegree *= DEGREE_TO_RADIAN;
-    if(center == null) center = {x:0, y:0};
-    return cc.pAdd(center, {x:radius*Math.cos(angleDegree), y:radius*Math.sin(angleDegree)});
+    var cx = center ? center.x : 0;
+    var cy = center ? center.y : 0;
+    return {x: cx + radius*Math.cos(angleDegree), y: cy + radius*Math.sin(angleDegree)};
 };
 flax.getPosition = function(sprite, coordinate)
 {

@@ -32,7 +32,7 @@ flax.Collider = cc.Class.extend({
             this._polygons = [];
             var arr = data[6].split("'");
             for(var i = 0; i < arr.length - 1; i += 2){
-                var pos = cc.p(parseFloat(arr[i]), parseFloat(arr[i + 1]));
+                var pos = {x:parseFloat(arr[i]), y:parseFloat(arr[i + 1])};
                 this._polygons.push(pos);
             }
         }
