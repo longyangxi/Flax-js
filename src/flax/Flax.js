@@ -50,6 +50,11 @@ flax._orientationTip = null;
 flax._languageDict = null;
 flax._languageToLoad = null;
 
+flax.onDeviceRotate = null;
+flax.onScreenResize = null;
+flax.onSceneExit = null;
+flax.onSceneEnter = null;
+
 flax._addResVersion = function(url)
 {
     if(cc.sys.isNative  || typeof url != "string" || flax.isSoundFile(url)) return url;
@@ -150,8 +155,11 @@ flax.init = function(resolutionPolicy, initialUserData, designSize)
     }
 
     flax.stageRect = cc.rect(cc.visibleRect.bottomLeft.x, cc.visibleRect.bottomLeft.y, cc.visibleRect.width, cc.visibleRect.height);
+
     flax.onDeviceRotate = new signals.Signal();
     flax.onScreenResize = new signals.Signal();
+    flax.onSceneExit = new signals.Signal();
+    flax.onSceneEnter = new signals.Signal();
 
     if(!cc.sys.isNative){
         window.addEventListener("resize", function(){
@@ -291,6 +299,8 @@ flax.replaceScene = function(sceneName, transition, duration)
 {
     if(!flax.isDomainAllowed()) return;
 
+    if(flax.currentSceneName) flax.onSceneExit.dispatch(flax.currentSceneName);
+
     if(flax.ObjectPool) flax.ObjectPool.release();
     if(flax.BulletCanvas) flax.BulletCanvas.release();
     cc.director.resume();
@@ -349,6 +359,8 @@ flax.replaceScene = function(sceneName, transition, duration)
         flax.inputManager = new flax.InputManager();
         flax.currentScene.addChild(flax.inputManager, 999999);
         flax._checkDeviceOrientation();
+
+        flax.onSceneEnter.dispatch(flax.currentSceneName);
     });
 };
 /**
@@ -494,9 +506,6 @@ flax.playSound = function(path)
     return flax.playEffect(path);
 };
 //----------------------sound about-------------------------------------------------------
-flax.onDeviceRotate = null;
-flax.onScreenResize = null;
-
 flax._checkDeviceOrientation = function(){
     if(cc.sys.isNative) return;
     if(!flax._orientationTip && cc.sys.isMobile){
