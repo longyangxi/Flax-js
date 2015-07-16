@@ -1,11 +1,11 @@
-ÓÃ·¨£º
+ï»¿ç”¨æ³•ï¼š
 
-1¡¢Í¨¹ıflax¹¤¾ß£¬½«flashÄ¿Â¼µÄswfÎÄ¼ş×ªµ½resÄ¿Â¼ºó£¬
-2¡¢ÔËĞĞautoUpdate.bat½«×Ô¶¯×öÈçÏÂÊÂÇé£º
-   2.1 ×Ô¶¯±éÀúresÄ¿Â¼µÄ.plistºÍ.jsonÎÄ¼ş¡£
-   2.2 ×Ô¶¯ĞŞ¸Äsrc/resource.jsºÍsrc/HelloWorld.js 
-ÉÏÁ½²½Í¨¹ınode autoUpdate.jsÊµÏÖ¡£
-   2.3 ×Ô¶¯Æô¶¯web·şÎñÆ÷²¢´ò¿ªÓÎÏ·¡£
-ÕâÒ»²½cocos run -p web --port 8888
+1ã€é€šè¿‡flaxå·¥å…·ï¼Œå°†flashç›®å½•çš„swfæ–‡ä»¶è½¬åˆ°resç›®å½•åï¼Œ
+2ã€è¿è¡ŒautoUpdate.batå°†è‡ªåŠ¨åšå¦‚ä¸‹äº‹æƒ…ï¼š
+   2.1 è‡ªåŠ¨éå†resç›®å½•çš„.plistå’Œ.jsonæ–‡ä»¶ã€‚
+   2.2 è‡ªåŠ¨ä¿®æ”¹src/resource.jså’Œsrc/HelloWorld.js 
+ä¸Šä¸¤æ­¥é€šè¿‡node autoUpdate.jså®ç°ã€‚
+   2.3 è‡ªåŠ¨å¯åŠ¨webæœåŠ¡å™¨å¹¶æ‰“å¼€æ¸¸æˆã€‚
+è¿™ä¸€æ­¥cocos run -p web --port 8888
 
-Ò»°ãÈç¹û°ÑcocosÏîÄ¿·Åµ½Ä¿Â¼£¬¿ÉÒÔ²»ÓÃÔËĞĞbatÎÄ¼ş£¬Ö±½ÓÔËĞĞnode autoUpdate.js¼´¿É¡£
+ä¸€èˆ¬å¦‚æœæŠŠcocosé¡¹ç›®æ”¾åˆ°ç›®å½•ï¼Œå¯ä»¥ä¸ç”¨è¿è¡Œbatæ–‡ä»¶ï¼Œç›´æ¥è¿è¡Œnode autoUpdate.jså³å¯ã€‚
