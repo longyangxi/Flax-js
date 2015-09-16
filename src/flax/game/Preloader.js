@@ -34,7 +34,7 @@ flax._preloader = {
         var loadingImg = cc.game.config["loading"];
         if(loadingImg && flax.isImageFile(loadingImg)){
             cc.loader.load(loadingImg, function(){
-                self._logo = cc.Sprite.create(loadingImg);
+                self._logo = new cc.Sprite(loadingImg);
                 self._logo.setPosition(centerPos);
                 self.addChild(self._logo, 10);
                 if(!cc.sys.isNative){

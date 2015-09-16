@@ -68,9 +68,9 @@ flax._image = {
         this._imgSize = temp.getContentSize();
 //        this._updateSize(this._sx, this._sy);
         //to fix the bug... not scaled properly
-        this.scheduleOnce(function(){
+//        this.scheduleOnce(function(){
             this._updateSize(this._sx, this._sy);
-        },0.01)
+//        },0.01)
     },
     destroy:function()
     {
@@ -190,7 +190,7 @@ flax._image = {
             this._sy = sy;
             this._updateSize(this._sx, sy);
         }else{
-            cc.Node.prototype.setScaleX.call(this, sy);
+            cc.Node.prototype.setScaleY.call(this, sy);
         }
     },
     _updateSize:function(sx, sy)

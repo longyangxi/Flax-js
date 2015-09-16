@@ -195,7 +195,8 @@ flax.AssetsManager = cc.Class.extend({
         if(ext == ".flax") assetsFile1 = cc.path.changeBasename(assetsFile1, ".plist");
 
         cc.spriteFrameCache.removeSpriteFramesFromFile(assetsFile1);
-        delete cc.loader.cache[assetsFile1];
+        cc.loader.release(assetsFile1);
+        cc.loader.release(cc.path.changeBasename(assetsFile1, ".png"));
     },
     removeAllAssets:function()
     {

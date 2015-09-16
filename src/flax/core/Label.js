@@ -123,7 +123,7 @@ flax.Label = cc.Sprite.extend({
                 continue;
             }
 
-            sprite = cc.Sprite.create(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
+            sprite = new cc.Sprite(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
             sprite.anchorX = this._fontDefine.anchorX;
             sprite.anchorY = this._fontDefine.anchorY;
             // calculate the position of the sprite;
@@ -237,6 +237,7 @@ flax.Label.create = function(assetsFile, data, define)
     }
     //If it is ttf label(has font and the bitmap font is null, other wise use bitmap label
     else if(data.font && bmpFontName == null){
+        //todo, if setFontSize bug occur in JSB, pls don't use cc.FontDefinition to create labelTTF
         var labelDef = new cc.FontDefinition();
         labelDef.fontName = data.font;
         labelDef.fontSize = data.fontSize;
@@ -246,6 +247,7 @@ flax.Label.create = function(assetsFile, data, define)
         labelDef.fontDimensions = true;
         labelDef.boundingWidth = data.textWidth;
         labelDef.boundingHeight = data.textHeight;
+        //text, fontName, fontSize, dimensions, hAlignment, vAlignment
         if(txtCls == "null") {
             lbl = new cc.LabelTTF(define.text, labelDef);
         }else{

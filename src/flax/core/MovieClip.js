@@ -146,14 +146,14 @@ flax._movieClip = {
         cc.Node.prototype.setOpacity.call(this, opacity);
         for(var k in this.namedChildren){
             var child = this.namedChildren[k];
-            child.setOpacity(opacity);
+            if(child.setOpacity) child.setOpacity(opacity);
         }
     },
     setColor: function (color) {
         cc.Node.prototype.setColor.call(this, color);
         for(var k in this.namedChildren){
             var child = this.namedChildren[k];
-            child.setColor(color);
+            if(child.setColor) child.setColor(color);
         }
     },
     /**

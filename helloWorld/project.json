@@ -55,6 +55,7 @@
       "src/flax/game/ScrollPane.js",
       "src/flax/game/TiledImage.js",
       "src/flax/game/LinkFinder.js",
+      "src/flax/game/Color.js",
       "src/resource.js",
       "src/HelloWorld.js"
   ]

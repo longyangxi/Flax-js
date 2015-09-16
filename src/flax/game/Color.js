@@ -1,4 +1,10 @@
 var HEX_NUM = "0123456789ABCDEF";
+var COLOR_WHITE = cc.color(255, 255, 255);
+var COLOR_BLACK = cc.color(0, 0, 0);
+var COLOR_RED = cc.color(255, 0, 0);
+var COLOR_GREEN = cc.color(0, 255, 0);
+var COLOR_BLUE = cc.color(0, 0, 255);
+var COLOR_GRAY = cc.color(128, 128, 128);
 
 function hexToRgb(hex)
 {
@@ -7,6 +13,12 @@ function hexToRgb(hex)
     var g = parseInt(h.substring(2,4),16);
     var b = parseInt(h.substring(4,6),16);
     return [r, g, b];
+}
+
+function randomColor()
+{
+    var rgb = hsvToRgb(Math.random(), 0.9725, 1.0);
+    return rgbToHex(rgb[0], rgb[1], rgb[2]).toUpperCase();
 }
 
 function rgbToHex(r, g, b) {

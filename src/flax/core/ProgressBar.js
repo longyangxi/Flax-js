@@ -71,7 +71,7 @@ flax.ProgressBar = flax.Animator.extend({
         var sFrame = cc.spriteFrameCache.getSpriteFrame(this.frameNames[frame]);
         if(sFrame) {
             //todo, is there some performance issue? pool?
-            var frameSprite = cc.Sprite.create(sFrame);
+            var frameSprite = new cc.Sprite(sFrame);
             if(this.pBar == null){
                 this.width = frameSprite.width;
                 this.height = frameSprite.height;

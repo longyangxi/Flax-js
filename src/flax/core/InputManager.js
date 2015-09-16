@@ -443,6 +443,7 @@ flax.InputManager = cc.Node.extend({
         var calls = this._callbacks[target.__instanceId];
         if(!calls || !calls.length) return;
         event.currentTarget = target;
+        event.inputType = type;
         var call = null;
         var dispatches = [];
         var i = calls.length;

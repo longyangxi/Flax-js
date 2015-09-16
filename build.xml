@@ -2,7 +2,7 @@
 <project name="Javascript compress project" basedir="" default="compile">
 
     <taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask"
-             classpath="/Users/long/Documents/www/cocos2d-js-v3.1/tools/cocos2d-console/bin/../plugins/project_compile/build_web/bin/compiler-1.7.jar"/>
+             classpath="/Users/long/Documents/www/cocos2d-js-v3.6.1/tools/cocos2d-console/bin/../plugins/project_compile/build_web/bin/compiler-1.7.jar"/>
 
     <target name="compile">
         <jscomp compilationLevel="simple"
@@ -48,6 +48,7 @@
                 <file name="src/flax/game/ScrollPane.js"/>
                 <file name="src/flax/game/TiledImage.js"/>
                 <file name="src/flax/game/LinkFinder.js"/>
+                <file name="src/flax/game/Color.js"/>
             </sources>
         </jscomp>
     </target>

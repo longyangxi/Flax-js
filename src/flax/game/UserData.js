@@ -8,6 +8,7 @@ flax.userData = {
 };
 
 flax.fetchUserData = function(defaultValue) {
+    if(defaultValue) flax.userData = defaultValue;
     var data = null;
     try{
         data = cc.sys.localStorage.getItem(cc.game.config["gameId"]);
@@ -16,7 +17,7 @@ flax.fetchUserData = function(defaultValue) {
         cc.log("Fetch UserData Error: "+ e.name);
     }
     if(data) flax.copyProperties(data, flax.userData);
-    else if(defaultValue) flax.userData = defaultValue;
+//    else if(defaultValue) flax.userData = defaultValue;
     if(!flax.userData) flax.userData = {};
 };
 

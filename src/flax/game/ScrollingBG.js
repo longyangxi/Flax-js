@@ -68,7 +68,7 @@ flax.ScrollingBG = cc.Node.extend({
             }
             //If it's a image
             else if(flax.isImageFile(bgData.source)){
-                bg = cc.Sprite.create(bgData.source);
+                bg = new cc.Sprite(bgData.source);
             }else {
                 throw "Not supported source type!";
             }

@@ -25,7 +25,7 @@ var flax = flax || {};
 //Avoid to advanced compile mode
 window['flax'] = flax;
 
-flax.version = 2.3;
+flax.version = 2.4;
 flax.gameVersion = 0;
 flax.minToolVersion = 2.0;
 flax.language = null;
@@ -43,6 +43,8 @@ flax.currentScene = null;
 flax.prevSceneName = null;
 flax.buttonSound = null;
 flax.frameInterval = 1/60;
+flax.pointZero = {x:0, y:0};
+
 flax._scenesDict = {};
 flax._soundEnabled = true;
 flax._inited = false;
@@ -169,14 +171,19 @@ flax.init = function(resolutionPolicy, initialUserData, designSize)
     }
 };
 
-flax.getLanguageStr = function(key){
+flax.getLanguageStr = function(key, params){
     if(flax._languageDict == null) {
         cc.log("Warning: there is no language defined: "+flax.language);
         return null;
     }
     var str = flax._languageDict[key];
     if(str == null) cc.log("Warning: there is no language string for key: "+key);
-    //todo, more param replace
+    else if(params){
+        for(var key in params){
+            var rk = "{" + key + "}";
+            str = str.replace(new RegExp(rk, 'g'), params[key]);
+        }
+    }
     return str;
 };
 flax.updateLanguage = function(lan){
@@ -511,7 +518,7 @@ flax._checkDeviceOrientation = function(){
     if(!flax._orientationTip && cc.sys.isMobile){
         if(cc.game.config["rotateImg"]){
             flax._orientationTip = cc.LayerColor.create(flax.bgColor, cc.visibleRect.width + 10, cc.visibleRect.height +10);
-            var img =  cc.Sprite.create(cc.game.config["rotateImg"]);
+            var img =  new cc.Sprite(cc.game.config["rotateImg"]);
             img.setPosition(cc.visibleRect.center);
             flax._orientationTip.__icon = img;
             flax._orientationTip.addChild(img);
@@ -559,8 +566,14 @@ flax._showOrientaionTip = function(){
 ///---------------------utils-------------------------------------------------------------
 flax.getAngle = function(startPoint, endPoint, forDegree)
 {
-    var dx = endPoint.x - startPoint.x;
-    var dy = endPoint.y - startPoint.y;
+    var x0 = 0;
+    var y0 = 0;
+    if(startPoint){
+        x0 = startPoint.x;
+        y0 = startPoint.y;
+    }
+    var dx = endPoint.x - x0;
+    var dy = endPoint.y - y0;
     return flax.getAngle1(dx, dy, forDegree);
 };
 flax.getAngle1 = function(dx, dy, forDegree)
@@ -646,7 +659,8 @@ flax.getRect = function(sprite, coordinate)
     if(sprite.getRect) {
         rect = sprite.getRect(coordinate);
         return rect;
-    }else if(sprite instanceof cc.Layer || sprite instanceof cc.Scene){
+    //edit box it is layer
+    }else if((sprite instanceof cc.Layer || sprite instanceof cc.Scene) && (!cc.EditBox || !(sprite instanceof cc.EditBox))){
         return flax.stageRect;
     }
     if(coordinate == null) coordinate = true;
@@ -817,13 +831,25 @@ flax.randInt = function (start, end)
 {
     return start + Math.floor(Math.random()*(end - start));
 };
-flax.getRandomInArray = function (arr)
+flax.getRandomInArray = function (arr, rates)
 {
     if(arr == null) return null;
-    var i = flax.randInt(0, arr.length);
+    if(rates == null){
+        var i = flax.randInt(0, arr.length);
+        return arr[i];
+    }
+    var rate = Math.random();
+    var totalRate = 0;
+    for(var i = 0; i < rates.length; i++)
+    {
+        if(rates[i] <= 0) continue;
+        totalRate += rates[i];
+        if(rate <= totalRate){
+            break;
+        }
+    }
     return arr[i];
 };
-
 flax.isImageFile = function(path)
 {
     if(typeof path != "string") return false;
@@ -929,9 +955,13 @@ flax.utf8ToUnicode = function(strUtf8) {
     }
     return bstr;
 }
-flax.formatTime = function(seconds)
+flax.formatTime = function(seconds, levels)
 {
-    var h = Math.floor(seconds/3600);
+    if(levels <= 1) return seconds + "";
+    if(!levels) levels = 2;
+
+    var h = 0;
+    if(levels > 2) h = Math.floor(seconds/3600);
     var m = Math.floor((seconds - h*3600)/60);
     var s = seconds - h*3600 - m*60;
 
@@ -939,7 +969,8 @@ flax.formatTime = function(seconds)
     if(m < 10) m = "0" + m;
     if(s < 10) s = "0" + s;
 
-    return h + ":" + m + ":" + s;
+    if(levels > 2) return h + ":" + m + ":" + s;
+    return m + ":" + s;
 }
 /**
  * generate a unique id

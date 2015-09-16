@@ -6,12 +6,17 @@ flax.Anchor = cc.Class.extend({
     y:0,
     zIndex:0,
     rotation:0,
+    scaleX:1,
+    scaleY:1,
     ctor:function(data){
         data = data.split(",");
         this.x = parseFloat(data[0]);
         this.y = parseFloat(data[1]);
         if(data.length > 2) this.zIndex = parseInt(data[2]);
         if(data.length > 3) this.rotation = parseFloat(data[3]);
+        if(data.length > 4) this.scaleX = parseFloat(data[4]);
+        if(data.length > 5) this.scaleY = parseFloat(data[5]);
+        cc.log(this.scaleX + "," + data.length)
     }
 });
 
@@ -628,6 +633,8 @@ flax._sprite = {
         node.y = anchor.y;
         node.zIndex = anchor.zIndex;
         node.rotation = anchor.rotation;
+        node.setScaleX(anchor.scaleX);
+        node.setScaleY(anchor.scaleY);
     },
     onEnter:function()
     {
