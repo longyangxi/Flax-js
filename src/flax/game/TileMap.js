@@ -34,11 +34,7 @@ flax.TileMap = cc.Node.extend({
         this._tileHeight = tileHeight;
         if(!mapWidth) mapWidth = cc.visibleRect.width;
         if(!mapHeight) mapHeight = cc.visibleRect.height;
-        if(inPixel){
-            mapWidth = Math.ceil(mapWidth/this._tileWidth);
-            mapHeight = Math.ceil(mapHeight/this._tileHeight);
-        }
-        this.setMapSize(mapWidth, mapHeight);
+        this.setMapSize(mapWidth, mapHeight, inPixel);
     },
     //fix the tile update bug when in JSB
     update:function(delta){
@@ -57,8 +53,12 @@ flax.TileMap = cc.Node.extend({
         if(this.isHexagon) s.width += this._tileWidth*0.5;
         return s;
     },
-    setMapSize:function(w, h)
+    setMapSize:function(w, h, inPixel)
     {
+        if(inPixel){
+            w = Math.ceil(w/this._tileWidth);
+            h = Math.ceil(h/this._tileHeight);
+        }
         var result = [];
         //the objects in the tiles would be removed from the data
         result[0] = [];

@@ -224,6 +224,7 @@ flax._sprite = {
         }
         var param = {density:density,friction:friction,restitution:restitution,isSensor:isSensor,catBits:catBits,maskBits:maskBits};
         if(this.parent) {
+            collider.setOwner(this);
             var fixture = collider.createPhysics(density, friction, restitution, isSensor, catBits, maskBits);
             if(this._physicsColliders.indexOf(collider) == -1) this._physicsColliders.push(collider);
             return fixture;

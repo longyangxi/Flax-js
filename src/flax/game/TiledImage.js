@@ -31,7 +31,7 @@ flax.TiledImage = cc.SpriteBatchNode.extend({
 
         var tile = flax.assetsManager.createDisplay(this.assetsFile, this.assetID);
         var size = tile.getContentSize();
-        this.tileMap.setTileSize(size.width + this.tileWidthOffset, size.height + this.tileHeightOffset);
+        this.tileMap.init(size.width + this.tileWidthOffset, size.height + this.tileHeightOffset);
 
         if(this._mapWidth * this._mapHeight > 0) {
             if(this.getChildrenCount() > 0){
@@ -66,7 +66,7 @@ flax.TiledImage = cc.SpriteBatchNode.extend({
     },
     _updateSize:function()
     {
-        var objs = this.tileMap.setMapSizePixel(this._mapWidth, this._mapHeight);
+        var objs = this.tileMap.setMapSize(this._mapWidth, this._mapHeight, true);
         var i;
         var n = objs[0].length;
         if(n > 0) {

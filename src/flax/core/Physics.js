@@ -45,6 +45,7 @@ flax.Collider = cc.Class.extend({
     },
     setOwner:function(owner)
     {
+        if(this.owner == owner) return;
         this.owner = owner;
         this.owner.retain();
     },
