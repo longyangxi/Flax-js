@@ -32,9 +32,7 @@ flax.TileMap = cc.Node.extend({
         if(!tileWidth || !tileHeight) throw "Please set tileWdith and tileHeight!"
         this._tileWidth = tileWidth;
         this._tileHeight = tileHeight;
-        if(!mapWidth) mapWidth = cc.visibleRect.width;
-        if(!mapHeight) mapHeight = cc.visibleRect.height;
-        this.setMapSize(mapWidth, mapHeight, inPixel);
+        if(mapWidth && mapHeight) this.setMapSize(mapWidth, mapHeight, inPixel);
     },
     //fix the tile update bug when in JSB
     update:function(delta){
@@ -55,7 +53,9 @@ flax.TileMap = cc.Node.extend({
     },
     setMapSize:function(w, h, inPixel)
     {
-        if(inPixel){
+//        if(!w) w = cc.visibleRect.width;
+//        if(!h) h = cc.visibleRect.height;
+        if(inPixel == true){
             w = Math.ceil(w/this._tileWidth);
             h = Math.ceil(h/this._tileHeight);
         }

@@ -250,7 +250,7 @@ flax.Label.create = function(assetsFile, data, define)
         //text, fontName, fontSize, dimensions, hAlignment, vAlignment
         if(txtCls == "null") {
             lbl = new cc.LabelTTF(define.text, labelDef);
-        }else{
+        }else if(flax.getLanguageStr){
             lbl = new cc.LabelTTF(flax.getLanguageStr(txtCls) || define.text, labelDef);
         }
         //enable stroke

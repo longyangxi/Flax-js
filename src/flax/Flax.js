@@ -251,7 +251,22 @@ flax.addModule = function(cls, module, override){
             else cls.prototype[kn]++;
             cls.prototype[nk + cls.prototype[kn]] = module[k];
         }else if(override === true || !cls.prototype[k]){
-            cls.prototype[k] = module[k];
+            var value = module[k];
+            if (value && (typeof value.get === 'function' || typeof value.set === 'function'))
+            {
+                if (typeof value.clone === 'function')
+                {
+                    cls.prototype[k] = value.clone();
+                }
+                else
+                {
+                    Object.defineProperty(cls.prototype, k, value);
+                }
+            }
+            else
+            {
+                cls.prototype[k] = value;
+            }
         }
     }
 };
