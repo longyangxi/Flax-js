@@ -123,7 +123,12 @@ flax.Label = cc.Sprite.extend({
                 continue;
             }
 
-            sprite = cc.Sprite.create(cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
+            var sFrame = cc.spriteFrameCache.getSpriteFrame(this.frames[charIndex]);
+            if (!sFrame) {
+                cc.log("Not found the char: " + ch + " cc.spriteFrameCache.getSpriteFrame");
+            }
+            var sprite = new cc.Sprite(sFrame);
+
             sprite.anchorX = this._fontDefine.anchorX;
             sprite.anchorY = this._fontDefine.anchorY;
             // calculate the position of the sprite;
