@@ -46,6 +46,7 @@
       "src/flax/game/TileMap.js",
       "src/flax/game/UserData.js",
       "src/flax/game/ObjectPool.js",
+      "src/flax/module/PhysicsModule.js",
       "src/flax/module/HealthModule.js",
       "src/flax/module/EnemyWaveModule.js",
       "src/flax/game/SoundButton.js",
