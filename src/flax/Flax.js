@@ -568,12 +568,12 @@ flax._showOrientaionTip = function(){
     flax.landscape = newLandscape;
 
 
-    if(landscapeConfiged == newLandscape){
-        cc.view.setDesignResolutionSize(flax.designedStageSize.width, flax.designedStageSize.height, cc.view.getResolutionPolicy());
-    }else{
-        cc.view.setDesignResolutionSize(flax.designedStageSize.height, flax.designedStageSize.width, cc.view.getResolutionPolicy());
-    }
-    flax.stageRect = cc.rect(cc.visibleRect.bottomLeft.x, cc.visibleRect.bottomLeft.y, cc.visibleRect.width, cc.visibleRect.height);
+    //if(landscapeConfiged == newLandscape){
+    //    cc.view.setDesignResolutionSize(flax.designedStageSize.width, flax.designedStageSize.height, cc.view.getResolutionPolicy());
+    //}else{
+    //    cc.view.setDesignResolutionSize(flax.designedStageSize.height, flax.designedStageSize.width, cc.view.getResolutionPolicy());
+    //}
+    //flax.stageRect = cc.rect(cc.visibleRect.bottomLeft.x, cc.visibleRect.bottomLeft.y, cc.visibleRect.width, cc.visibleRect.height);
 
     flax.onDeviceRotate.dispatch(flax.landscape);
 };
