@@ -314,6 +314,8 @@ flax._movieClip = {
             var child = this.namedChildren[key];
             if(child.__isMovieClip === true) {
                 child.setAutoPlayChildren(v);
+            }
+            if(child.__isFlaxSprite) {
                 v ? child.play() : child.stop();
             }
         }
