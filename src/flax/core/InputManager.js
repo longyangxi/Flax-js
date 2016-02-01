@@ -12,6 +12,7 @@ var InputType = {
 
 flax.InputManager = cc.Node.extend({
     enabled:true,
+    nullEnabled:false,
     inTouching:false,
     inDragging:false,
     justDragged:false,
@@ -68,6 +69,7 @@ flax.InputManager = cc.Node.extend({
             onTouchBegan:function(touch, event)
             {
                 flax.mousePos = touch.getLocation();
+                if(!self.nullEnabled) return false;
                 if (!self.enabled) return false;
                 self.inDragging = false;
                 self.justDragged = false;
@@ -78,6 +80,7 @@ flax.InputManager = cc.Node.extend({
             },
             onTouchEnded:function(touch, event)
             {
+                if(!self.nullEnabled) return;
                 self.inDragging = false;
                 self.inTouching = false;
                 self._dispatchOne(self, touch, event, InputType.up);
@@ -85,6 +88,7 @@ flax.InputManager = cc.Node.extend({
             },
             onTouchMoved:function(touch, event)
             {
+                if(!self.nullEnabled) return;
                 flax.mousePos = touch.getLocation();
                 self.inDragging = true;
                 self.justDragged = true;

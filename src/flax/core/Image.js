@@ -19,13 +19,13 @@ flax._image = {
     ctor:function(assetsFile, assetID){
         if(this instanceof cc.Sprite) cc.Sprite.prototype.ctor.call(this);
         else {
-            //todo, not good solution for cc.Scale9Sprite error in JSB
+            //todo, use texture as scale9
             this.define = flax.assetsManager.getDisplayDefine(assetsFile, assetID);
             //get the resource folder
-            var dir = assetsFile.slice(0, assetsFile.lastIndexOf("/"));
-            this._imgFile = dir + "/" + this.define['url'];
-            cc.Scale9Sprite.prototype.ctor.call(this, this._imgFile, cc.rect(), this.define['scale9']);
-            this.clsName = "flax.Scale9Image";
+            this._imgFile = this.define['url'];
+            this._super();
+            var batch = new cc.SpriteBatchNode(this._imgFile);
+            this.updateWithBatchNode(batch, flax.rect(), false, this.define['scale9']);
         }
         if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!";
         this.__instanceId = ClassManager.getNewInstanceId();
