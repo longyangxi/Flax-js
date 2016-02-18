@@ -216,6 +216,7 @@ flax.Label.create = function(assetsFile, data, define)
         }
         var frames = flax.assetsManager.getFrameNamesOfDisplay(assetsFile, txtCls);
         //todo, the size of the edit box is the background's size, not the text
+        if(flax.Scale9Image == null) throw "Please add module of 'gui' or 'ccui'(cocos 3.10 later) into project.json if you want to use EditBox!";
         lbl = new cc.EditBox(cc.size(data.textWidth, data.textHeight), new cc.Scale9Sprite(frames[0]),
             frames[1] ? new cc.Scale9Sprite(frames[1]) : null,
             frames[2] ? new cc.Scale9Sprite(frames[2]) : null);
