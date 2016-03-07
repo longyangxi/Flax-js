@@ -216,7 +216,7 @@ flax.AssetsManager = cc.Class.extend({
             throw "Make sure you have pre-loaded the resource: "+assetsFile;
         }
         //the min tool version this API needed
-        var toolVersion = dict["metadata"]["flaxVersion"];
+        var toolVersion = dict["metadata"]["version"] || dict["metadata"]["flaxVersion"];
         this.toolsVersion[assetsFile] = toolVersion || 0;
         if(!toolVersion || toolVersion < flax.minToolVersion){
             throw "The resource: " + assetsFile + " was exported with the old version of Flax, please do it with current version!";
