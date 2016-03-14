@@ -25,7 +25,7 @@ flax._image = {
             this._imgFile = this.define['url'];
             this._super();
             var batch = new cc.SpriteBatchNode(this._imgFile);
-            this.updateWithBatchNode(batch, flax.rect(), false, this.define['scale9']);
+            this.updateWithBatchNode(batch, cc.rect(), false, this.define['scale9']);
         }
         if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!";
         this.__instanceId = ClassManager.getNewInstanceId();
