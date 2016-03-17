@@ -224,6 +224,7 @@ flax.InputManager = cc.Node.extend({
     removeListener:function(target, func, type)
     {
         if(target == null) target = this;
+        type = (type == null) ? InputType.click : type;
         var calls = this._callbacks[target.__instanceId];
         if(calls && (type == null || (type != InputType.keyPress && type != InputType.keyUp))) {
 //            this.scheduleOnce(function(){
