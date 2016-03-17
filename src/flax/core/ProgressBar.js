@@ -51,7 +51,11 @@ flax.ProgressBar = flax.Animator.extend({
     {
         if(this.pBar == null) return;
         if(this._tween) {
-            this.pBar.stopAction(this._tween);
+            // isDone function for determining whether the action has been completed.
+            // If the action have been completed, We should not call stopAction to avoid cocos tip: target not found
+            if(!this._tween.isDone()) {
+                this.pBar.stopAction(this._tween);
+            }
             this._tween.release();
         }
         this._tween = cc.progressFromTo(duration, from, to);
